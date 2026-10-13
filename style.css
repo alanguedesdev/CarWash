@@ -1,12 +1,3 @@
-:root {
-  font-family: "Trebuchet MS", Arial, sans-serif;
-  color: #24344b;
-  background: #86d9f5;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
 * {
   box-sizing: border-box;
@@ -14,54 +5,616 @@
 
 html,
 body {
-  width: 100%;
-  min-width: 320px;
-  min-height: 100%;
   margin: 0;
-}
-
-body {
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  background: linear-gradient(#86d9f5, #d8f5ff);
-}
-
-#game-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 12px;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  background: #b6dce6;
 }
 
 #game {
+  position: relative;
   width: 100%;
-  max-width: 1000px;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
-  border: 4px solid #ffffff;
-  border-radius: 20px;
-  background: #b9edff;
-  box-shadow: 0 8px 0 rgb(36 52 75 / 12%);
 }
 
 #game canvas {
   display: block;
-  width: 100% !important;
-  height: auto !important;
+  width: 100%;
+  height: 100%;
   touch-action: none;
 }
 
-@media (max-width: 600px) {
-  #game-container {
-    padding: 0;
+.game-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  color: #263f48;
+}
+
+.game-brand {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px;
+  border-left: 5px solid #e87c64;
+  background: rgba(248, 228, 181, 0.97);
+  box-shadow: 0 4px 12px rgba(36, 49, 48, 0.2);
+}
+
+.game-brand strong {
+  font-size: clamp(15px, 1.8vw, 22px);
+  letter-spacing: 1px;
+}
+
+.game-brand span {
+  color: #695c42;
+  font-size: clamp(10px, 1vw, 12px);
+}
+
+.mission-card {
+  position: absolute;
+  top: 105px;
+  left: 16px;
+  width: 275px;
+  padding: 12px;
+  background: rgba(250, 240, 213, 0.97);
+  border-left: 4px solid #d79b48;
+  box-shadow: 0 5px 16px rgba(36, 49, 48, 0.18);
+}
+
+.mission-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-avatar {
+  position: relative;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 58px;
+  overflow: hidden;
+  border: 2px solid #fff3d6;
+  background: #b9d7cf;
+}
+
+.avatar-hair {
+  position: absolute;
+  top: 6px;
+  left: 13px;
+  width: 29px;
+  height: 20px;
+  border-radius: 50% 50% 25% 25%;
+  background: #49362c;
+}
+
+.avatar-face {
+  position: absolute;
+  top: 13px;
+  left: 15px;
+  width: 25px;
+  height: 28px;
+  border-radius: 42% 42% 48% 48%;
+  background: #dba77c;
+}
+
+.avatar-face i {
+  position: absolute;
+  top: 10px;
+  left: 5px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #342e2a;
+}
+
+.avatar-face i:nth-child(2) {
+  left: 17px;
+}
+
+.avatar-face span {
+  position: absolute;
+  bottom: 5px;
+  left: 9px;
+  width: 8px;
+  height: 3px;
+  border-bottom: 2px solid #754b3c;
+  border-radius: 50%;
+}
+
+.avatar-body {
+  position: absolute;
+  bottom: -14px;
+  left: 5px;
+  width: 44px;
+  height: 30px;
+  border-radius: 45% 45% 0 0;
+  background: #476a82;
+}
+
+.customer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.customer-details small,
+.mission-goal span,
+.mission-reward span {
+  color: #8a7048;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+}
+
+.customer-details strong {
+  font-size: 14px;
+}
+
+.customer-details > span,
+.mission-car span {
+  color: #76674f;
+  font-size: 10px;
+}
+
+.mission-car {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 0;
+  margin-top: 9px;
+  border-top: 1px solid rgba(133, 104, 62, 0.22);
+  border-bottom: 1px solid rgba(133, 104, 62, 0.22);
+}
+
+.car-symbol {
+  font-size: 27px !important;
+}
+
+.mission-car div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mission-car strong {
+  font-size: 12px;
+}
+
+.customer-request {
+  margin: 9px 0;
+  color: #5e5847;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.mission-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(133, 104, 62, 0.22);
+}
+
+.mission-goal strong {
+  font-size: 11px;
+}
+
+.mission-reward {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed rgba(133, 104, 62, 0.4);
+}
+
+.mission-reward strong {
+  color: #378253;
+  font-size: 16px;
+}
+
+.wash-status {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: min(300px, 30vw);
+  transform: translateX(-50%);
+  padding: 10px 13px;
+  background: rgba(248, 228, 181, 0.97);
+  border-bottom: 4px solid #e87c64;
+  box-shadow: 0 4px 12px rgba(36, 49, 48, 0.18);
+}
+
+.status-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.status-top span {
+  color: #76664b;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.status-top strong {
+  font-size: 20px;
+}
+
+.progress-track {
+  height: 10px;
+  overflow: hidden;
+  background: #c6d0c3;
+  border: 1px solid rgba(73, 86, 69, 0.2);
+}
+
+#wash-progress {
+  width: 0%;
+  height: 100%;
+  background: #43a875;
+  transition: width 180ms ease;
+}
+
+#wash-step {
+  margin-top: 6px;
+  color: #695c42;
+  font-size: 10px;
+}
+
+.game-message {
+  position: absolute;
+  left: 50%;
+  bottom: 115px;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border-left: 4px solid #e87c64;
+  background: rgba(248, 228, 181, 0.96);
+  color: #354f56;
+  font-size: 11px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(37, 65, 75, 0.13);
+}
+
+.tool-dock {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 7px;
+  max-width: calc(100% - 280px);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.tool-button {
+  width: 72px;
+  min-height: 76px;
+  padding: 6px 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  border: 2px solid #f6edcf;
+  border-bottom: 4px solid #6e8584;
+  border-radius: 8px;
+  background: #344f5b;
+  color: #f7f0d9;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.tool-button:hover:not(.locked) {
+  transform: translateY(-3px);
+}
+
+.tool-button.selected {
+  background: #f3cf70;
+  color: #263f48;
+  border-color: #fff3cb;
+  border-bottom-color: #dc875c;
+  outline: 2px solid #e87c64;
+}
+
+.tool-icon {
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.tool-name {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.tool-cost {
+  font-size: 9px;
+  opacity: 0.75;
+}
+
+.tool-button.locked {
+  opacity: 0.58;
+  background: #53666b;
+  cursor: not-allowed;
+}
+
+.game-footer {
+  position: absolute;
+  left: 16px;
+  bottom: 20px;
+}
+
+.game-footer > span {
+  padding: 7px 9px;
+  background: rgba(248, 228, 181, 0.96);
+  color: #4f5d50;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+}
+
+#reset-car {
+  position: fixed;
+  right: 16px;
+  bottom: 20px;
+  pointer-events: auto;
+  border: 2px solid #f4e8c9;
+  border-bottom: 4px solid #263f48;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #344f5b;
+  color: #fff6df;
+  font: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#reset-car:hover {
+  background: #466b78;
+}
+
+#tool-cursor {
+  display: none;
+  position: fixed;
+  z-index: 20;
+  transform: translate(-30%, -65%);
+  pointer-events: none;
+  font-size: 35px;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
+}
+
+@media (max-width: 900px) {
+  .mission-card {
+    top: 90px;
+    left: 8px;
+    width: 215px;
+    padding: 8px;
   }
 
-  #game {
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+  .customer-avatar {
+    flex-basis: 42px;
+    width: 42px;
+    height: 48px;
+  }
+
+  .avatar-face {
+    left: 10px;
+  }
+
+  .avatar-hair {
+    left: 8px;
+  }
+
+  .avatar-body {
+    left: 0;
+  }
+
+  .customer-details strong {
+    font-size: 12px;
+  }
+
+  .customer-request {
+    font-size: 10px;
+  }
+
+  .mission-car {
+    padding: 6px 0;
+  }
+
+  .mission-goal strong {
+    font-size: 10px;
+  }
+
+  .tool-dock {
+    max-width: calc(100% - 16px);
+    gap: 4px;
+  }
+
+  .tool-button {
+    width: clamp(48px, 10vw, 66px);
+    min-height: 65px;
+  }
+
+  .tool-icon {
+    font-size: 22px;
+  }
+
+  .tool-name {
+    font-size: 9px;
+  }
+
+  .tool-cost {
+    font-size: 8px;
+  }
+
+  .game-footer > span {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .game-brand {
+    top: 7px;
+    left: 6px;
+    padding: 6px 8px;
+  }
+
+  .game-brand strong {
+    font-size: 13px;
+  }
+
+  .game-brand span {
+    max-width: 130px;
+    font-size: 9px;
+  }
+
+  .wash-status {
+    top: 7px;
+    right: 6px;
+    left: auto;
+    width: 40vw;
+    max-width: 165px;
+    padding: 6px 8px;
+    transform: none;
+  }
+
+  .status-top span {
+    font-size: 7px;
+  }
+
+  .status-top strong {
+    font-size: 15px;
+  }
+
+  #wash-step {
+    font-size: 8px;
+  }
+
+  .mission-card {
+    top: 73px;
+    left: 6px;
+    width: 174px;
+    padding: 7px;
+  }
+
+  .customer-avatar {
+    flex-basis: 35px;
+    width: 35px;
+    height: 40px;
+  }
+
+  .avatar-hair {
+    top: 5px;
+    left: 5px;
+    width: 24px;
+    height: 16px;
+  }
+
+  .avatar-face {
+    top: 11px;
+    left: 5px;
+    transform: scale(0.82);
+    transform-origin: top left;
+  }
+
+  .avatar-body {
+    left: -5px;
+    transform: scale(0.85);
+  }
+
+  .customer-details small {
+    font-size: 7px;
+  }
+
+  .customer-details strong {
+    font-size: 10px;
+  }
+
+  .customer-details > span,
+  .mission-car span {
+    font-size: 8px;
+  }
+
+  .mission-car {
+    gap: 4px;
+    margin-top: 5px;
+  }
+
+  .car-symbol {
+    font-size: 20px !important;
+  }
+
+  .mission-car strong {
+    font-size: 9px;
+  }
+
+  .customer-request {
+    margin: 6px 0;
+    font-size: 9px;
+  }
+
+  .mission-goal span,
+  .mission-reward span {
+    font-size: 7px;
+  }
+
+  .mission-goal strong {
+    font-size: 9px;
+  }
+
+  .mission-reward strong {
+    font-size: 12px;
+  }
+
+  .game-message {
+    bottom: 87px;
+    font-size: 9px;
+  }
+
+  .tool-dock {
+    bottom: 5px;
+    gap: 3px;
+  }
+
+  .tool-button {
+    width: 15vw;
+    min-height: 61px;
+    padding: 3px 1px;
+  }
+
+  .tool-icon {
+    font-size: 19px;
+  }
+
+  .tool-name {
+    font-size: 8px;
+  }
+
+  .tool-cost {
+    font-size: 7px;
+  }
+
+  #reset-car {
+    right: 6px;
+    bottom: 72px;
+    padding: 7px 8px;
+    font-size: 9px;
   }
 }
