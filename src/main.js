@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import CleaningSystem from "./systems/CleaningSystem.js";
 import "./../style.css";
 
 class GarageScene extends Phaser.Scene {
@@ -115,7 +116,8 @@ class GarageScene extends Phaser.Scene {
     graphics.fillStyle(0x8da2b5, 1);
     graphics.fillCircle(385, 430, 9);
     graphics.fillCircle(610, 430, 9);
-
+    
+    this.cleaningSystem = new CleaningSystem(this);
     // Pequenos detalhes decorativos.
     graphics.fillStyle(0xffffff, 0.9);
     graphics.fillCircle(338, 377, 5);
