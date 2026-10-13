@@ -1,5 +1,7 @@
+
 import Phaser from "phaser";
 import CleaningSystem from "./systems/CleaningSystem.js";
+import CarView from "./vehicles/CarView.js";
 import "./../style.css";
 
 class GarageScene extends Phaser.Scene {
@@ -67,62 +69,12 @@ class GarageScene extends Phaser.Scene {
       strokeThickness: 2,
     }).setOrigin(0.5);
 
-    // Sombra do carro.
-    graphics.fillStyle(0x35536a, 0.18);
-    graphics.fillEllipse(485, 458, 410, 45);
+    // Desenho do carro.
+    this.carView = new CarView(this);
+    this.carView.drawSideView();
 
-    // Carroceria principal: vista lateral estilizada.
-    graphics.fillStyle(0xff806b, 1);
-    graphics.fillRoundedRect(300, 350, 375, 90, 28);
-
-    // Frente inclinada.
-    graphics.fillTriangle(
-      620, 350,
-      710, 390,
-      675, 425
-    );
-
-    // Para-choque.
-    graphics.fillStyle(0xe85f58, 1);
-    graphics.fillRoundedRect(640, 408, 57, 22, 8);
-
-    // Janelas.
-    graphics.fillStyle(0xb9efff, 1);
-    graphics.fillRoundedRect(390, 295, 165, 75, 18);
-
-    graphics.fillTriangle(
-      555, 300,
-      615, 350,
-      555, 350
-    );
-
-    // Divisória das janelas.
-    graphics.lineStyle(6, 0xff806b, 1);
-    graphics.lineBetween(478, 301, 478, 366);
-
-    // Farol.
-    graphics.fillStyle(0xfff5b0, 1);
-    graphics.fillRoundedRect(680, 385, 22, 16, 6);
-
-    // Rodas.
-    graphics.fillStyle(0x34465d, 1);
-    graphics.fillCircle(385, 430, 39);
-    graphics.fillCircle(610, 430, 39);
-
-    graphics.fillStyle(0xf2f5fa, 1);
-    graphics.fillCircle(385, 430, 21);
-    graphics.fillCircle(610, 430, 21);
-
-    graphics.fillStyle(0x8da2b5, 1);
-    graphics.fillCircle(385, 430, 9);
-    graphics.fillCircle(610, 430, 9);
-    
+    // Sistema de lavagem.
     this.cleaningSystem = new CleaningSystem(this);
-    // Pequenos detalhes decorativos.
-    graphics.fillStyle(0xffffff, 0.9);
-    graphics.fillCircle(338, 377, 5);
-    graphics.fillCircle(350, 387, 3);
-    graphics.fillCircle(650, 370, 4);
 
     // Interface provisória.
     this.add.text(24, 22, "MEU LAVA-JATO", {
@@ -140,7 +92,6 @@ class GarageScene extends Phaser.Scene {
       color: "#29445b",
     });
 
-    // Aviso temporário: ainda não há interação.
     this.add.text(480, 545, "Sua jornada começa aqui!", {
       fontFamily: "Trebuchet MS, Arial, sans-serif",
       fontSize: "21px",
