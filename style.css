@@ -1,0 +1,67 @@
+:root {
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: #24344b;
+  background: #86d9f5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: linear-gradient(#86d9f5, #d8f5ff);
+}
+
+#game-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 12px;
+}
+
+#game {
+  width: 100%;
+  max-width: 1000px;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  border-radius: 20px;
+  background: #b9edff;
+  box-shadow: 0 8px 0 rgb(36 52 75 / 12%);
+}
+
+#game canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  touch-action: none;
+}
+
+@media (max-width: 600px) {
+  #game-container {
+    padding: 0;
+  }
+
+  #game {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
