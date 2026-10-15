@@ -402,7 +402,7 @@ function loadCar() {
   const loader = new GLTFLoader();
 
   loader.load(
-    "/models/Nissan-gtr.glb",
+  `${import.meta.env.BASE_URL}models/Nissan-gtr.glb`,
 
     (gltf) => {
       if (disposed) return;
