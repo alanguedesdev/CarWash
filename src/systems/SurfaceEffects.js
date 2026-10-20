@@ -301,6 +301,17 @@ export default class SurfaceEffects {
     this.totalDirt = this.dirtMarks.length;
   }
 
+  getPreparationProgress(property) {
+    const total = this.dirtMarks.length;
+    const prepared = this.dirtMarks.reduce((count, mark) => count + (mark[property] ? 1 : 0), 0);
+    return {
+      total,
+      prepared,
+      percent: total ? Math.round((prepared / total) * 100) : 100,
+      complete: total > 0 && prepared === total,
+    };
+  }
+
   beginRinse() {
     for (const mark of this.dirtMarks) mark.rinsed = false;
     this.onMessage("Passe água por toda a lataria para remover a espuma.");
