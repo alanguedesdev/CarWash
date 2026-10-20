@@ -173,7 +173,6 @@ const carMeshes = [];
 let carModel = null;
 let surfaceEffects = null;
 let selectedTool = null;
-let washStage = "initial-water";
 let missionCompleted = false;
 let rewardClaimed = false;
 let dragging = false;
@@ -354,7 +353,6 @@ function updateMission(progress) {
 function finishMission() {
   if (missionCompleted) return;
   missionCompleted = true;
-  washStage = "completed";
   setTool(null);
   updateMission(surfaceEffects.getProgress());
   completionPanel.hidden = false;
@@ -543,13 +541,15 @@ function loadCar() {
 loadCar();
 
 // Interação com mouse e toque
-renderer.domElement.addEventListener("wheel", (event) => {
-  if (!carModel) return;
+window.addEventListener("wheel", (event) => {
+  if (!carModel || event.deltaY === 0) return;
+  // A rotação é independente da ferramenta selecionada e funciona mesmo
+  // quando o cursor está sobre a interface do jogo.
   event.preventDefault();
-  const rotation = Math.sign(event.deltaY) * 0.18;
+  const rotation = Math.sign(event.deltaY) * 0.22;
   carPivot.rotation.y += rotation;
   platform.rotation.y = carPivot.rotation.y;
-}, { passive: false });
+}, { passive: false, capture: true });
 
 renderer.domElement.addEventListener("pointerdown", (event) => {
   if (!carModel) return;

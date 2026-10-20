@@ -406,7 +406,6 @@ export default class SurfaceEffects {
     for (const mark of this.dirtMarks) {
       if (
         mark.removed ||
-        (property === "soapy" && !mark.wet) ||
         mark.modelPosition.distanceToSquared(modelPoint) > PREPARATION_RADIUS * PREPARATION_RADIUS
       ) {
         continue;
@@ -479,12 +478,6 @@ export default class SurfaceEffects {
   }
 
   applySoap(mesh, localPoint, effectPosition, normal, modelPoint) {
-    const nearbyWetDirt = this.dirtMarks.some(
-      (mark) => !mark.removed && mark.wet &&
-        mark.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS
-    );
-    if (!nearbyWetDirt) return false;
-
     this.addEffect({
       mesh,
       position: effectPosition,
@@ -523,7 +516,6 @@ export default class SurfaceEffects {
     for (const mark of this.dirtMarks) {
       if (
         mark.removed ||
-        !mark.soapy ||
         mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared
       ) continue;
 
