@@ -618,3 +618,30 @@ body {
     font-size: 9px;
   }
 }
+
+
+/* Conclusão da missão */
+.mission-complete[hidden] { display: none !important; }
+.mission-complete {
+  position: absolute; inset: 0; z-index: 30; display: grid; place-items: center;
+  padding: 18px; background: rgba(22, 43, 49, 0.58); pointer-events: auto;
+  animation: completion-fade-in 220ms ease-out;
+}
+.completion-card {
+  width: min(390px, 100%); padding: 26px 24px 22px; border: 3px solid #f7e8bb;
+  border-bottom: 7px solid #d98d54; border-radius: 14px; background: #fff4d6;
+  color: #29464e; text-align: center; box-shadow: 0 16px 50px rgba(12, 28, 33, 0.35);
+}
+.completion-sparkle { font-size: 42px; line-height: 1.1; }
+.completion-eyebrow { margin: 10px 0 5px; color: #9a7442; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
+.completion-card h2 { margin: 0; font-size: clamp(25px, 5vw, 34px); }
+.completion-copy { margin: 10px auto 14px; max-width: 290px; color: #66716a; font-size: 13px; line-height: 1.5; }
+.completion-rating { display: flex; justify-content: center; gap: 5px; margin: 8px 0 18px; color: #e4a735; font-size: 28px; text-shadow: 0 1px 0 #a46c27; }
+.completion-reward { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px dashed rgba(133, 104, 62, 0.4); border-bottom: 1px dashed rgba(133, 104, 62, 0.4); text-align: left; }
+.completion-reward span { color: #74674d; font-size: 12px; }
+.completion-reward strong { color: #378253; font-size: 22px; white-space: nowrap; }
+#claim-reward { width: 100%; margin-top: 17px; padding: 13px 16px; border: 0; border-bottom: 4px solid #276644; border-radius: 8px; background: #43a875; color: white; font: inherit; font-weight: 800; cursor: pointer; }
+#claim-reward:hover:not(:disabled) { background: #358d61; }
+#claim-reward:disabled { cursor: default; opacity: 0.82; }
+.completion-note { margin: 10px 0 0; color: #66716a; font-size: 10px; }
+@keyframes completion-fade-in { from { opacity: 0; } to { opacity: 1; } }
