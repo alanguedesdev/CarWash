@@ -510,8 +510,12 @@ export default class SurfaceEffects {
     }
 
     for (const effect of this.effects) {
-      if (effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared) {
-        // Remove depois da iteração para não alterar o Set em andamento.
+      // A bucha remove marcas de água, mas a espuma fica na lataria
+      // até a etapa final de enxágue.
+      if (
+        effect.type !== "soap" &&
+        effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
+      ) {
         effect.removeRequested = true;
       }
     }
