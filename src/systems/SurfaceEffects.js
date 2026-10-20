@@ -1,17 +1,20 @@
 import * as THREE from "three";
 
 const MAX_SURFACES = 100;
-const MARKS_PER_SURFACE = 5;
+const TARGET_DIRT_MARKS = 90;
+const PREPARATION_RADIUS = 0.62;
+const CLEANING_RADIUS = 0.48;
+const MAX_PERSISTENT_EFFECTS = 180;
+const SURFACE_OFFSET = 0.012;
 
-// Alcance da aplicação de água, sabão e bucha em coordenadas locais.
-const PREPARATION_RADIUS = 0.55;
-const CLEANING_RADIUS = 0.42;
+const DIRT_COLORS = [0x49301f, 0x785139, 0x9b7957, 0xc2ad84];
 
 export default class SurfaceEffects {
   constructor({ onProgress = () => {}, onMessage = () => {} } = {}) {
     this.onProgress = onProgress;
     this.onMessage = onMessage;
 
+    this.model = null;
     this.surfaces = new Map();
     this.dirtMarks = [];
     this.effects = new Set();
@@ -20,46 +23,142 @@ export default class SurfaceEffects {
     this.cleanedDirt = 0;
     this.disposed = false;
 
-    this.sphereGeometry = new THREE.SphereGeometry(1, 8, 6);
+    this.initializeResources();
+  }
+
+  initializeResources() {
+    // Geometria plana compartilhada: evita centenas de esferas e geometrias.
+    this.blobGeometry = this.createBlobGeometry();
+    this.waterGeometry = new THREE.CircleGeometry(1, 16);
+    this.foamGeometry = this.createFoamGeometry();
+
+    this.dirtMaterials = DIRT_COLORS.map(
+      (color) =>
+        new THREE.MeshBasicMaterial({
+          color,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -2,
+          toneMapped: false,
+        })
+    );
+
+    this.waterMaterial = new THREE.MeshBasicMaterial({
+      color: 0x55d7ff,
+      transparent: true,
+      opacity: 0.38,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -3,
+      toneMapped: false,
+    });
+
+    this.waterHighlightMaterial = new THREE.MeshBasicMaterial({
+      color: 0xe7fbff,
+      transparent: true,
+      opacity: 0.68,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      toneMapped: false,
+    });
+
+    this.foamMaterial = new THREE.MeshBasicMaterial({
+      color: 0xeafaff,
+      transparent: true,
+      opacity: 0.84,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      toneMapped: false,
+    });
+  }
+
+  createBlobGeometry() {
+    const segments = 10;
+    const positions = [0, 0, 0];
+    const indices = [];
+
+    // Pequenas variações fixas deixam a mancha orgânica, não circular perfeita.
+    const variations = [0.82, 1.08, 0.94, 1.12, 0.78, 1.02, 1.15, 0.88, 1.05, 0.9];
+
+    for (let i = 0; i < segments; i++) {
+      const angle = (i / segments) * Math.PI * 2;
+      const radius = variations[i];
+      positions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+    }
+
+    for (let i = 0; i < segments; i++) {
+      const current = i + 1;
+      const next = ((i + 1) % segments) + 1;
+      indices.push(0, current, next);
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
+  createFoamGeometry() {
+    const geometry = new THREE.CircleGeometry(1, 18);
+    const position = geometry.attributes.position;
+
+    // Achata e deforma levemente a borda para parecer uma camada de espuma.
+    for (let i = 0; i < position.count; i++) {
+      const x = position.getX(i);
+      const y = position.getY(i);
+      if (i > 0) {
+        const factor = 0.9 + 0.1 * Math.sin(i * 2.4);
+        position.setXY(i, x * factor, y * factor);
+      }
+    }
+
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
   }
 
   attachModel(model) {
     this.dispose();
 
     this.disposed = false;
+    this.initializeResources();
+    this.model = model;
     this.surfaces = new Map();
     this.dirtMarks = [];
     this.effects = new Set();
     this.totalDirt = 0;
     this.cleanedDirt = 0;
 
+    model.updateMatrixWorld(true);
     const candidates = [];
 
     model.traverse((mesh) => {
       if (!mesh.isMesh || !mesh.geometry?.attributes?.position) return;
 
       const geometry = mesh.geometry;
-
-      if (!geometry.boundingBox) {
-        geometry.computeBoundingBox();
-      }
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
 
       const size = new THREE.Vector3();
       geometry.boundingBox.getSize(size);
 
-      if (size.length() > 0.001) {
-        candidates.push({
-          mesh,
-          size,
-          area: size.x * size.y + size.x * size.z + size.y * size.z,
-        });
+      // Descarta peças sem área útil, como alguns objetos auxiliares do GLB.
+      const area = size.x * size.y + size.x * size.z + size.y * size.z;
+      if (size.length() > 0.001 && area > 0.002) {
+        candidates.push({ mesh, size, area });
       }
     });
 
     candidates.sort((a, b) => b.area - a.area);
 
-    for (const { mesh, size } of candidates.slice(0, MAX_SURFACES)) {
-      this.surfaces.set(mesh.uuid, { mesh, size });
+    for (const candidate of candidates.slice(0, MAX_SURFACES)) {
+      this.surfaces.set(candidate.mesh.uuid, candidate);
     }
 
     if (!this.surfaces.size) {
@@ -83,7 +182,6 @@ export default class SurfaceEffects {
     const geometry = mesh.geometry;
     const positions = geometry.attributes.position;
     const index = geometry.index;
-
     const triangleCount = index
       ? Math.floor(index.count / 3)
       : Math.floor(positions.count / 3);
@@ -92,7 +190,6 @@ export default class SurfaceEffects {
 
     for (let attempt = 0; attempt < 30; attempt++) {
       const triangle = Math.floor(Math.random() * triangleCount);
-
       const ia = index ? index.getX(triangle * 3) : triangle * 3;
       const ib = index ? index.getX(triangle * 3 + 1) : triangle * 3 + 1;
       const ic = index ? index.getX(triangle * 3 + 2) : triangle * 3 + 2;
@@ -103,7 +200,6 @@ export default class SurfaceEffects {
 
       let r1 = Math.random();
       let r2 = Math.random();
-
       if (r1 + r2 > 1) {
         r1 = 1 - r1;
         r2 = 1 - r2;
@@ -114,110 +210,90 @@ export default class SurfaceEffects {
         .addScaledVector(c.clone().sub(a), r2);
 
       const normal = b.clone().sub(a).cross(c.clone().sub(a)).normalize();
-
       if (normal.lengthSq() < 0.1) continue;
 
+      // Normais de triângulos degenerados não são úteis para orientar decalques.
       return { point, normal };
     }
 
     return null;
   }
 
-  createBall(mesh, position, color, radius, opacity = 1) {
-    const material = new THREE.MeshBasicMaterial({
-      color,
-      transparent: opacity < 1,
-      opacity,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      toneMapped: false,
-    });
-
-    const ball = new THREE.Mesh(this.sphereGeometry, material);
-
-    ball.position.copy(position);
-    ball.scale.setScalar(radius);
-    ball.renderOrder = 20;
-    ball.frustumCulled = false;
-
-    mesh.add(ball);
-
-    return ball;
+  orientToNormal(object, normal) {
+    object.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 0, 1),
+      normal.clone().normalize()
+    );
   }
 
-  createPersistentEffect(mesh, position, color, radius, opacity = 1, type = "water") {
-    const ball = this.createBall(mesh, position, color, radius, opacity);
-
-    const effect = {
-      ball,
-      mesh,
-      position: position.clone(),
-      type,
-    };
-
-    this.effects.add(effect);
-
-    return effect;
+  toModelPosition(mesh, localPosition) {
+    const worldPosition = mesh.localToWorld(localPosition.clone());
+    // Converte para unidades aproximadas da cena, compensando a escala do GLB.
+    return this.model.worldToLocal(worldPosition).multiplyScalar(this.model.scale.x);
   }
 
-  removeEffect(effect) {
-    if (!effect) return;
-
-    if (effect.ball) {
-      effect.ball.parent?.remove(effect.ball);
-      effect.ball.material?.dispose();
-    }
-
-    this.effects.delete(effect);
+  createSurfaceMesh(mesh, geometry, material, position, normal, scale, renderOrder = 20) {
+    const object = new THREE.Mesh(geometry, material);
+    object.position.copy(position);
+    this.orientToNormal(object, normal);
+    object.scale.set(scale.x, scale.y, 1);
+    object.renderOrder = renderOrder;
+    object.frustumCulled = true;
+    object.userData.surfaceEffect = true;
+    mesh.add(object);
+    return object;
   }
 
   generateDirt() {
-    for (const { mesh, size } of this.surfaces.values()) {
-      const radius = Math.max(
-        0.012,
-        Math.min(Math.max(size.x, size.y, size.z) * 0.025, 0.055)
+    const candidates = [...this.surfaces.values()];
+    const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
+
+    for (const candidate of candidates) {
+      // Distribui as manchas pela área estimada, evitando cinco manchas em cada
+      // peça minúscula e concentrando-as nas partes maiores da lataria.
+      const count = Math.max(
+        candidate.area > 0.16 ? 1 : 0,
+        Math.round((candidate.area / Math.max(totalArea, 0.001)) * TARGET_DIRT_MARKS)
       );
 
-      for (let i = 0; i < MARKS_PER_SURFACE; i++) {
-        const sample = this.randomPointOnMesh(mesh);
-
+      for (let i = 0; i < count; i++) {
+        const sample = this.randomPointOnMesh(candidate.mesh);
         if (!sample) continue;
 
-        const offset = sample.normal.clone().multiplyScalar(radius * 0.65);
-        const position = sample.point.clone().add(offset);
-
-        const colors = [
-          0x49301f,
-          0x785139,
-          0x9b7957,
-          0xc2ad84,
-        ];
-
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const markRadius = radius * (0.65 + Math.random() * 0.65);
-
-        const object = this.createBall(
-          mesh,
-          position,
-          color,
-          markRadius,
-          1
+        const position = sample.point.clone().addScaledVector(
+          sample.normal,
+          SURFACE_OFFSET
         );
 
-        this.dirtMarks.push({
-          mesh,
+        const sizeFactor = 0.035 + Math.random() * 0.028;
+        const scale = new THREE.Vector2(
+          sizeFactor * (0.75 + Math.random() * 0.8),
+          sizeFactor * (0.55 + Math.random() * 0.55)
+        );
+        const materialIndex = Math.floor(Math.random() * this.dirtMaterials.length);
+        const object = this.createSurfaceMesh(
+          candidate.mesh,
+          this.blobGeometry,
+          this.dirtMaterials[materialIndex],
+          position,
+          sample.normal,
+          scale,
+          21
+        );
+
+        const mark = {
+          mesh: candidate.mesh,
           object,
           position: position.clone(),
-          type: i % 4 === 3
-            ? "grease"
-            : i % 3 === 0
-              ? "dust"
-              : "mud",
+          modelPosition: this.toModelPosition(candidate.mesh, position),
+          normal: sample.normal.clone(),
           wet: false,
           soapy: false,
           removed: false,
-          radius: markRadius,
-        });
+          radius: Math.max(scale.x, scale.y) * 1.5,
+        };
+
+        this.dirtMarks.push(mark);
       }
     }
 
@@ -225,162 +301,171 @@ export default class SurfaceEffects {
   }
 
   applyTool(hit, tool) {
-    if (this.disposed || !hit?.object?.isMesh || !hit.point) {
+    if (this.disposed || !hit?.object?.isMesh || !hit.point || !hit.face) {
       return false;
     }
 
     const mesh = hit.object;
-
     if (!this.surfaces.has(mesh.uuid)) {
       this.onMessage("Passe a ferramenta diretamente sobre o carro.");
       return false;
     }
 
+    this.model.updateMatrixWorld(true);
     const localPoint = mesh.worldToLocal(hit.point.clone());
-
-    const normal = hit.face?.normal
-      ? hit.face.normal.clone()
-      : new THREE.Vector3(0, 1, 0);
-
-    const worldNormal = normal.transformDirection(mesh.matrixWorld);
-
-    const localNormal = worldNormal
-      .clone()
-      .transformDirection(mesh.matrixWorld.clone().invert());
-
-    const effectPosition = localPoint.clone().add(
-      localNormal.clone().multiplyScalar(0.035)
-    );
+    const normal = hit.face.normal.clone().normalize();
+    const effectPosition = localPoint.clone().addScaledVector(normal, SURFACE_OFFSET);
+    const modelPoint = this.model
+      .worldToLocal(hit.point.clone())
+      .multiplyScalar(this.model.scale.x);
 
     if (tool === "water") {
-      this.applyWater(mesh, localPoint, effectPosition);
+      this.applyWater(mesh, localPoint, effectPosition, normal, modelPoint);
     } else if (tool === "soap") {
-      this.applySoap(mesh, localPoint, effectPosition);
+      this.applySoap(mesh, localPoint, effectPosition, normal, modelPoint);
     } else if (tool === "sponge") {
-      this.applySponge(mesh, localPoint);
+      this.applySponge(mesh, localPoint, modelPoint);
     } else {
       return false;
     }
 
     this.onProgress(this.getProgress());
-
     return true;
   }
 
-  applyWater(mesh, localPoint, effectPosition) {
-    // Água persistente: não desaparece por tempo.
-    this.createPersistentEffect(
-      mesh,
-      effectPosition,
-      0x55d7ff,
-      0.085,
-      0.55,
-      "water"
-    );
-
-    this.createPersistentEffect(
-      mesh,
-      effectPosition.clone().add(new THREE.Vector3(0.05, 0.025, 0)),
-      0xe7fbff,
-      0.022,
-      0.8,
-      "water"
-    );
+  prepareNearbyDirt(modelPoint, property) {
+    let changed = false;
 
     for (const mark of this.dirtMarks) {
       if (
-        mark.mesh === mesh &&
-        !mark.removed &&
-        mark.position.distanceTo(localPoint) <= PREPARATION_RADIUS
-      ) {
-        mark.wet = true;
-      }
-    }
-
-    this.onMessage("Carro molhado! Agora aplique sabão ou passe a bucha.");
-  }
-
-  applySoap(mesh, localPoint, effectPosition) {
-    // Espuma persistente até a bucha limpar essa região.
-    const bubbles = [
-      [-0.08, 0.00, 0.00],
-      [0.04, 0.05, 0.015],
-      [0.09, -0.025, 0.01],
-      [-0.02, -0.06, 0.02],
-      [0.12, 0.04, -0.01],
-      [-0.11, 0.05, 0.015],
-      [0.00, 0.09, -0.015],
-    ];
-
-    for (let i = 0; i < bubbles.length; i++) {
-      const [dx, dy, dz] = bubbles[i];
-
-      const position = effectPosition.clone().add(
-        new THREE.Vector3(dx, dy, dz)
-      );
-
-      const radius = 0.025 + Math.random() * 0.025;
-      const color = i % 3 === 0 ? 0xffffff : 0xdff6ff;
-
-      this.createPersistentEffect(
-        mesh,
-        position,
-        color,
-        radius,
-        0.92,
-        "soap"
-      );
-    }
-
-    for (const mark of this.dirtMarks) {
-      if (
-        mark.mesh === mesh &&
-        !mark.removed &&
-        mark.position.distanceTo(localPoint) <= PREPARATION_RADIUS
-      ) {
-        mark.soapy = true;
-      }
-    }
-
-    this.onMessage("Carro ensaboado! Passe a bucha para remover a sujeira.");
-  }
-
-  applySponge(mesh, localPoint) {
-    let removedAny = false;
-
-    // Remove manchas preparadas dentro do alcance da bucha.
-    for (const mark of this.dirtMarks) {
-      if (
-        mark.mesh !== mesh ||
         mark.removed ||
-        mark.position.distanceTo(localPoint) > CLEANING_RADIUS
+        mark.modelPosition.distanceToSquared(modelPoint) > PREPARATION_RADIUS * PREPARATION_RADIUS
       ) {
         continue;
       }
 
-      const canClean =
-        mark.wet ||
-        mark.soapy;
-
-      if (!canClean) continue;
-
-      mark.removed = true;
-      mark.object.parent?.remove(mark.object);
-      mark.object.material?.dispose();
-
-      this.cleanedDirt++;
-      removedAny = true;
+      mark[property] = true;
+      changed = true;
     }
 
-    // Limpa a espuma e os efeitos de água da região esfregada.
-    // O estado das manchas já foi verificado acima.
-    for (const effect of [...this.effects]) {
+    return changed;
+  }
+
+  addEffect({ mesh, position, normal, modelPoint, type, scale, geometry, material }) {
+    const object = this.createSurfaceMesh(
+      mesh,
+      geometry,
+      material,
+      position,
+      normal,
+      scale,
+      22
+    );
+
+    const effect = {
+      object,
+      mesh,
+      position: position.clone(),
+      modelPosition: modelPoint.clone(),
+      type,
+      radius: Math.max(scale.x, scale.y) * 1.6,
+    };
+
+    this.effects.add(effect);
+
+    // Limite de segurança para sessões longas, evitando crescimento ilimitado.
+    while (this.effects.size > MAX_PERSISTENT_EFFECTS) {
+      this.removeEffect(this.effects.values().next().value);
+    }
+
+    return effect;
+  }
+
+  applyWater(mesh, localPoint, effectPosition, normal, modelPoint) {
+    this.addEffect({
+      mesh,
+      position: effectPosition,
+      normal,
+      modelPoint,
+      type: "water",
+      scale: new THREE.Vector2(0.16, 0.095),
+      geometry: this.waterGeometry,
+      material: this.waterMaterial,
+    });
+
+    this.addEffect({
+      mesh,
+      position: effectPosition.clone().addScaledVector(normal, 0.002),
+      normal,
+      modelPoint,
+      type: "water-highlight",
+      scale: new THREE.Vector2(0.065, 0.018),
+      geometry: this.waterGeometry,
+      material: this.waterHighlightMaterial,
+    });
+
+    this.prepareNearbyDirt(modelPoint, "wet");
+    this.onMessage("Carro molhado! Agora aplique sabão ou passe a bucha.");
+  }
+
+  applySoap(mesh, localPoint, effectPosition, normal, modelPoint) {
+    this.addEffect({
+      mesh,
+      position: effectPosition,
+      normal,
+      modelPoint,
+      type: "soap",
+      scale: new THREE.Vector2(0.19, 0.13),
+      geometry: this.foamGeometry,
+      material: this.foamMaterial,
+    });
+
+    this.prepareNearbyDirt(modelPoint, "soapy");
+    this.onMessage("Sabão aplicado! Passe a bucha nessa região para remover a sujeira.");
+  }
+
+  removeDirtMark(mark) {
+    if (!mark || mark.removed) return false;
+
+    mark.removed = true;
+    mark.object.parent?.remove(mark.object);
+    this.cleanedDirt++;
+    return true;
+  }
+
+  removeEffect(effect) {
+    if (!effect) return;
+    effect.object?.parent?.remove(effect.object);
+    this.effects.delete(effect);
+  }
+
+  applySponge(mesh, localPoint, modelPoint) {
+    let removedAny = false;
+    const radiusSquared = CLEANING_RADIUS * CLEANING_RADIUS;
+
+    // Distância no espaço do modelo, não apenas na malha atingida:
+    // permite limpar manchas próximas em portas, para-lamas e outras peças.
+    for (const mark of this.dirtMarks) {
       if (
-        effect.mesh === mesh &&
-        effect.position.distanceTo(localPoint) <= CLEANING_RADIUS
+        mark.removed ||
+        mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared
       ) {
-        this.removeEffect(effect);
+        continue;
       }
+
+      if (!mark.wet && !mark.soapy) continue;
+      removedAny = this.removeDirtMark(mark) || removedAny;
+    }
+
+    for (const effect of this.effects) {
+      if (effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared) {
+        // Remove depois da iteração para não alterar o Set em andamento.
+        effect.removeRequested = true;
+      }
+    }
+
+    for (const effect of this.effects) {
+      if (effect.removeRequested) this.removeEffect(effect);
     }
 
     if (removedAny) {
@@ -388,9 +473,8 @@ export default class SurfaceEffects {
     } else {
       const nearby = this.dirtMarks.some(
         (mark) =>
-          mark.mesh === mesh &&
           !mark.removed &&
-          mark.position.distanceTo(localPoint) <= CLEANING_RADIUS
+          mark.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
       );
 
       this.onMessage(
@@ -406,9 +490,7 @@ export default class SurfaceEffects {
     const cleaned = this.cleanedDirt;
 
     return {
-      percent: total
-        ? Math.round((cleaned / total) * 100)
-        : 0,
+      percent: total ? Math.round((cleaned / total) * 100) : 0,
       cleaned,
       total,
       remaining: Math.max(0, total - cleaned),
@@ -416,22 +498,27 @@ export default class SurfaceEffects {
   }
 
   dispose() {
-    for (const effect of [...(this.effects || [])]) {
-      this.removeEffect(effect);
+    for (const effect of this.effects || []) {
+      effect.object?.parent?.remove(effect.object);
     }
 
     for (const mark of this.dirtMarks || []) {
-      if (mark.object) {
-        mark.object.parent?.remove(mark.object);
-        mark.object.material?.dispose();
-      }
+      mark.object?.parent?.remove(mark.object);
     }
 
     this.effects?.clear();
     this.dirtMarks = [];
     this.surfaces?.clear();
+    this.model = null;
 
-    this.sphereGeometry?.dispose();
+    this.blobGeometry?.dispose();
+    this.waterGeometry?.dispose();
+    this.foamGeometry?.dispose();
+
+    for (const material of this.dirtMaterials || []) material.dispose();
+    this.waterMaterial?.dispose();
+    this.waterHighlightMaterial?.dispose();
+    this.foamMaterial?.dispose();
 
     this.disposed = true;
   }
