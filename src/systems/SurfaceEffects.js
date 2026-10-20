@@ -419,10 +419,13 @@ export default class SurfaceEffects {
   }
 
   addEffect({ mesh, position, normal, modelPoint, type, scale, geometry, material }) {
+    // Cada marca de água tem material próprio para desaparecer isoladamente.
+    const effectMaterial =
+      type === "water" || type === "water-highlight" ? material.clone() : material;
     const object = this.createSurfaceMesh(
       mesh,
       geometry,
-      material,
+      effectMaterial,
       position,
       normal,
       scale,
@@ -435,6 +438,8 @@ export default class SurfaceEffects {
       position: position.clone(),
       modelPosition: modelPoint.clone(),
       type,
+      createdAt: Date.now(),
+      initialOpacity: effectMaterial.opacity ?? 1,
       radius: Math.max(scale.x, scale.y) * 1.6,
     };
 
@@ -503,9 +508,27 @@ export default class SurfaceEffects {
     return true;
   }
 
+  update(now = Date.now()) {
+    const WATER_HOLD_MS = 1800;
+    const WATER_FADE_MS = 2200;
+
+    for (const effect of [...this.effects]) {
+      if (effect.type !== "water" && effect.type !== "water-highlight") continue;
+      const elapsed = now - effect.createdAt;
+      if (elapsed <= WATER_HOLD_MS) continue;
+
+      const fade = Math.min(1, (elapsed - WATER_HOLD_MS) / WATER_FADE_MS);
+      effect.object.material.opacity = effect.initialOpacity * (1 - fade);
+      if (fade >= 1) this.removeEffect(effect);
+    }
+  }
+
   removeEffect(effect) {
     if (!effect) return;
     effect.object?.parent?.remove(effect.object);
+    if (effect.type === "water" || effect.type === "water-highlight") {
+      effect.object?.material?.dispose();
+    }
     this.effects.delete(effect);
   }
 
