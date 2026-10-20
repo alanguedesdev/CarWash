@@ -228,7 +228,8 @@ export default class SurfaceEffects {
 
   toModelPosition(mesh, localPosition) {
     const worldPosition = mesh.localToWorld(localPosition.clone());
-    return this.model.worldToLocal(worldPosition);
+    // Converte para unidades aproximadas da cena, compensando a escala do GLB.
+    return this.model.worldToLocal(worldPosition).multiplyScalar(this.model.scale.x);
   }
 
   createSurfaceMesh(mesh, geometry, material, position, normal, scale, renderOrder = 20) {
@@ -314,7 +315,9 @@ export default class SurfaceEffects {
     const localPoint = mesh.worldToLocal(hit.point.clone());
     const normal = hit.face.normal.clone().normalize();
     const effectPosition = localPoint.clone().addScaledVector(normal, SURFACE_OFFSET);
-    const modelPoint = this.model.worldToLocal(hit.point.clone());
+    const modelPoint = this.model
+      .worldToLocal(hit.point.clone())
+      .multiplyScalar(this.model.scale.x);
 
     if (tool === "water") {
       this.applyWater(mesh, localPoint, effectPosition, normal, modelPoint);
