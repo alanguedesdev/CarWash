@@ -391,7 +391,7 @@ export default class SurfaceEffects {
     } else if (tool === "soap") {
       changed = this.applySoap(mesh, localPoint, effectPosition, normal, modelPoint);
     } else if (tool === "sponge") {
-      changed = this.applySponge(mesh, localPoint, modelPoint);
+      changed = this.applySponge(mesh, localPoint, normal, modelPoint);
     } else {
       return false;
     }
@@ -406,6 +406,7 @@ export default class SurfaceEffects {
     for (const mark of this.dirtMarks) {
       if (
         mark.removed ||
+        (property === "soapy" && !mark.wet) ||
         mark.modelPosition.distanceToSquared(modelPoint) > PREPARATION_RADIUS * PREPARATION_RADIUS
       ) {
         continue;
@@ -515,7 +516,7 @@ export default class SurfaceEffects {
     this.effects.delete(effect);
   }
 
-  applySponge(mesh, localPoint, modelPoint) {
+  applySponge(mesh, localPoint, normal, modelPoint) {
     const radiusSquared = CLEANING_RADIUS * CLEANING_RADIUS;
     let scrubbedAny = false;
 
@@ -539,8 +540,8 @@ export default class SurfaceEffects {
     // a sujeira: ela só sai quando a água enxágua esta mesma região.
     this.addEffect({
       mesh,
-      position: localPoint.clone().add(new THREE.Vector3(0, 0, SURFACE_OFFSET * 1.4)),
-      normal: new THREE.Vector3(0, 0, 1),
+      position: localPoint.clone().addScaledVector(normal, SURFACE_OFFSET * 1.4),
+      normal,
       modelPoint,
       type: "scrub-foam",
       scale: new THREE.Vector2(0.24, 0.17),
