@@ -331,23 +331,24 @@ function showLoadError(text) {
 function updateMission(progress) {
   progressLabel.textContent = progress.percent + "%";
   progressElement.style.width = progress.percent + "%";
+
   if (missionCompleted) {
     stepLabel.textContent = "Missão concluída!";
     goalLabel.textContent = "Veículo limpo e enxaguado";
     return;
   }
-  if (washStage === "initial-water") {
-    stepLabel.textContent = "Etapa 1 de 4 · Molhe a lataria";
-    goalLabel.textContent = "Comece molhando o carro";
-  } else if (washStage === "soap") {
-    stepLabel.textContent = "Etapa 2 de 4 · Aplique sabão";
-    goalLabel.textContent = "Cubra a lataria com sabão";
-  } else if (washStage === "sponge") {
-    stepLabel.textContent = progress.remaining ? "Etapa 3 de 4 · " + progress.remaining + " manchas restantes" : "Sujeira removida — falta enxaguar";
-    goalLabel.textContent = progress.remaining ? "Esfregue toda a sujeira com a bucha" : "Enxágue até remover toda a espuma";
-  } else if (washStage === "rinse") {
-    stepLabel.textContent = "Etapa 4 de 4 · Enxágue " + (surfaceEffects ? surfaceEffects.getRinseProgress().percent : 0) + "%";
-    goalLabel.textContent = "Remova a espuma de toda a lataria";
+
+  const foamCount = surfaceEffects ? surfaceEffects.getFoamCount() : 0;
+  if (progress.remaining === 0 && foamCount === 0) {
+    stepLabel.textContent = "Carro limpo e sem espuma";
+    goalLabel.textContent = "Lavagem completa — pronto para entregar";
+  } else {
+    stepLabel.textContent = progress.remaining
+      ? progress.remaining + " manchas restantes"
+      : "Sujeira removida · retire a espuma";
+    goalLabel.textContent = progress.remaining
+      ? "Molhe, ensaboe, esfregue e enxágue cada região"
+      : "Passe água nas áreas com espuma";
   }
 }
 function finishMission() {
@@ -381,7 +382,7 @@ function setTool(tool) {
     const texts = {
       water: "Água: molhe e enxágue o veículo.",
       soap: "Sabão: aplique espuma na lataria.",
-      sponge: "Bucha: esfregue as manchas molhadas ou ensaboadas.",
+      sponge: "Bucha: esfregue a espuma; a água remove a sujeira.",
     };
 
     setMessage(texts[tool]);
@@ -426,63 +427,34 @@ function useTool(event) {
   if (!hit) return;
 
   if (selectedTool === "water") {
-    if (washStage === "initial-water") {
-      surfaceEffects.applyTool(hit, "water");
-      const coverage = surfaceEffects.getPreparationProgress("wet");
-      stepLabel.textContent = "Etapa 1 de 4 · Molhar " + coverage.percent + "%";
-      if (coverage.complete) {
-        washStage = "soap";
-        updateMission(surfaceEffects.getProgress());
-        setMessage("Lataria toda molhada! Agora aplique sabão por todo o carro.");
-      } else {
-        setMessage("Continue passando água por toda a lataria: " + coverage.percent + "% molhado.");
-      }
-      return;
+    surfaceEffects.applyTool(hit, "water");
+    const progress = surfaceEffects.getProgress();
+    updateMission(progress);
+    if (progress.remaining === 0 && surfaceEffects.getFoamCount() === 0) {
+      finishMission();
+    } else {
+      setMessage(progress.remaining < progress.total
+        ? "A água removeu a sujeira esfregada e o sabão desta região. Continue nas outras partes."
+        : "Região molhada/enxaguada. Aplique sabão, esfregue com a bucha e enxágue para remover a sujeira.");
     }
-    if (washStage === "rinse") {
-      surfaceEffects.rinseAt(hit);
-      const rinse = surfaceEffects.getRinseProgress();
-      stepLabel.textContent = "Etapa 4 de 4 · Enxágue " + rinse.percent + "%";
-      if (rinse.complete) finishMission();
-      else setMessage("Enxágue por toda a lataria: " + rinse.percent + "% concluído.");
-      return;
-    }
-    setMessage("Use a água primeiro e volte para enxaguar somente depois de remover toda a sujeira.");
     return;
   }
 
   if (selectedTool === "soap") {
-    if (washStage !== "soap") {
-      setMessage(washStage === "initial-water" ? "Primeiro molhe a lataria com água." : "O sabão já foi aplicado. Agora esfregue com a bucha.");
-      return;
-    }
-    surfaceEffects.applyTool(hit, "soap");
-    const coverage = surfaceEffects.getPreparationProgress("soapy");
-    stepLabel.textContent = "Etapa 2 de 4 · Sabão " + coverage.percent + "%";
-    if (coverage.complete) {
-      washStage = "sponge";
-      updateMission(surfaceEffects.getProgress());
-      setMessage("Lataria ensaboada! Agora esfregue toda a sujeira com a bucha.");
-    } else {
-      setMessage("Espalhe o sabão por toda a lataria: " + coverage.percent + "% coberto.");
-    }
+    const applied = surfaceEffects.applyTool(hit, "soap");
+    updateMission(surfaceEffects.getProgress());
+    setMessage(applied
+      ? "Espuma aplicada nesta região. Passe a bucha para esfregar e depois enxágue com água."
+      : "Molhe essa região antes de aplicar o sabão.");
     return;
   }
 
   if (selectedTool === "sponge") {
-    if (washStage !== "sponge") {
-      setMessage("Molhe o carro e aplique sabão antes de usar a bucha.");
-      return;
-    }
-    surfaceEffects.applyTool(hit, "sponge");
-    const progress = surfaceEffects.getProgress();
-    updateMission(progress);
-    if (progress.remaining === 0) {
-      washStage = "rinse";
-      surfaceEffects.beginRinse();
-      updateMission(progress);
-      setMessage("Toda a sujeira saiu! Agora passe água por toda a lataria para retirar a espuma.");
-    }
+    const scrubbed = surfaceEffects.applyTool(hit, "sponge");
+    updateMission(surfaceEffects.getProgress());
+    setMessage(scrubbed
+      ? "Bucha em ação! A espuma ficou mais visível; jogue água nesta região para remover a sujeira."
+      : "Molhe e ensaboe essa região antes de esfregar com a bucha.");
   }
 }
 
@@ -571,6 +543,14 @@ function loadCar() {
 loadCar();
 
 // Interação com mouse e toque
+renderer.domElement.addEventListener("wheel", (event) => {
+  if (!carModel) return;
+  event.preventDefault();
+  const rotation = Math.sign(event.deltaY) * 0.18;
+  carPivot.rotation.y += rotation;
+  platform.rotation.y = carPivot.rotation.y;
+}, { passive: false });
+
 renderer.domElement.addEventListener("pointerdown", (event) => {
   if (!carModel) return;
 
