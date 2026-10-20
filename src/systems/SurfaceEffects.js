@@ -290,6 +290,7 @@ export default class SurfaceEffects {
           wet: false,
           soapy: false,
           removed: false,
+          rinsed: false,
           radius: Math.max(scale.x, scale.y) * 1.5,
         };
 
@@ -298,6 +299,57 @@ export default class SurfaceEffects {
     }
 
     this.totalDirt = this.dirtMarks.length;
+  }
+
+  getPreparationProgress(property) {
+    const total = this.dirtMarks.length;
+    const prepared = this.dirtMarks.reduce((count, mark) => count + (mark[property] ? 1 : 0), 0);
+    return {
+      total,
+      prepared,
+      percent: total ? Math.round((prepared / total) * 100) : 100,
+      complete: total > 0 && prepared === total,
+    };
+  }
+
+  beginRinse() {
+    for (const mark of this.dirtMarks) mark.rinsed = false;
+    this.onMessage("Passe água por toda a lataria para remover a espuma.");
+  }
+
+  rinseAt(hit) {
+    if (!hit?.object?.isMesh || !hit.point || !hit.face || !this.model) return false;
+
+    this.model.updateMatrixWorld(true);
+    const modelPoint = this.model.worldToLocal(hit.point.clone()).multiplyScalar(this.model.scale.x);
+
+    for (const mark of this.dirtMarks) {
+      if (mark.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS) {
+        mark.rinsed = true;
+      }
+    }
+
+    // Remove a espuma somente na região atingida pelo jato de água.
+    for (const effect of [...this.effects]) {
+      if (
+        effect.type === "soap" &&
+        effect.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS
+      ) {
+        this.removeEffect(effect);
+      }
+    }
+    return true;
+  }
+
+  getRinseProgress() {
+    const total = this.dirtMarks.length;
+    const rinsed = this.dirtMarks.reduce((count, mark) => count + (mark.rinsed ? 1 : 0), 0);
+    return {
+      total,
+      rinsed,
+      percent: total ? Math.round((rinsed / total) * 100) : 100,
+      complete: total > 0 && rinsed === total,
+    };
   }
 
   applyTool(hit, tool) {
@@ -458,8 +510,12 @@ export default class SurfaceEffects {
     }
 
     for (const effect of this.effects) {
-      if (effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared) {
-        // Remove depois da iteração para não alterar o Set em andamento.
+      // A bucha remove marcas de água, mas a espuma fica na lataria
+      // até a etapa final de enxágue.
+      if (
+        effect.type !== "soap" &&
+        effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
+      ) {
         effect.removeRequested = true;
       }
     }
