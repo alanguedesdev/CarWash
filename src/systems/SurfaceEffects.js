@@ -289,6 +289,7 @@ export default class SurfaceEffects {
           normal: sample.normal.clone(),
           wet: false,
           soapy: false,
+          scrubbed: false,
           removed: false,
           rinsed: false,
           radius: Math.max(scale.x, scale.y) * 1.5,
@@ -313,8 +314,8 @@ export default class SurfaceEffects {
   }
 
   beginRinse() {
-    for (const mark of this.dirtMarks) mark.rinsed = false;
-    this.onMessage("Passe água por toda a lataria para remover a espuma.");
+    // Mantido como compatibilidade para futuras etapas; o enxágue agora é local.
+    this.onMessage("Enxágue a região esfregada para retirar a espuma e a sujeira.");
   }
 
   rinseAt(hit) {
@@ -322,22 +323,26 @@ export default class SurfaceEffects {
 
     this.model.updateMatrixWorld(true);
     const modelPoint = this.model.worldToLocal(hit.point.clone()).multiplyScalar(this.model.scale.x);
+    const radiusSquared = PREPARATION_RADIUS * PREPARATION_RADIUS;
 
     for (const mark of this.dirtMarks) {
-      if (mark.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS) {
-        mark.rinsed = true;
-      }
+      if (mark.removed || mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared) continue;
+      mark.rinsed = true;
+      if (mark.scrubbed) this.removeDirtMark(mark);
+      // O enxágue tira o sabão da região. Se a sujeira não foi esfregada,
+      // ela permanece e o jogador pode repetir o processo localmente.
+      mark.soapy = false;
     }
 
-    // Remove a espuma somente na região atingida pelo jato de água.
     for (const effect of [...this.effects]) {
       if (
-        effect.type === "soap" &&
-        effect.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS
+        (effect.type === "soap" || effect.type === "scrub-foam") &&
+        effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
       ) {
         this.removeEffect(effect);
       }
     }
+
     return true;
   }
 
@@ -350,6 +355,14 @@ export default class SurfaceEffects {
       percent: total ? Math.round((rinsed / total) * 100) : 100,
       complete: total > 0 && rinsed === total,
     };
+  }
+
+  getFoamCount() {
+    let count = 0;
+    for (const effect of this.effects) {
+      if (effect.type === "soap" || effect.type === "scrub-foam") count++;
+    }
+    return count;
   }
 
   applyTool(hit, tool) {
@@ -371,18 +384,20 @@ export default class SurfaceEffects {
       .worldToLocal(hit.point.clone())
       .multiplyScalar(this.model.scale.x);
 
+    let changed = false;
     if (tool === "water") {
       this.applyWater(mesh, localPoint, effectPosition, normal, modelPoint);
+      changed = true;
     } else if (tool === "soap") {
-      this.applySoap(mesh, localPoint, effectPosition, normal, modelPoint);
+      changed = this.applySoap(mesh, localPoint, effectPosition, normal, modelPoint);
     } else if (tool === "sponge") {
-      this.applySponge(mesh, localPoint, modelPoint);
+      changed = this.applySponge(mesh, localPoint, modelPoint);
     } else {
       return false;
     }
 
     this.onProgress(this.getProgress());
-    return true;
+    return changed;
   }
 
   prepareNearbyDirt(modelPoint, property) {
@@ -457,10 +472,18 @@ export default class SurfaceEffects {
     });
 
     this.prepareNearbyDirt(modelPoint, "wet");
-    this.onMessage("Carro molhado! Agora aplique sabão ou passe a bucha.");
+    // Jogar água novamente enxágua somente a área atingida.
+    this.rinseAt({ object: mesh, point: mesh.localToWorld(effectPosition.clone()), face: { normal } });
+    this.onMessage("Área enxaguada. A água remove a sujeira que já foi esfregada.");
   }
 
   applySoap(mesh, localPoint, effectPosition, normal, modelPoint) {
+    const nearbyWetDirt = this.dirtMarks.some(
+      (mark) => !mark.removed && mark.wet &&
+        mark.modelPosition.distanceToSquared(modelPoint) <= PREPARATION_RADIUS * PREPARATION_RADIUS
+    );
+    if (!nearbyWetDirt) return false;
+
     this.addEffect({
       mesh,
       position: effectPosition,
@@ -473,7 +496,8 @@ export default class SurfaceEffects {
     });
 
     this.prepareNearbyDirt(modelPoint, "soapy");
-    this.onMessage("Sabão aplicado! Passe a bucha nessa região para remover a sujeira.");
+    this.onMessage("Espuma aplicada nesta região. Esfregue com a bucha e enxágue.");
+    return true;
   }
 
   removeDirtMark(mark) {
@@ -492,53 +516,40 @@ export default class SurfaceEffects {
   }
 
   applySponge(mesh, localPoint, modelPoint) {
-    let removedAny = false;
     const radiusSquared = CLEANING_RADIUS * CLEANING_RADIUS;
+    let scrubbedAny = false;
 
-    // Distância no espaço do modelo, não apenas na malha atingida:
-    // permite limpar manchas próximas em portas, para-lamas e outras peças.
     for (const mark of this.dirtMarks) {
       if (
         mark.removed ||
+        !mark.soapy ||
         mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared
-      ) {
-        continue;
-      }
+      ) continue;
 
-      if (!mark.wet && !mark.soapy) continue;
-      removedAny = this.removeDirtMark(mark) || removedAny;
+      mark.scrubbed = true;
+      scrubbedAny = true;
     }
 
-    for (const effect of this.effects) {
-      // A bucha remove marcas de água, mas a espuma fica na lataria
-      // até a etapa final de enxágue.
-      if (
-        effect.type !== "soap" &&
-        effect.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
-      ) {
-        effect.removeRequested = true;
-      }
+    if (!scrubbedAny) {
+      this.onMessage("Molhe e aplique sabão nesta região antes de esfregar.");
+      return false;
     }
 
-    for (const effect of this.effects) {
-      if (effect.removeRequested) this.removeEffect(effect);
-    }
+    // A bucha espalha uma camada de espuma mais evidente, mas não remove
+    // a sujeira: ela só sai quando a água enxágua esta mesma região.
+    this.addEffect({
+      mesh,
+      position: localPoint.clone().add(new THREE.Vector3(0, 0, SURFACE_OFFSET * 1.4)),
+      normal: new THREE.Vector3(0, 0, 1),
+      modelPoint,
+      type: "scrub-foam",
+      scale: new THREE.Vector2(0.24, 0.17),
+      geometry: this.foamGeometry,
+      material: this.foamMaterial,
+    });
 
-    if (removedAny) {
-      this.onMessage("Sujeira removida! Continue esfregando o carro.");
-    } else {
-      const nearby = this.dirtMarks.some(
-        (mark) =>
-          !mark.removed &&
-          mark.modelPosition.distanceToSquared(modelPoint) <= radiusSquared
-      );
-
-      this.onMessage(
-        nearby
-          ? "Aplique água ou sabão nessa região antes de esfregar."
-          : "Esfregue mais perto das manchas para removê-las."
-      );
-    }
+    this.onMessage("Espuma esfregada! Jogue água aqui para remover a sujeira.");
+    return true;
   }
 
   getProgress() {
