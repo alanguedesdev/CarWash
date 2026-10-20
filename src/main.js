@@ -173,6 +173,9 @@ const carMeshes = [];
 let carModel = null;
 let surfaceEffects = null;
 let selectedTool = null;
+let washStage = "initial-water";
+let missionCompleted = false;
+let rewardClaimed = false;
 let dragging = false;
 let lastX = 0;
 let lastToolAction = 0;
@@ -284,6 +287,18 @@ hud.innerHTML = `
     <button id="reset-car" type="button">⟳ Centralizar carro</button>
   </div>
 
+  <div id="mission-complete" class="mission-complete" role="dialog" aria-modal="true" aria-labelledby="mission-complete-title" hidden>
+    <div class="completion-card">
+      <div class="completion-sparkle" aria-hidden="true">✨</div>
+      <p class="completion-eyebrow">LAVA-JATO · MISSÃO 01</p>
+      <h2 id="mission-complete-title">Carro impecável!</h2>
+      <p class="completion-copy">Rafael vai receber o Nissan GT-R limpo, sem espuma e brilhando.</p>
+      <div class="completion-rating"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+      <div class="completion-reward"><span>Recompensa da missão</span><strong>R$ 80,00</strong></div>
+      <button id="claim-reward" type="button">Concluir missão</button>
+      <p id="completion-note" class="completion-note">Lavagem completa finalizada.</p>
+    </div>
+  </div>
   <div id="tool-cursor" aria-hidden="true"></div>
   <div id="load-error" role="alert" style="display:none"></div>
 `;
@@ -297,6 +312,9 @@ const goalLabel = hud.querySelector("#mission-goal-text");
 const message = hud.querySelector("#game-message");
 const toolCursor = hud.querySelector("#tool-cursor");
 const loadError = hud.querySelector("#load-error");
+const completionPanel = hud.querySelector("#mission-complete");
+const claimRewardButton = hud.querySelector("#claim-reward");
+const completionNote = hud.querySelector("#completion-note");
 const toolButtons = [...hud.querySelectorAll("[data-tool]")];
 
 function setMessage(text) {
@@ -311,18 +329,35 @@ function showLoadError(text) {
 }
 
 function updateMission(progress) {
-  progressLabel.textContent = `${progress.percent}%`;
-  progressElement.style.width = `${progress.percent}%`;
-
-  stepLabel.textContent = progress.total
-    ? `${progress.remaining} manchas restantes`
-    : "Preparando a lavagem...";
-
-  if (progress.total > 0 && progress.remaining === 0) {
-    goalLabel.textContent = "Sujeira removida — enxágue o veículo";
-  } else {
-    goalLabel.textContent = "Remover sujeira e enxaguar";
+  progressLabel.textContent = progress.percent + "%";
+  progressElement.style.width = progress.percent + "%";
+  if (missionCompleted) {
+    stepLabel.textContent = "Missão concluída!";
+    goalLabel.textContent = "Veículo limpo e enxaguado";
+    return;
   }
+  if (washStage === "initial-water") {
+    stepLabel.textContent = "Etapa 1 de 4 · Molhe a lataria";
+    goalLabel.textContent = "Comece molhando o carro";
+  } else if (washStage === "soap") {
+    stepLabel.textContent = "Etapa 2 de 4 · Aplique sabão";
+    goalLabel.textContent = "Cubra a lataria com sabão";
+  } else if (washStage === "sponge") {
+    stepLabel.textContent = progress.remaining ? "Etapa 3 de 4 · " + progress.remaining + " manchas restantes" : "Sujeira removida — falta enxaguar";
+    goalLabel.textContent = progress.remaining ? "Esfregue toda a sujeira com a bucha" : "Enxágue até remover toda a espuma";
+  } else if (washStage === "rinse") {
+    stepLabel.textContent = "Etapa 4 de 4 · Enxágue " + (surfaceEffects ? surfaceEffects.getRinseProgress().percent : 0) + "%";
+    goalLabel.textContent = "Remova a espuma de toda a lataria";
+  }
+}
+function finishMission() {
+  if (missionCompleted) return;
+  missionCompleted = true;
+  washStage = "completed";
+  setTool(null);
+  updateMission(surfaceEffects.getProgress());
+  completionPanel.hidden = false;
+  setMessage("Lavagem completa! Missão concluída.");
 }
 
 function setTool(tool) {
@@ -386,12 +421,56 @@ function getCarHit(event) {
 }
 
 function useTool(event) {
-  if (!selectedTool || !surfaceEffects) return;
-
+  if (!selectedTool || !surfaceEffects || missionCompleted) return;
   const hit = getCarHit(event);
+  if (!hit) return;
 
-  if (hit) {
-    surfaceEffects.applyTool(hit, selectedTool);
+  if (selectedTool === "water") {
+    if (washStage === "initial-water") {
+      surfaceEffects.applyTool(hit, "water");
+      washStage = "soap";
+      updateMission(surfaceEffects.getProgress());
+      setMessage("Lataria molhada! Agora selecione o sabão.");
+      return;
+    }
+    if (washStage === "rinse") {
+      surfaceEffects.rinseAt(hit);
+      const rinse = surfaceEffects.getRinseProgress();
+      stepLabel.textContent = "Etapa 4 de 4 · Enxágue " + rinse.percent + "%";
+      if (rinse.complete) finishMission();
+      else setMessage("Enxágue por toda a lataria: " + rinse.percent + "% concluído.");
+      return;
+    }
+    setMessage("Use a água primeiro e volte para enxaguar somente depois de remover toda a sujeira.");
+    return;
+  }
+
+  if (selectedTool === "soap") {
+    if (washStage !== "soap") {
+      setMessage(washStage === "initial-water" ? "Primeiro molhe a lataria com água." : "O sabão já foi aplicado. Agora esfregue com a bucha.");
+      return;
+    }
+    surfaceEffects.applyTool(hit, "soap");
+    washStage = "sponge";
+    updateMission(surfaceEffects.getProgress());
+    setMessage("Sabão aplicado! Esfregue a lataria com a bucha.");
+    return;
+  }
+
+  if (selectedTool === "sponge") {
+    if (washStage !== "sponge") {
+      setMessage("Molhe o carro e aplique sabão antes de usar a bucha.");
+      return;
+    }
+    surfaceEffects.applyTool(hit, "sponge");
+    const progress = surfaceEffects.getProgress();
+    updateMission(progress);
+    if (progress.remaining === 0) {
+      washStage = "rinse";
+      surfaceEffects.beginRinse();
+      updateMission(progress);
+      setMessage("Toda a sujeira saiu! Agora passe água por toda a lataria para retirar a espuma.");
+    }
   }
 }
 
@@ -538,6 +617,14 @@ toolButtons.forEach((button) => {
     const tool = button.dataset.tool;
     setTool(selectedTool === tool ? null : tool);
   });
+});
+
+claimRewardButton.addEventListener("click", () => {
+  if (rewardClaimed) return;
+  rewardClaimed = true;
+  claimRewardButton.disabled = true;
+  claimRewardButton.textContent = "Recompensa recebida ✓";
+  completionNote.textContent = "R$ 80,00 registrados como recompensa desta missão.";
 });
 
 // Centralizar o carro
