@@ -646,6 +646,7 @@ function animate() {
   if (disposed) return;
 
   animationFrame = requestAnimationFrame(animate);
+  surfaceEffects?.update();
   renderer.render(scene, camera);
 }
 
