@@ -428,9 +428,15 @@ function useTool(event) {
   if (selectedTool === "water") {
     if (washStage === "initial-water") {
       surfaceEffects.applyTool(hit, "water");
-      washStage = "soap";
-      updateMission(surfaceEffects.getProgress());
-      setMessage("Lataria molhada! Agora selecione o sabão.");
+      const coverage = surfaceEffects.getPreparationProgress("wet");
+      stepLabel.textContent = "Etapa 1 de 4 · Molhar " + coverage.percent + "%";
+      if (coverage.complete) {
+        washStage = "soap";
+        updateMission(surfaceEffects.getProgress());
+        setMessage("Lataria toda molhada! Agora aplique sabão por todo o carro.");
+      } else {
+        setMessage("Continue passando água por toda a lataria: " + coverage.percent + "% molhado.");
+      }
       return;
     }
     if (washStage === "rinse") {
@@ -451,9 +457,15 @@ function useTool(event) {
       return;
     }
     surfaceEffects.applyTool(hit, "soap");
-    washStage = "sponge";
-    updateMission(surfaceEffects.getProgress());
-    setMessage("Sabão aplicado! Esfregue a lataria com a bucha.");
+    const coverage = surfaceEffects.getPreparationProgress("soapy");
+    stepLabel.textContent = "Etapa 2 de 4 · Sabão " + coverage.percent + "%";
+    if (coverage.complete) {
+      washStage = "sponge";
+      updateMission(surfaceEffects.getProgress());
+      setMessage("Lataria ensaboada! Agora esfregue toda a sujeira com a bucha.");
+    } else {
+      setMessage("Espalhe o sabão por toda a lataria: " + coverage.percent + "% coberto.");
+    }
     return;
   }
 
