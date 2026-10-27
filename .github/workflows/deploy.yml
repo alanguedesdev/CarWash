@@ -1,4 +1,5 @@
 
+# Rebuild and redeploy the compiled Vite production bundle on every push.
 name: Publicar CarWash
 
 on:
