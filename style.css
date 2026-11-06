@@ -749,3 +749,84 @@ body {
     font-size: 9px;
   }
 }
+
+
+/* Progressão por níveis e marcos do lava-jato */
+.business-dashboard {
+  flex-wrap: wrap;
+  max-width: min(440px, calc(100% - 32px));
+}
+
+.business-level {
+  flex: 1 0 100%;
+  min-width: 220px;
+  padding: 7px 9px 3px;
+  border-top: 1px solid rgba(255, 246, 223, 0.2);
+}
+
+.business-level-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.business-level-top strong {
+  color: #fff9e8;
+  font-size: 11px;
+}
+
+.business-level-top span,
+.business-level > small {
+  color: #e5d7ad;
+  font-size: 9px;
+}
+
+.business-level-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.business-level-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #f3cf70;
+  transition: width 250ms ease;
+}
+
+.business-level > small {
+  display: block;
+  margin-top: 5px;
+}
+
+@media (max-width: 900px) {
+  .business-dashboard {
+    max-width: min(390px, calc(100% - 16px));
+  }
+}
+
+@media (max-width: 560px) {
+  .business-dashboard {
+    top: 58px;
+    max-width: none;
+  }
+
+  .business-level {
+    min-width: 0;
+    padding: 5px 6px 2px;
+  }
+
+  .business-level-top strong {
+    font-size: 9px;
+  }
+
+  .business-level-top span,
+  .business-level > small {
+    font-size: 8px;
+  }
+}
