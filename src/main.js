@@ -135,7 +135,6 @@ washEnvironment.add(platform);
 
 const sceneManager = new SceneManager(scene, washEnvironment);
 let activeScene = "menu";
-carPivot.visible = false;
 
 const turntable = new THREE.Mesh(
   new THREE.CylinderGeometry(3.15, 3.15, 0.16, 32),
@@ -177,6 +176,8 @@ for (let i = 0; i < 24; i++) {
 // Grupo do veículo
 const carPivot = new THREE.Group();
 scene.add(carPivot);
+carPivot.visible = false;
+sceneManager.show("menu");
 
 const carMeshes = [];
 
