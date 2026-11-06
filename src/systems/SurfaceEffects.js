@@ -11,7 +11,9 @@ const DIRT_COLORS = [0x49301f, 0x785139, 0x9b7957, 0xc2ad84];
 
 export default class SurfaceEffects {
   constructor({ onProgress = () => {}, onMessage = () => {} } = {}) {
-    this.cleaningRadiusMultiplier = 1;\n    this.rinseRadiusMultiplier = 1;\n    this.onProgress = onProgress;
+    this.cleaningRadiusMultiplier = 1;
+    this.rinseRadiusMultiplier = 1;
+    this.onProgress = onProgress;
     this.onMessage = onMessage;
 
     this.model = null;
@@ -26,7 +28,12 @@ export default class SurfaceEffects {
     this.initializeResources();
   }
 
-  setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {\n    this.cleaningRadiusMultiplier = Math.max(1, cleaningRadiusMultiplier);\n    this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);\n  }\n\n  initializeResources() {
+  setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
+    this.cleaningRadiusMultiplier = Math.max(1, cleaningRadiusMultiplier);
+    this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);
+  }
+
+  initializeResources() {
     // Geometria plana compartilhada: evita centenas de esferas e geometrias.
     this.blobGeometry = this.createBlobGeometry();
     this.waterGeometry = new THREE.CircleGeometry(1, 16);
@@ -323,7 +330,8 @@ export default class SurfaceEffects {
 
     this.model.updateMatrixWorld(true);
     const modelPoint = this.model.worldToLocal(hit.point.clone()).multiplyScalar(this.model.scale.x);
-    const radius = PREPARATION_RADIUS * this.rinseRadiusMultiplier;\n    const radiusSquared = radius * radius;
+    const radius = PREPARATION_RADIUS * this.rinseRadiusMultiplier;
+    const radiusSquared = radius * radius;
 
     for (const mark of this.dirtMarks) {
       if (mark.removed || mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared) continue;
@@ -533,7 +541,8 @@ export default class SurfaceEffects {
   }
 
   applySponge(mesh, localPoint, normal, modelPoint) {
-    const radius = CLEANING_RADIUS * this.cleaningRadiusMultiplier;\n    const radiusSquared = radius * radius;
+    const radius = CLEANING_RADIUS * this.cleaningRadiusMultiplier;
+    const radiusSquared = radius * radius;
     let scrubbedAny = false;
 
     for (const mark of this.dirtMarks) {
