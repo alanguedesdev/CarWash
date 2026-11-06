@@ -1091,8 +1091,8 @@ body {
   background:linear-gradient(180deg,rgba(20,49,57,.05) 20%,rgba(20,49,57,.25) 100%);
 }
 .dialogue-scene-glow { position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 78% 52%,rgba(255,230,177,.3),transparent 38%);pointer-events:none; }
-.dialogue-character { position:absolute;z-index:0;right:-3.5%;bottom:-8%;height:94%;width:min(43vw,590px);display:flex;align-items:flex-end;justify-content:flex-end;pointer-events:none;filter:drop-shadow(-14px 10px 18px rgba(23,48,54,.22)); }
-.dialogue-character img { display:block;max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;object-position:bottom right; }
+.dialogue-character { position:absolute;z-index:0;right:1.5%;bottom:0;height:min(76%,520px);width:min(44vw,360px);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;pointer-events:none;filter:drop-shadow(-10px 8px 14px rgba(23,48,54,.2)); }
+.dialogue-character img { display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom; }
 .dialogue-card {
   position:relative;
   z-index:2;
@@ -1157,7 +1157,7 @@ body {
   #menu-progress { margin:7px 0 9px; }
   #play-game { padding:10px 15px; }
   .menu-hint { margin-top:5px; }
-  .dialogue-character { height:95%;right:-3%; }
+  .dialogue-character { height:min(68%,320px);width:min(38vw,260px);right:0; }
   .dialogue-card { padding:12px 17px 9px; }
   .dialogue-card p { min-height:40px;margin-bottom:8px;padding:8px 11px;font-size:11px; }
   .dialogue-footnote { margin-top:5px; }
