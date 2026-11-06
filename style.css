@@ -645,3 +645,107 @@ body {
 #claim-reward:disabled { cursor: default; opacity: 0.82; }
 .completion-note { margin: 10px 0 0; color: #66716a; font-size: 10px; }
 @keyframes completion-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* Indicadores de evolução do negócio */
+.business-dashboard {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(255, 248, 220, 0.8);
+  border-bottom: 4px solid #6e8584;
+  border-radius: 9px;
+  background: rgba(52, 79, 91, 0.96);
+  color: #fff6df;
+  box-shadow: 0 4px 12px rgba(36, 49, 48, 0.2);
+  pointer-events: none;
+}
+
+.business-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 78px;
+  padding: 2px 7px;
+}
+
+.business-stat + .business-stat {
+  border-left: 1px solid rgba(255, 246, 223, 0.2);
+}
+
+.business-stat-icon {
+  font-size: 19px;
+}
+
+.business-stat div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.business-stat small {
+  color: #e5d7ad;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.business-stat strong {
+  color: #fff9e8;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .business-dashboard {
+    top: 83px;
+    right: 8px;
+    gap: 2px;
+    padding: 5px;
+  }
+
+  .business-stat {
+    min-width: 0;
+    gap: 4px;
+    padding: 2px 5px;
+  }
+
+  .business-stat-icon {
+    font-size: 15px;
+  }
+
+  .business-stat small {
+    font-size: 7px;
+  }
+
+  .business-stat strong {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .business-dashboard {
+    top: 58px;
+    right: 6px;
+    left: 6px;
+    justify-content: space-around;
+  }
+
+  .business-stat {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .business-stat-icon {
+    font-size: 14px;
+  }
+
+  .business-stat strong {
+    font-size: 9px;
+  }
+}
