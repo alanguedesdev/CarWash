@@ -902,3 +902,122 @@ body {
   .shop-item button { grid-column:2; justify-self:start; }
   .shop-item-title { font-size:10px; }
 }
+
+
+/* Fluxo de cenas: recepção, lavagem e entrega */
+.game-hud:not(.scene-wash) .mission-card,
+.game-hud:not(.scene-wash) .wash-status,
+.game-hud:not(.scene-wash) .game-message,
+.game-hud:not(.scene-wash) .tool-dock,
+.game-hud:not(.scene-wash) .game-footer,
+.game-hud:not(.scene-wash) .business-dashboard,
+.game-hud:not(.scene-wash) .shop-overlay {
+  display: none !important;
+}
+
+.scene-intro[hidden] { display: none !important; }
+.scene-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(35, 66, 72, 0.06), rgba(35, 66, 72, 0.2));
+  pointer-events: auto;
+}
+.scene-intro-card {
+  width: min(460px, 100%);
+  padding: clamp(20px, 4vw, 32px);
+  border: 3px solid #fff0c9;
+  border-bottom: 7px solid #d77e5d;
+  border-radius: 16px;
+  background: rgba(255, 245, 218, 0.97);
+  color: #29464e;
+  text-align: center;
+  box-shadow: 0 18px 48px rgba(24, 48, 52, 0.28);
+}
+.scene-intro-kicker {
+  color: #a16e3f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+.scene-intro-card h1 {
+  margin: 9px 0;
+  font-size: clamp(25px, 5vw, 36px);
+  line-height: 1.08;
+}
+.scene-intro-card p {
+  max-width: 350px;
+  margin: 10px auto 16px;
+  color: #697267;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.scene-intro-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin: 16px 0 19px;
+}
+.scene-intro-details span {
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: #eee4c8;
+  color: #52645c;
+  font-size: 10px;
+  font-weight: 800;
+}
+#start-service {
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-bottom: 4px solid #286343;
+  border-radius: 8px;
+  background: #43a875;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+#start-service:hover:not(:disabled) { background: #358d61; }
+#start-service:disabled { opacity: 0.7; cursor: wait; }
+#start-service span { margin-left: 8px; font-size: 18px; }
+
+.scene-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: #243f48;
+  color: #fff2d2;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 500ms ease, visibility 500ms ease;
+}
+.scene-transition.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+.scene-transition span {
+  padding: 12px 18px;
+  border-top: 2px solid #e98768;
+  border-bottom: 2px solid #e98768;
+  font-size: clamp(13px, 2vw, 18px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (max-width: 560px) {
+  .scene-intro-card { padding: 20px 16px; }
+  .scene-intro-card p { font-size: 11px; }
+  .scene-intro-details { gap: 5px; }
+  .scene-intro-details span { font-size: 9px; }
+}
