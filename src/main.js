@@ -297,8 +297,32 @@ hud.innerHTML = `
     <button id="reset-car" type="button">⟳ Centralizar carro</button>
   </div>
 
-  <section id="main-menu" class="main-menu"><div class="main-menu-card"><small>SIMULADOR DE GESTÃO E LAVAGEM</small><h1>CAR WASH</h1><p>Transforme seu pequeno lava-jato em um grande negócio.</p><div id="menu-progress"></div><button id="play-game">JOGAR →</button></div><div class="main-menu-footer">LAVE · EVOLUA · CONQUISTE</div></section>
-  <section id="customer-dialogue" class="customer-dialogue" hidden><div class="dialogue-card"><small>ATENDIMENTO · NOVO CLIENTE</small><h2 id="dialogue-title"></h2><p id="dialogue-text"></p><div class="dialogue-actions"><button id="dialogue-next">Continuar →</button><button id="accept-service" hidden>Aceitar serviço ✓</button><button id="decline-service" class="secondary" hidden>Recusar</button></div></div></section>
+  <section id="main-menu" class="main-menu">
+    <div class="menu-glow menu-glow-one"></div><div class="menu-glow menu-glow-two"></div>
+    <div class="main-menu-card">
+      <div class="menu-brand-mark"><span class="menu-brand-icon">✦</span><span>SEU NEGÓCIO COMEÇA AQUI</span></div>
+      <p class="menu-eyebrow">SIMULADOR DE GESTÃO · LAVA-JATO</p>
+      <h1>CAR<span>WASH</span></h1>
+      <div class="menu-title-line"><i></i><span>DO PRIMEIRO CLIENTE AO SUCESSO</span><i></i></div>
+      <p class="menu-description">Cuide de cada detalhe, conquiste clientes e transforme seu lava-jato em referência na cidade.</p>
+      <div class="menu-feature-row"><span>💦 Lavagem manual</span><span>⭐ Reputação</span><span>📈 Evolução</span></div>
+      <div id="menu-progress"></div>
+      <button id="play-game"><span>COMEÇAR A JOGAR</span><b>→</b></button>
+      <small class="menu-hint">TOQUE PARA CONTINUAR</small>
+    </div>
+    <div class="main-menu-footer"><span>CAR WASH</span><i></i><span>LAVE · EVOLUA · CONQUISTE</span></div>
+  </section>
+  <section id="customer-dialogue" class="customer-dialogue" hidden>
+    <div class="dialogue-scene-glow"></div>
+    <div class="dialogue-character" aria-hidden="true"><img id="dialogue-portrait" alt=""></div>
+    <div class="dialogue-card">
+      <div class="dialogue-card-top"><span class="dialogue-live-dot"></span><small>ATENDIMENTO · NOVO CLIENTE</small><span class="dialogue-step">● ● ●</span></div>
+      <h2 id="dialogue-title"></h2>
+      <p id="dialogue-text"></p>
+      <div class="dialogue-actions"><button id="dialogue-next">CONTINUAR <b>→</b></button><button id="accept-service" hidden>ACEITAR SERVIÇO ✓</button><button id="decline-service" class="secondary" hidden>RECUSAR</button></div>
+      <div class="dialogue-footnote">TOQUE NA CONVERSA PARA AVANÇAR</div>
+    </div>
+  </section>
   <div id="scene-transition" class="scene-transition" aria-hidden="true"><span id="scene-transition-label">Preparando ambiente...</span></div>
 
   <div id="mission-complete" class="mission-complete" role="dialog" aria-modal="true" aria-labelledby="mission-complete-title" hidden>
@@ -332,7 +356,7 @@ const loadError = hud.querySelector("#load-error");
 const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
-const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
+const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons=[...hud.querySelectorAll("[data-tool]")]; menuProgress.textContent="Carreira salva · "+career.stats.completedJobs+" serviços concluídos";
@@ -357,9 +381,9 @@ async function transitionTo(nextScene, label) {
   await wait(500);
 }
 
-const customers=[{name:"Rafael Martins",request:"Preciso de uma lavagem completa. O carro está cheio de poeira e sujeira da estrada.",lines:["Olá! Tudo bem? Meu nome é Rafael.","Vim porque disseram que aqui o cuidado com os carros é excelente.","Meu carro precisa de uma lavagem completa. Você consegue cuidar dele?"]},{name:"Camila Souza",request:"Quero uma lavagem completa para deixar a lataria brilhando.",lines:["Oi! Sou a Camila, prazer em conhecer você.","Estou procurando um lava-jato caprichoso para cuidar do meu carro.","Gostaria de uma lavagem completa. Podemos fechar esse serviço?"]},{name:"Bruno Almeida",request:"O carro está precisando de uma boa limpeza externa.",lines:["Bom dia! Meu nome é Bruno.","Passei aqui e resolvi conhecer o seu lava-jato.","Você pode fazer uma lavagem completa no meu carro?"]}];
+const customers=[{name:"Rafael Martins",portrait:"rafael.svg",request:"Preciso de uma lavagem completa. O carro está cheio de poeira e sujeira da estrada.",lines:["Olá! Tudo bem? Meu nome é Rafael.","Vim porque disseram que aqui o cuidado com os carros é excelente.","Meu carro precisa de uma lavagem completa. Você consegue cuidar dele?"]},{name:"Camila Souza",portrait:"camila.svg",request:"Quero uma lavagem completa para deixar a lataria brilhando.",lines:["Oi! Sou a Camila, prazer em conhecer você.","Estou procurando um lava-jato caprichoso para cuidar do meu carro.","Gostaria de uma lavagem completa. Podemos fechar esse serviço?"]},{name:"Bruno Almeida",portrait:"bruno.svg",request:"O carro está precisando de uma boa limpeza externa.",lines:["Bom dia! Meu nome é Bruno.","Passei aqui e resolvi conhecer o seu lava-jato.","Você pode fazer uma lavagem completa no meu carro?"]}];
 let customerIndex=0,dialogueLine=0,currentCustomer=customers[0],dialogueTimer=null;
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent="Cliente · serviço solicitado";customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";}
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent="Cliente · serviço solicitado";customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"images/characters/"+currentCustomer.portrait;dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
 function showDialogue(){if(dialogueTimer)window.clearTimeout(dialogueTimer);dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;if(!last)dialogueTimer=window.setTimeout(advanceDialogue,3200);}
 function advanceDialogue(){if(dialogueTimer)window.clearTimeout(dialogueTimer);if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}

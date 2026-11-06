@@ -148,7 +148,7 @@ export default class SceneManager {
     }
 
     this.reception.visible = ["menu","dialogue","reception"].includes(name);
-    this.customer.visible = name === "dialogue";
+    this.customer.visible = false;
     this.washEnvironment.visible = name === "wash";
     this.delivery.visible = name === "delivery";
     const backgroundKey=name==="menu"||name==="dialogue"?"reception":name;
