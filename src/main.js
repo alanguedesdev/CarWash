@@ -134,7 +134,7 @@ const platform = new THREE.Group();
 washEnvironment.add(platform);
 
 const sceneManager = new SceneManager(scene, washEnvironment);
-let activeScene = "reception";
+let activeScene = "menu";\ncarPivot.visible = false;
 
 const turntable = new THREE.Mesh(
   new THREE.CylinderGeometry(3.15, 3.15, 0.16, 32),
@@ -295,15 +295,8 @@ hud.innerHTML = `
     <button id="reset-car" type="button">⟳ Centralizar carro</button>
   </div>
 
-  <section id="scene-intro" class="scene-intro" aria-labelledby="scene-intro-title">
-    <div class="scene-intro-card">
-      <span class="scene-intro-kicker">BEM-VINDO AO MEU LAVA-JATO</span>
-      <h1 id="scene-intro-title">Seu próximo serviço começa aqui!</h1>
-      <p>O Nissan GT-R de Rafael chegou. Prepare-se para deixar esse carro impecável.</p>
-      <div class="scene-intro-details"><span>🚘 Nissan GT-R</span><span>🧽 Lavagem completa</span><span>💰 R$ 80,00</span></div>
-      <button id="start-service" type="button">Levar para o box <span>→</span></button>
-    </div>
-  </section>
+  <section id="main-menu" class="main-menu"><div class="main-menu-card"><small>SIMULADOR DE GESTÃO E LAVAGEM</small><h1>CAR WASH</h1><p>Transforme seu pequeno lava-jato em um grande negócio.</p><div id="menu-progress"></div><button id="play-game">JOGAR →</button></div><div class="main-menu-footer">LAVE · EVOLUA · CONQUISTE</div></section>
+  <section id="customer-dialogue" class="customer-dialogue" hidden><div class="dialogue-card"><small>ATENDIMENTO · NOVO CLIENTE</small><h2 id="dialogue-title"></h2><p id="dialogue-text"></p><div class="dialogue-actions"><button id="dialogue-next">Continuar →</button><button id="accept-service" hidden>Aceitar serviço ✓</button><button id="decline-service" class="secondary" hidden>Recusar</button></div></div></section>
   <div id="scene-transition" class="scene-transition" aria-hidden="true"><span id="scene-transition-label">Preparando ambiente...</span></div>
 
   <div id="mission-complete" class="mission-complete" role="dialog" aria-modal="true" aria-labelledby="mission-complete-title" hidden>
@@ -341,7 +334,7 @@ const sceneIntro = hud.querySelector("#scene-intro");
 const startServiceButton = hud.querySelector("#start-service");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
-const toolButtons = [...hud.querySelectorAll("[data-tool]")];
+const toolButtons=[...hud.querySelectorAll("[data-tool]")]; menuProgress.textContent="Carreira salva · "+career.stats.completedJobs+" serviços concluídos";
 
 function setMessage(text) {
   message.textContent = text;
@@ -356,26 +349,21 @@ async function transitionTo(nextScene, label) {
   sceneTransition.classList.add("is-visible");
   await wait(500);
 
-  sceneManager.show(nextScene);
-  activeScene = nextScene;
-  hud.classList.toggle("scene-wash", nextScene === "wash");
-  hud.classList.toggle("scene-reception", nextScene === "reception");
-  hud.classList.toggle("scene-delivery", nextScene === "delivery");
+  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="wash"||nextScene==="delivery"; hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
 
   await wait(120);
   sceneTransition.classList.remove("is-visible");
   await wait(500);
 }
 
-async function startService() {
-  if (activeScene !== "reception") return;
-  startServiceButton.disabled = true;
-  await transitionTo("wash", "Preparando o box de lavagem...");
-  sceneIntro.hidden = true;
-  setMessage("Selecione uma ferramenta para começar a lavagem.");
-  startServiceButton.disabled = false;
-}
-
+const customers=[{name:"Rafael Martins",request:"Preciso de uma lavagem completa. O carro está cheio de poeira e sujeira da estrada.",lines:["Olá! Tudo bem? Meu nome é Rafael.","Vim porque disseram que aqui o cuidado com os carros é excelente.","Meu carro precisa de uma lavagem completa. Você consegue cuidar dele?"]},{name:"Camila Souza",request:"Quero uma lavagem completa para deixar a lataria brilhando.",lines:["Oi! Sou a Camila, prazer em conhecer você.","Estou procurando um lava-jato caprichoso para cuidar do meu carro.","Gostaria de uma lavagem completa. Podemos fechar esse serviço?"]},{name:"Bruno Almeida",request:"O carro está precisando de uma boa limpeza externa.",lines:["Bom dia! Meu nome é Bruno.","Passei aqui e resolvi conhecer o seu lava-jato.","Você pode fazer uma lavagem completa no meu carro?"]}];
+let customerIndex=0,dialogueLine=0,currentCustomer=customers[0];
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent="Cliente · serviço solicitado";customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";}
+function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
+function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
+async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
+async function acceptCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("wash","Preparando o box de lavagem...");customerDialogue.hidden=true;setMessage("Serviço aceito! Selecione uma ferramenta para começar.");acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
+async function declineCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("menu","Agradecendo ao cliente...");customerDialogue.hidden=true;customerIndex=(customerIndex+1)%customers.length;currentCustomer=customers[customerIndex];await wait(650);await transitionTo("dialogue","Um novo cliente está chegando...");customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
 function showLoadError(text) {
   loadError.style.display = "block";
   loadError.textContent = text;
@@ -516,7 +504,7 @@ function useTool(event) {
 
 // Carregamento do modelo
 function loadCar() {
-  stepLabel.textContent = "Carregando Nissan GT-R...";
+  stepLabel.textContent = "Carregando veículo...";
 
   const loader = new GLTFLoader();
 
