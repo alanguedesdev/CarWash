@@ -12,8 +12,8 @@
 <path d="M30 720 Q45 540 160 500 Q210 476 265 476 Q320 476 360 500 Q475 540 490 720Z" fill="url(#shirt)" stroke="#263a45" stroke-width="12"/>
 <path d="M205 425h120v110q-60 65-120 0Z" fill="url(#skin)"/>
 <path d="M130 250 Q130 105 265 100 Q400 105 400 250 V360 Q400 470 265 485 Q130 470 130 360Z" fill="url(#skin)" stroke="#263a45" stroke-width="9"/>
-<path d="M126 276 Q105 230 125 190 Q140 70 265 60 Q400 58 420 190 L405 280 Q380 240 365 190 Q290 250 155 240Z" fill="url(#hair)" stroke="#263a45" stroke-width="12" stroke-linejoin="round"/>
-<path d="M100 255 C84 129 160 52 266 52 C370 52 440 130 430 260 L403 230 C373 210 357 178 348 147 C313 192 254 214 194 210 C151 208 121 228 100 255 Z" fill="url(#hair)" stroke="#263a45" stroke-width="11" stroke-linejoin="round"/>
+<path d="M105 258 C85 145 155 55 265 55 C375 55 440 145 415 258 Q380 225 350 180 Q320 225 285 230 Q250 235 230 195 Q190 245 150 230 Q125 240 105 258Z" fill="url(#hair)" stroke="#303039" stroke-width="11" stroke-linejoin="round"/>
+
 <path d="M136 295 Q102 286 105 340 Q112 390 143 386 M394 295 Q428 286 425 340 Q418 390 387 386" fill="url(#skin)" stroke="#263a45" stroke-width="8"/>
 <path d="M170 320 Q205 290 238 320 M292 320 Q325 290 360 320" fill="none" stroke="#263a45" stroke-width="12" stroke-linecap="round"/>
 <ellipse cx="207" cy="350" rx="17" ry="23" fill="#fff"/><ellipse cx="323" cy="350" rx="17" ry="23" fill="#fff"/>
