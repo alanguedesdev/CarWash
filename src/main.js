@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import SurfaceEffects from "./systems/SurfaceEffects.js";
+import CareerSystem from "./systems/CareerSystem.js";
 import "./../style.css";
 
 const root = document.querySelector("#game");
@@ -303,6 +304,7 @@ hud.innerHTML = `
 `;
 
 root.appendChild(hud);
+const career = new CareerSystem(hud);
 
 const progressLabel = hud.querySelector("#progress-label");
 const progressElement = hud.querySelector("#wash-progress");
@@ -614,6 +616,7 @@ toolButtons.forEach((button) => {
 claimRewardButton.addEventListener("click", () => {
   if (rewardClaimed) return;
   rewardClaimed = true;
+  career.completeJob(80, 5);
   claimRewardButton.disabled = true;
   claimRewardButton.textContent = "Recompensa recebida ✓";
   completionNote.textContent = "R$ 80,00 registrados como recompensa desta missão.";
