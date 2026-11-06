@@ -1,4 +1,4 @@
-// Cadastro de clientes do CarWash. Para adicionar clientes, inclua um objeto e um SVG em public/characters/.
+// Cadastro de clientes do CarWash. Para adicionar um cliente, inclua um SVG em public/characters/ e um objeto neste catálogo.
 export const CUSTOMERS = [
   {
     "id": "rafael",

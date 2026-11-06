@@ -390,7 +390,11 @@ async function transitionTo(nextScene, label) {
   sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="wash"||nextScene==="delivery"; hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
 
   await wait(120);
-  sceneTransition.classlet customerBag = [];
+  sceneTransition.classList.remove("is-visible");
+  await wait(500);
+}
+
+let customerBag = [];
 function nextCustomer() {
   if (customerBag.length === 0) {
     customerBag = [...CUSTOMERS];
@@ -406,7 +410,6 @@ function nextCustomer() {
 }
 let dialogueLine = 0;
 let currentCustomer = null;
-x=0,dialogueLine=0,currentCustomer=customers[0];
 function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+currentCustomer.id+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}

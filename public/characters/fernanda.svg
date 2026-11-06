@@ -13,16 +13,15 @@
 <path d="M205 425h120v110q-60 65-120 0Z" fill="url(#skin)"/>
 <path d="M130 250 Q130 105 265 100 Q400 105 400 250 V360 Q400 470 265 485 Q130 470 130 360Z" fill="url(#skin)" stroke="#2c2530" stroke-width="9"/>
 <path d="M126 276 Q105 230 125 190 Q140 70 265 60 Q400 58 420 190 L405 280 Q380 240 365 190 Q290 250 155 240Z" fill="url(#hair)" stroke="#2c2530" stroke-width="12" stroke-linejoin="round"/>
-M90 266 C70 125 158 47 267 47 C379 47 447 125 435 269 C429 336 398 384 375 397 L355 278 C330 207 301 182 267 170 C231 209 178 230 120 230 Z
-<path d="M136 295 Q102 286 105 340 Q112 390 143 386" fill="#f1c39f" stroke="#2c2530" stroke-width="8"/>
-<path d="M394 295 Q428 286 425 340 Q418 390 387 386" fill="#f1c39f" stroke="#2c2530" stroke-width="8"/>
+<path d="M90 266 C70 125 158 47 267 47 C379 47 447 125 435 269 C429 336 398 384 375 397 L355 278 C330 207 301 182 267 170 C231 209 178 230 120 230 Z" fill="url(#hair)" stroke="#2c2530" stroke-width="11" stroke-linejoin="round"/>
+<path d="M136 295 Q102 286 105 340 Q112 390 143 386 M394 295 Q428 286 425 340 Q418 390 387 386" fill="url(#skin)" stroke="#2c2530" stroke-width="8"/>
 <path d="M170 320 Q205 290 238 320 M292 320 Q325 290 360 320" fill="none" stroke="#2c2530" stroke-width="12" stroke-linecap="round"/>
 <ellipse cx="207" cy="350" rx="17" ry="23" fill="#fff"/><ellipse cx="323" cy="350" rx="17" ry="23" fill="#fff"/>
 <ellipse cx="211" cy="354" rx="9" ry="14" fill="#27383b"/><ellipse cx="327" cy="354" rx="9" ry="14" fill="#27383b"/>
 <path d="M265 350 Q246 405 263 414 Q278 420 291 410" fill="none" stroke="#a96350" stroke-width="9" stroke-linecap="round"/>
+
 <path d="M210 445 Q265 490 320 445" fill="none" stroke="#9f4e4c" stroke-width="14" stroke-linecap="round"/>
 <path d="M218 445 Q265 474 312 445" fill="none" stroke="#fff1e6" stroke-width="8" stroke-linecap="round"/>
-
 <path d="M150 220 Q95 290 126 420 Q139 476 183 514 L165 430 Q140 320 190 245Z M380 220 Q435 290 404 420 Q391 476 347 514 L365 430 Q390 320 340 245Z" fill="#7b3e32"/>
 <path d="M190 545 L265 600 L340 545" fill="none" stroke="#fff" stroke-width="10" opacity=".5"/>
 <path d="M220 540 L265 590 L310 540" fill="none" stroke="#f5d36a" stroke-width="12"/>
