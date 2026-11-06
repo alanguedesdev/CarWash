@@ -36,9 +36,9 @@ renderer.domElement.style.touchAction = "none";
 root.appendChild(renderer.domElement);
 
 // Iluminação
-scene.add(new THREE.HemisphereLight("#fff4dc", "#62564a", 2));
+scene.add(new THREE.HemisphereLight("#fff9dc", "#76604a", 2.5));
 
-const sun = new THREE.DirectionalLight("#fff0cf", 2.4);
+const sun = new THREE.DirectionalLight("#fff2bf", 3.0);
 sun.position.set(-4, 8, 5);
 sun.castShadow = true;
 sun.shadow.mapSize.set(512, 512);
@@ -48,7 +48,7 @@ sun.shadow.camera.top = 7;
 sun.shadow.camera.bottom = -7;
 scene.add(sun);
 
-const fillLight = new THREE.DirectionalLight("#a5dcff", 1.1);
+const fillLight = new THREE.DirectionalLight("#8ee7ec", 1.35);
 fillLight.position.set(5, 4, -4);
 scene.add(fillLight);
 
@@ -61,13 +61,13 @@ function mat(color, roughness = 0.85, metalness = 0) {
 }
 
 const M = {
-  yellow: mat("#d8a43f"),
-  floor: mat("#9d9c83"),
-  coral: mat("#e87c64"),
-  dark: mat("#354b51"),
-  steel: mat("#657579", 0.7, 0.2),
-  wood: mat("#78583b"),
-  white: mat("#e6e1ce"),
+  yellow: mat("#ffd02f"),
+  floor: mat("#c9d9c2"),
+  coral: mat("#f15e45"),
+  dark: mat("#174e5b"),
+  steel: mat("#3996a3", 0.7, 0.2),
+  wood: mat("#a65c3d"),
+  white: mat("#fff2c9"),
 };
 
 const washEnvironment = new THREE.Group();
@@ -90,12 +90,12 @@ function addBox(name, size, pos, material, shadows = true) {
 }
 
 // Garagem
-addBox("Piso", [16, 0.2, 16], [0, -0.13, 0], M.floor);
+addBox("Piso", [16, 0.2, 16], [0, -0.13, 0], M.floor);\naddBox("PisoBoxColorido", [13.8, 0.035, 11.8], [0, -0.015, 0], mat("#a8d9d2"), false);
 addBox("Parede do fundo", [14, 5.3, 0.25], [0, 2.5, -4.3], M.yellow);
 addBox("Parede esquerda", [0.25, 5.3, 12], [-7, 2.5, -0.1], M.yellow);
 addBox("Parede direita", [0.25, 5.3, 12], [7, 2.5, -0.1], M.yellow);
 addBox("Rodapé", [13.8, 0.23, 0.12], [0, 0.12, -4.12], M.dark);
-addBox("Faixa coral", [13.8, 0.12, 0.12], [0, 1.6, -4.12], M.coral);
+addBox("Faixa coral", [13.8, 0.16, 0.12], [0, 1.6, -4.12], M.coral);\naddBox("Faixa amarela superior", [13.8, 0.28, 0.12], [0, 4.55, -4.12], M.yellow);\naddBox("Letreiro do box", [4.6, 0.72, 0.16], [0, 3.55, -4.08], M.dark);\naddBox("Letreiro destaque", [3.9, 0.08, 0.08], [0, 3.18, -3.98], M.yellow, false);\nfor (const x of [-3.4, 0, 3.4]) { const lamp=addBox("Luminaria", [1.25, 0.08, 0.42], [x, 4.82, -2.3], mat("#fff4c9"), false); lamp.material.emissive=new THREE.Color("#ffe49a"); lamp.material.emissiveIntensity=.5; }
 
 // Portão lateral
 addBox("Moldura do portão", [0.16, 4.1, 4.2], [6.75, 2.05, 1.2], M.dark);
@@ -113,7 +113,7 @@ for (let y = 0.3; y <= 3.8; y += 0.32) {
 
 // Prateleiras e produtos
 addBox("Prateleira superior", [2.2, 0.12, 0.48], [-5.65, 2.15, -2.65], M.wood);
-addBox("Prateleira inferior", [2.2, 0.12, 0.48], [-5.65, 1.05, -2.65], M.wood);
+addBox("Prateleira inferior", [2.2, 0.12, 0.48], [-5.65, 1.05, -2.65], M.wood);\naddBox("Armario de produtos", [2.45, 2.55, 0.18], [-5.65, 1.75, -4.0], M.coral);\naddBox("Armario painel", [2.2, 2.3, 0.12], [-5.65, 1.75, -3.88], M.dark);\naddBox("Armario prateleira alta", [2.3, 0.1, 0.2], [-5.65, 2.7, -3.72], M.yellow);
 
 for (const x of [-6.55, -4.75]) {
   addBox("Suporte", [0.09, 2.2, 0.09], [x, 1.05, -2.65], M.dark);
@@ -127,7 +127,7 @@ function bottle(x, y, z, color) {
 bottle(-6.35, 2.42, -2.65, "#477da4");
 bottle(-5.8, 2.42, -2.65, "#6b9b59");
 bottle(-5.25, 1.32, -2.65, "#bd5340");
-bottle(-4.95, 1.32, -2.65, "#e0bd62");
+bottle(-4.95, 1.32, -2.65, "#e0bd62");\naddBox("Painel de ferramentas", [1.7, 1.45, 0.12], [5.55, 3.0, -4.05], M.coral);\nfor (const x of [4.95,5.45,5.95]) addBox("Gancho de mangueira", [.08,.65,.12], [x,2.9,-3.91], M.yellow);\naddBox("Bancada de apoio", [1.7,.16,.65], [5.55,.95,-3.6], M.dark);
 
 // Plataforma circular
 const platform = new THREE.Group();
