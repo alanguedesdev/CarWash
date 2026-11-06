@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import SurfaceEffects from "./systems/SurfaceEffects.js";
 import CareerSystem from "./systems/CareerSystem.js";
+import SceneManager from "./systems/SceneManager.js";
 import "./../style.css";
 
 const root = document.querySelector("#game");
@@ -69,6 +70,10 @@ const M = {
   white: mat("#e6e1ce"),
 };
 
+const washEnvironment = new THREE.Group();
+washEnvironment.name = "WashEnvironment";
+scene.add(washEnvironment);
+
 function addBox(name, size, pos, material, shadows = true) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(...size),
@@ -79,7 +84,7 @@ function addBox(name, size, pos, material, shadows = true) {
   mesh.position.set(...pos);
   mesh.castShadow = shadows;
   mesh.receiveShadow = true;
-  scene.add(mesh);
+  washEnvironment.add(mesh);
 
   return mesh;
 }
@@ -126,7 +131,10 @@ bottle(-4.95, 1.32, -2.65, "#e0bd62");
 
 // Plataforma circular
 const platform = new THREE.Group();
-scene.add(platform);
+washEnvironment.add(platform);
+
+const sceneManager = new SceneManager(scene, washEnvironment);
+let activeScene = "reception";
 
 const turntable = new THREE.Mesh(
   new THREE.CylinderGeometry(3.15, 3.15, 0.16, 32),
@@ -287,6 +295,17 @@ hud.innerHTML = `
     <button id="reset-car" type="button">⟳ Centralizar carro</button>
   </div>
 
+  <section id="scene-intro" class="scene-intro" aria-labelledby="scene-intro-title">
+    <div class="scene-intro-card">
+      <span class="scene-intro-kicker">BEM-VINDO AO MEU LAVA-JATO</span>
+      <h1 id="scene-intro-title">Seu próximo serviço começa aqui!</h1>
+      <p>O Nissan GT-R de Rafael chegou. Prepare-se para deixar esse carro impecável.</p>
+      <div class="scene-intro-details"><span>🚘 Nissan GT-R</span><span>🧽 Lavagem completa</span><span>💰 R$ 80,00</span></div>
+      <button id="start-service" type="button">Levar para o box <span>→</span></button>
+    </div>
+  </section>
+  <div id="scene-transition" class="scene-transition" aria-hidden="true"><span id="scene-transition-label">Preparando ambiente...</span></div>
+
   <div id="mission-complete" class="mission-complete" role="dialog" aria-modal="true" aria-labelledby="mission-complete-title" hidden>
     <div class="completion-card">
       <div class="completion-sparkle" aria-hidden="true">✨</div>
@@ -318,10 +337,43 @@ const loadError = hud.querySelector("#load-error");
 const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
+const sceneIntro = hud.querySelector("#scene-intro");
+const startServiceButton = hud.querySelector("#start-service");
+const sceneTransition = hud.querySelector("#scene-transition");
+const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons = [...hud.querySelectorAll("[data-tool]")];
 
 function setMessage(text) {
   message.textContent = text;
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+async function transitionTo(nextScene, label) {
+  sceneTransitionLabel.textContent = label;
+  sceneTransition.classList.add("is-visible");
+  await wait(500);
+
+  sceneManager.show(nextScene);
+  activeScene = nextScene;
+  hud.classList.toggle("scene-wash", nextScene === "wash");
+  hud.classList.toggle("scene-reception", nextScene === "reception");
+  hud.classList.toggle("scene-delivery", nextScene === "delivery");
+
+  await wait(120);
+  sceneTransition.classList.remove("is-visible");
+  await wait(500);
+}
+
+async function startService() {
+  if (activeScene !== "reception") return;
+  startServiceButton.disabled = true;
+  await transitionTo("wash", "Preparando o box de lavagem...");
+  sceneIntro.hidden = true;
+  setMessage("Selecione uma ferramenta para começar a lavagem.");
+  startServiceButton.disabled = false;
 }
 
 function showLoadError(text) {
@@ -354,13 +406,15 @@ function updateMission(progress) {
       : "Passe água nas áreas com espuma";
   }
 }
-function finishMission() {
-  if (missionCompleted) return;
+async function finishMission() {
+  if (missionCompleted || activeScene !== "wash") return;
   missionCompleted = true;
   setTool(null);
   updateMission(surfaceEffects.getProgress());
+  setMessage("Lavagem completa! Preparando a entrega.");
+  await transitionTo("delivery", "Lavagem finalizada! Preparando a entrega...");
   completionPanel.hidden = false;
-  setMessage("Lavagem completa! Missão concluída.");
+  setMessage("Veículo pronto para entrega.");
 }
 
 function setTool(tool) {
@@ -424,7 +478,7 @@ function getCarHit(event) {
 }
 
 function useTool(event) {
-  if (!selectedTool || !surfaceEffects || missionCompleted) return;
+  if (activeScene !== "wash" || !selectedTool || !surfaceEffects || missionCompleted) return;
   const hit = getCarHit(event);
   if (!hit) return;
 
@@ -603,6 +657,9 @@ renderer.domElement.addEventListener("pointerup", stopDragging);
 renderer.domElement.addEventListener("pointercancel", stopDragging);
 renderer.domElement.addEventListener("lostpointercapture", stopDragging);
 
+// Entrada da missão: a recepção é a primeira cena exibida.
+startServiceButton.addEventListener("click", startService);
+
 // Ferramentas
 toolButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -668,6 +725,7 @@ window.addEventListener("pagehide", () => {
   window.removeEventListener("resize", resize);
 
   surfaceEffects?.dispose();
+  sceneManager.dispose();
   renderer.dispose();
 
   for (const material of Object.values(M)) {
