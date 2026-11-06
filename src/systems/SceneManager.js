@@ -42,6 +42,8 @@ export default class SceneManager {
     };
 
     this.reception = this.createReception();
+    this.customer = this.createCustomer();
+    this.reception.add(this.customer);
     this.delivery = this.createDelivery();
     this.scene.add(this.reception, this.delivery);
     this.show("reception");
@@ -144,10 +146,12 @@ export default class SceneManager {
       throw new Error(`Cena desconhecida: ${name}`);
     }
 
-    this.reception.visible = name === "reception";
+    this.reception.visible = ["menu","dialogue","reception"].includes(name);
+    this.customer.visible = name === "dialogue";
     this.washEnvironment.visible = name === "wash";
     this.delivery.visible = name === "delivery";
-    this.scene.background = this.backgrounds[name].clone();
+    const backgroundKey=name==="menu"||name==="dialogue"?"reception":name;
+    this.scene.background=this.backgrounds[backgroundKey].clone();
     this.current = name;
   }
 
