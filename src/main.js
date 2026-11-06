@@ -90,12 +90,17 @@ function addBox(name, size, pos, material, shadows = true) {
 }
 
 // Garagem
-addBox("Piso", [16, 0.2, 16], [0, -0.13, 0], M.floor);\naddBox("PisoBoxColorido", [13.8, 0.035, 11.8], [0, -0.015, 0], mat("#a8d9d2"), false);
+addBox("Piso", [16, 0.2, 16], [0, -0.13, 0], M.floor);
+addBox("PisoBoxColorido", [13.8, 0.035, 11.8], [0, -0.015, 0], mat("#a8d9d2"), false);
 addBox("Parede do fundo", [14, 5.3, 0.25], [0, 2.5, -4.3], M.yellow);
 addBox("Parede esquerda", [0.25, 5.3, 12], [-7, 2.5, -0.1], M.yellow);
 addBox("Parede direita", [0.25, 5.3, 12], [7, 2.5, -0.1], M.yellow);
 addBox("Rodapé", [13.8, 0.23, 0.12], [0, 0.12, -4.12], M.dark);
-addBox("Faixa coral", [13.8, 0.16, 0.12], [0, 1.6, -4.12], M.coral);\naddBox("Faixa amarela superior", [13.8, 0.28, 0.12], [0, 4.55, -4.12], M.yellow);\naddBox("Letreiro do box", [4.6, 0.72, 0.16], [0, 3.55, -4.08], M.dark);\naddBox("Letreiro destaque", [3.9, 0.08, 0.08], [0, 3.18, -3.98], M.yellow, false);\nfor (const x of [-3.4, 0, 3.4]) { const lamp=addBox("Luminaria", [1.25, 0.08, 0.42], [x, 4.82, -2.3], mat("#fff4c9"), false); lamp.material.emissive=new THREE.Color("#ffe49a"); lamp.material.emissiveIntensity=.5; }
+addBox("Faixa coral", [13.8, 0.16, 0.12], [0, 1.6, -4.12], M.coral);
+addBox("Faixa amarela superior", [13.8, 0.28, 0.12], [0, 4.55, -4.12], M.yellow);
+addBox("Letreiro do box", [4.6, 0.72, 0.16], [0, 3.55, -4.08], M.dark);
+addBox("Letreiro destaque", [3.9, 0.08, 0.08], [0, 3.18, -3.98], M.yellow, false);
+for (const x of [-3.4, 0, 3.4]) { const lamp=addBox("Luminaria", [1.25, 0.08, 0.42], [x, 4.82, -2.3], mat("#fff4c9"), false); lamp.material.emissive=new THREE.Color("#ffe49a"); lamp.material.emissiveIntensity=.5; }
 
 // Portão lateral
 addBox("Moldura do portão", [0.16, 4.1, 4.2], [6.75, 2.05, 1.2], M.dark);
@@ -113,7 +118,10 @@ for (let y = 0.3; y <= 3.8; y += 0.32) {
 
 // Prateleiras e produtos
 addBox("Prateleira superior", [2.2, 0.12, 0.48], [-5.65, 2.15, -2.65], M.wood);
-addBox("Prateleira inferior", [2.2, 0.12, 0.48], [-5.65, 1.05, -2.65], M.wood);\naddBox("Armario de produtos", [2.45, 2.55, 0.18], [-5.65, 1.75, -4.0], M.coral);\naddBox("Armario painel", [2.2, 2.3, 0.12], [-5.65, 1.75, -3.88], M.dark);\naddBox("Armario prateleira alta", [2.3, 0.1, 0.2], [-5.65, 2.7, -3.72], M.yellow);
+addBox("Prateleira inferior", [2.2, 0.12, 0.48], [-5.65, 1.05, -2.65], M.wood);
+addBox("Armario de produtos", [2.45, 2.55, 0.18], [-5.65, 1.75, -4.0], M.coral);
+addBox("Armario painel", [2.2, 2.3, 0.12], [-5.65, 1.75, -3.88], M.dark);
+addBox("Armario prateleira alta", [2.3, 0.1, 0.2], [-5.65, 2.7, -3.72], M.yellow);
 
 for (const x of [-6.55, -4.75]) {
   addBox("Suporte", [0.09, 2.2, 0.09], [x, 1.05, -2.65], M.dark);
@@ -127,7 +135,10 @@ function bottle(x, y, z, color) {
 bottle(-6.35, 2.42, -2.65, "#477da4");
 bottle(-5.8, 2.42, -2.65, "#6b9b59");
 bottle(-5.25, 1.32, -2.65, "#bd5340");
-bottle(-4.95, 1.32, -2.65, "#e0bd62");\naddBox("Painel de ferramentas", [1.7, 1.45, 0.12], [5.55, 3.0, -4.05], M.coral);\nfor (const x of [4.95,5.45,5.95]) addBox("Gancho de mangueira", [.08,.65,.12], [x,2.9,-3.91], M.yellow);\naddBox("Bancada de apoio", [1.7,.16,.65], [5.55,.95,-3.6], M.dark);
+bottle(-4.95, 1.32, -2.65, "#e0bd62");
+addBox("Painel de ferramentas", [1.7, 1.45, 0.12], [5.55, 3.0, -4.05], M.coral);
+for (const x of [4.95,5.45,5.95]) addBox("Gancho de mangueira", [.08,.65,.12], [x,2.9,-3.91], M.yellow);
+addBox("Bancada de apoio", [1.7,.16,.65], [5.55,.95,-3.6], M.dark);
 
 // Plataforma circular
 const platform = new THREE.Group();
