@@ -304,7 +304,9 @@ hud.innerHTML = `
 `;
 
 root.appendChild(hud);
-const career = new CareerSystem(hud);
+const career = new CareerSystem(hud, {
+  onUpgradeChange: (bonuses) => surfaceEffects?.setUpgradeBonuses(bonuses),
+});
 
 const progressLabel = hud.querySelector("#progress-label");
 const progressElement = hud.querySelector("#wash-progress");
@@ -509,6 +511,7 @@ function loadCar() {
         onProgress: updateMission,
         onMessage: setMessage,
       });
+      surfaceEffects.setUpgradeBonuses(career.getUpgradeBonuses());
 
       const attached = surfaceEffects.attachModel(carModel);
 
