@@ -195,7 +195,7 @@ const pointer = new THREE.Vector2();
 
 // Interface
 const hud = document.createElement("div");
-hud.className = "game-hud";
+hud.className = "game-hud scene-reception";
 
 hud.innerHTML = `
   <header class="game-brand">
