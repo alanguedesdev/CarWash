@@ -11,6 +11,8 @@ const DIRT_COLORS = [0x49301f, 0x785139, 0x9b7957, 0xc2ad84];
 
 export default class SurfaceEffects {
   constructor({ onProgress = () => {}, onMessage = () => {} } = {}) {
+    this.cleaningRadiusMultiplier = 1;
+    this.rinseRadiusMultiplier = 1;
     this.onProgress = onProgress;
     this.onMessage = onMessage;
 
@@ -24,6 +26,11 @@ export default class SurfaceEffects {
     this.disposed = false;
 
     this.initializeResources();
+  }
+
+  setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
+    this.cleaningRadiusMultiplier = Math.max(1, cleaningRadiusMultiplier);
+    this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);
   }
 
   initializeResources() {
@@ -323,7 +330,8 @@ export default class SurfaceEffects {
 
     this.model.updateMatrixWorld(true);
     const modelPoint = this.model.worldToLocal(hit.point.clone()).multiplyScalar(this.model.scale.x);
-    const radiusSquared = PREPARATION_RADIUS * PREPARATION_RADIUS;
+    const radius = PREPARATION_RADIUS * this.rinseRadiusMultiplier;
+    const radiusSquared = radius * radius;
 
     for (const mark of this.dirtMarks) {
       if (mark.removed || mark.modelPosition.distanceToSquared(modelPoint) > radiusSquared) continue;
@@ -406,7 +414,7 @@ export default class SurfaceEffects {
     for (const mark of this.dirtMarks) {
       if (
         mark.removed ||
-        mark.modelPosition.distanceToSquared(modelPoint) > PREPARATION_RADIUS * PREPARATION_RADIUS
+        mark.modelPosition.distanceToSquared(modelPoint) > (PREPARATION_RADIUS * this.rinseRadiusMultiplier) ** 2
       ) {
         continue;
       }
@@ -533,7 +541,8 @@ export default class SurfaceEffects {
   }
 
   applySponge(mesh, localPoint, normal, modelPoint) {
-    const radiusSquared = CLEANING_RADIUS * CLEANING_RADIUS;
+    const radius = CLEANING_RADIUS * this.cleaningRadiusMultiplier;
+    const radiusSquared = radius * radius;
     let scrubbedAny = false;
 
     for (const mark of this.dirtMarks) {
