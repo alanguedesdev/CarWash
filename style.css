@@ -1157,7 +1157,7 @@ body {
   #menu-progress { margin:7px 0 9px; }
   #play-game { padding:10px 15px; }
   .menu-hint { margin-top:5px; }
-  .dialogue-character { height:95%;right:-3%; }
+  .dialogue-character { height:min(68%,320px);width:min(38vw,260px);right:0; }
   .dialogue-card { padding:12px 17px 9px; }
   .dialogue-card p { min-height:40px;margin-bottom:8px;padding:8px 11px;font-size:11px; }
   .dialogue-footnote { margin-top:5px; }
