@@ -36,9 +36,9 @@ export default class SceneManager {
     this.washEnvironment = washEnvironment;
     this.current = null;
     this.backgrounds = {
-      reception: new THREE.Color("#a9d9e8"),
-      wash: new THREE.Color("#b6dce6"),
-      delivery: new THREE.Color("#b8cbd5"),
+      reception: new THREE.Color("#ffd86b"),
+      wash: new THREE.Color("#ffe08a"),
+      delivery: new THREE.Color("#ffe3a0"),
     };
 
     this.reception = this.createReception();
@@ -55,37 +55,54 @@ export default class SceneManager {
     const root = new THREE.Group();
     root.name = "ReceptionEnvironment";
 
-    addBox(root, "ReceptionGround", [18, 0.18, 18], [0, -0.22, 0], "#c9c7a8");
-    addBox(root, "ReceptionFacade", [13, 4.8, 0.35], [0, 2.15, -5.2], "#f0d49a");
-    addBox(root, "ReceptionRoof", [13.8, 0.35, 1.3], [0, 4.55, -4.9], "#e77f63");
-    addBox(root, "ReceptionSign", [5.4, 0.85, 0.16], [0, 3.65, -4.94], "#345764");
+    addBox(root, "ReceptionGround", [18, 0.18, 18], [0, -0.22, 0], "#f2c85d");
+    addBox(root, "ReceptionFacade", [13, 4.8, 0.35], [0, 2.15, -5.2], "#ffcf4d");
+    addBox(root, "ReceptionRoof", [13.8, 0.42, 1.3], [0, 4.55, -4.9], "#f15e45");
+    addBox(root, "ReceptionSign", [5.4, 0.85, 0.16], [0, 3.65, -4.94], "#174e5b");
     addBox(root, "ReceptionSignAccent", [4.8, 0.08, 0.08], [0, 3.28, -4.82], "#f3cc70", { castShadow: false });
 
     // Fachada com vitrines laterais e entrada central.
-    addBox(root, "LeftWindowFrame", [2.5, 2.2, 0.12], [-4.1, 1.85, -4.94], "#526c70");
+    addBox(root, "LeftWindowFrame", [2.5, 2.2, 0.12], [-4.1, 1.85, -4.94], "#174e5b");
     addBox(root, "LeftWindowGlass", [2.22, 1.92, 0.08], [-4.1, 1.85, -4.84], "#9dcbd1", { metalness: 0.12 });
-    addBox(root, "RightWindowFrame", [2.5, 2.2, 0.12], [4.1, 1.85, -4.94], "#526c70");
+    addBox(root, "RightWindowFrame", [2.5, 2.2, 0.12], [4.1, 1.85, -4.94], "#174e5b");
     addBox(root, "RightWindowGlass", [2.22, 1.92, 0.08], [4.1, 1.85, -4.84], "#9dcbd1", { metalness: 0.12 });
-    addBox(root, "EntranceDoor", [1.6, 2.7, 0.14], [0, 1.35, -4.91], "#587b7b");
+    addBox(root, "EntranceDoor", [1.6, 2.7, 0.14], [0, 1.35, -4.91], "#ef7652");
     addBox(root, "EntranceDoorGlass", [1.25, 2.1, 0.06], [0, 1.45, -4.8], "#b7dfe0", { metalness: 0.1 });
 
     // Marquise coral e pilares arredondados simulados com cilindros.
-    addBox(root, "ReceptionCanopy", [8.4, 0.22, 1.8], [0, 3.05, -3.9], "#e98a68");
+    addBox(root, "ReceptionCanopy", [8.4, 0.28, 1.8], [0, 3.05, -3.9], "#f15e45");
     for (const x of [-3.8, 3.8]) {
-      addCylinder(root, "CanopyPost", 0.13, 2.9, [x, 1.55, -3.15], "#f5e4bd");
+      addCylinder(root, "CanopyPost", 0.16, 2.9, [x, 1.55, -3.15], "#fff0c2");
     }
 
     // Caminho de entrada e jardineiras.
-    addBox(root, "Driveway", [10, 0.04, 7], [0, -0.105, 1.3], "#aeb6a0", { castShadow: false });
+    addBox(root, "Driveway", [10, 0.04, 7], [0, -0.105, 1.3], "#9fd7d2", { castShadow: false });
     for (const x of [-5.4, 5.4]) {
-      addBox(root, "Planter", [1.25, 0.48, 1.15], [x, 0.08, -1.7], "#b97855");
-      addCylinder(root, "PlanterPlant", 0.48, 1.1, [x, 0.82, -1.7], "#6e9b69");
-      addCylinder(root, "PlanterTop", 0.32, 0.72, [x + 0.16, 1.15, -1.76], "#86ad72");
+      addBox(root, "Planter", [1.25, 0.48, 1.15], [x, 0.08, -1.7], "#f16b4f");
+      addCylinder(root, "PlanterPlant", 0.48, 1.1, [x, 0.82, -1.7], "#5cae68");
+      addCylinder(root, "PlanterTop", 0.32, 0.72, [x + 0.16, 1.15, -1.76], "#7dc65f");
     }
 
     for (const x of [-2.6, 2.6]) {
-      addBox(root, "ParkingStripe", [0.12, 0.025, 3.6], [x, -0.08, 1.2], "#f7e8bd", { castShadow: false });
+      addBox(root, "ParkingStripe", [0.12, 0.025, 3.6], [x, -0.08, 1.2], "#fff7d8", { castShadow: false });
     }
+
+
+    // Identidade visual de lava-jato: letreiro, faixa de cores e luminárias.
+    addBox(root, "ReceptionSignPlate", [4.7, 0.12, 0.08], [0, 3.28, -4.82], "#f5c94e", { castShadow: false });
+    addBox(root, "YellowGarageStripe", [13.1, 0.28, 0.08], [0, 0.48, -4.78], "#f7b92f", { castShadow: false });
+    for (const x of [-2.5, 0, 2.5]) {
+      const lamp = addBox(root, "GarageLamp", [0.75, 0.07, 0.35], [x, 2.84, -3.45], "#fff5ce", { castShadow: false });
+      lamp.material.emissive = new THREE.Color("#ffe18a");
+      lamp.material.emissiveIntensity = 0.55;
+    }
+    // Painéis coloridos e suportes de mangueira reforçam a leitura de oficina.
+    addBox(root, "ToolWallPanel", [1.2, 1.25, 0.1], [-5.5, 3.15, -4.7], "#16899a");
+    addBox(root, "ToolWallPanelAccent", [0.18, 0.85, 0.08], [-5.5, 3.15, -4.61], "#ffdf63", { castShadow: false });
+    addBox(root, "ToolWallPanelRight", [1.2, 1.25, 0.1], [5.5, 3.15, -4.7], "#16899a");
+    addBox(root, "ToolWallPanelRightAccent", [0.18, 0.85, 0.08], [5.5, 3.15, -4.61], "#ffdf63", { castShadow: false });
+    addCylinder(root, "HoseReelLeft", 0.32, 0.16, [-5.5, 2.35, -4.48], "#f15e45").rotation.x = Math.PI / 2;
+    addCylinder(root, "HoseReelRight", 0.32, 0.16, [5.5, 2.35, -4.48], "#f15e45").rotation.x = Math.PI / 2;
 
     return root;
   }
