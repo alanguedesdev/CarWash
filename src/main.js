@@ -134,7 +134,8 @@ const platform = new THREE.Group();
 washEnvironment.add(platform);
 
 const sceneManager = new SceneManager(scene, washEnvironment);
-let activeScene = "menu";\ncarPivot.visible = false;
+let activeScene = "menu";
+carPivot.visible = false;
 
 const turntable = new THREE.Mesh(
   new THREE.CylinderGeometry(3.15, 3.15, 0.16, 32),
@@ -330,8 +331,7 @@ const loadError = hud.querySelector("#load-error");
 const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
-const sceneIntro = hud.querySelector("#scene-intro");
-const startServiceButton = hud.querySelector("#start-service");
+const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons=[...hud.querySelectorAll("[data-tool]")]; menuProgress.textContent="Carreira salva · "+career.stats.completedJobs+" serviços concluídos";
@@ -645,8 +645,12 @@ renderer.domElement.addEventListener("pointerup", stopDragging);
 renderer.domElement.addEventListener("pointercancel", stopDragging);
 renderer.domElement.addEventListener("lostpointercapture", stopDragging);
 
-// Entrada da missão: a recepção é a primeira cena exibida.
-startServiceButton.addEventListener("click", startService);
+// Fluxo: menu, conversa com cliente e box.
+playGameButton.addEventListener("click",openCustomerDialogue);
+dialogueNextButton.addEventListener("click",advanceDialogue);
+dialogueText.addEventListener("click",advanceDialogue);
+acceptServiceButton.addEventListener("click",acceptCustomerService);
+declineServiceButton.addEventListener("click",declineCustomerService);
 
 // Ferramentas
 toolButtons.forEach((button) => {
