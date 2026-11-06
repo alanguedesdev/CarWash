@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 720" role="img" aria-labelledby="title desc">
+<title id="title">Thiago Santos</title><desc id="desc">Retrato cartunesco de Thiago Santos, 27 anos, cliente do CarWash.</desc>
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#ec5e7b"/><stop offset="1" stop-color="#f1bd46"/></linearGradient>
+ <linearGradient id="skin" x2=".2" y2="1"><stop stop-color="#9b5b3c"/><stop offset="1" stop-color="#9b5b3c" stop-opacity=".82"/></linearGradient>
+ <linearGradient id="shirt" x2="1" y2="1"><stop stop-color="#f1bd46"/><stop offset="1" stop-color="#20242a"/></linearGradient>
+ <linearGradient id="hair" x2="1" y2="1"><stop stop-color="#30221e"/><stop offset="1" stop-color="#20242a"/></linearGradient>
+</defs>
+<rect width="520" height="720" rx="46" fill="url(#bg)"/>
+<circle cx="430" cy="110" r="90" fill="#fff" opacity=".12"/><circle cx="70" cy="600" r="120" fill="#fff" opacity=".1"/>
+<path d="M30 720 Q45 540 160 500 Q210 476 265 476 Q320 476 360 500 Q475 540 490 720Z" fill="url(#shirt)" stroke="#20242a" stroke-width="12"/>
+<path d="M205 425h120v110q-60 65-120 0Z" fill="url(#skin)"/>
+<path d="M130 250 Q130 105 265 100 Q400 105 400 250 V360 Q400 470 265 485 Q130 470 130 360Z" fill="url(#skin)" stroke="#20242a" stroke-width="9"/>
+<path d="M105 258 C85 140 155 52 265 52 C375 52 445 140 415 258 Q385 225 365 175 Q335 220 300 225 Q265 230 245 195 Q210 245 175 235 Q135 240 105 258Z" fill="url(#hair)" stroke="#303039" stroke-width="11" stroke-linejoin="round"/>
+
+<path d="M136 295 Q102 286 105 340 Q112 390 143 386 M394 295 Q428 286 425 340 Q418 390 387 386" fill="url(#skin)" stroke="#20242a" stroke-width="8"/>
+<path d="M170 320 Q205 290 238 320 M292 320 Q325 290 360 320" fill="none" stroke="#20242a" stroke-width="12" stroke-linecap="round"/>
+<ellipse cx="207" cy="350" rx="17" ry="23" fill="#fff"/><ellipse cx="323" cy="350" rx="17" ry="23" fill="#fff"/>
+<ellipse cx="211" cy="354" rx="9" ry="14" fill="#27383b"/><ellipse cx="327" cy="354" rx="9" ry="14" fill="#27383b"/>
+<path d="M265 350 Q246 405 263 414 Q278 420 291 410" fill="none" stroke="#a96350" stroke-width="9" stroke-linecap="round"/>
+<path d="M164 390 Q180 470 265 485 Q350 470 366 390 Q340 430 265 435 Q190 430 164 390Z" fill="#3b2b27"/>
+<path d="M210 445 Q265 490 320 445" fill="none" stroke="#9f4e4c" stroke-width="14" stroke-linecap="round"/>
+<path d="M218 445 Q265 474 312 445" fill="none" stroke="#fff1e6" stroke-width="8" stroke-linecap="round"/>
+<path d="M170 420 Q265 470 360 420" fill="none" stroke="#342622" stroke-width="20" stroke-linecap="round"/>
+<path d="M190 545 L265 600 L340 545" fill="none" stroke="#fff" stroke-width="10" opacity=".5"/>
+<path d="M220 540 L265 590 L310 540" fill="none" stroke="#f5d36a" stroke-width="12"/>
+</svg>

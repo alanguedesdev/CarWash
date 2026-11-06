@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import SurfaceEffects from "./systems/SurfaceEffects.js";
 import CareerSystem from "./systems/CareerSystem.js";
 import SceneManager from "./systems/SceneManager.js";
+import { CUSTOMERS } from "./data/customers.js";
 import "./../style.css";
 
 const root = document.querySelector("#game");
@@ -341,7 +342,7 @@ hud.innerHTML = `
       <div class="completion-sparkle" aria-hidden="true">✨</div>
       <p class="completion-eyebrow">LAVA-JATO · MISSÃO 01</p>
       <h2 id="mission-complete-title">Carro impecável!</h2>
-      <p class="completion-copy">Rafael vai receber o Nissan GT-R limpo, sem espuma e brilhando.</p>
+      <p class="completion-copy" id="completion-copy">Seu cliente vai receber o veículo limpo, sem espuma e brilhando.</p>
       <div class="completion-rating"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
       <div class="completion-reward"><span>Recompensa da missão</span><strong>R$ 80,00</strong></div>
       <button id="claim-reward" type="button">Concluir missão</button>
@@ -367,6 +368,7 @@ const loadError = hud.querySelector("#load-error");
 const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
+const completionCopy = hud.querySelector("#completion-copy");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
@@ -392,14 +394,28 @@ async function transitionTo(nextScene, label) {
   await wait(500);
 }
 
-const customers=[{name:"Rafael Martins",portrait:"rafael.svg",request:"Preciso de uma lavagem completa. O carro está cheio de poeira e sujeira da estrada.",lines:["Olá! Tudo bem? Meu nome é Rafael.","Vim porque disseram que aqui o cuidado com os carros é excelente.","Meu carro precisa de uma lavagem completa. Você consegue cuidar dele?"]},{name:"Camila Souza",portrait:"camila.svg",request:"Quero uma lavagem completa para deixar a lataria brilhando.",lines:["Oi! Sou a Camila, prazer em conhecer você.","Estou procurando um lava-jato caprichoso para cuidar do meu carro.","Gostaria de uma lavagem completa. Podemos fechar esse serviço?"]},{name:"Bruno Almeida",portrait:"bruno.svg",request:"O carro está precisando de uma boa limpeza externa.",lines:["Bom dia! Meu nome é Bruno.","Passei aqui e resolvi conhecer o seu lava-jato.","Você pode fazer uma lavagem completa no meu carro?"]}];
-let customerIndex=0,dialogueLine=0,currentCustomer=customers[0];
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent="Cliente · serviço solicitado";customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"images/characters/"+currentCustomer.portrait;dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
+let customerBag = [];
+function nextCustomer() {
+  if (customerBag.length === 0) {
+    customerBag = [...CUSTOMERS];
+    for (let i = customerBag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [customerBag[i], customerBag[j]] = [customerBag[j], customerBag[i]];
+    }
+    if (customerBag.length > 1 && customerBag[customerBag.length - 1].id === currentCustomer?.id) {
+      [customerBag[0], customerBag[customerBag.length - 1]] = [customerBag[customerBag.length - 1], customerBag[0]];
+    }
+  }
+  return customerBag.pop();
+}
+let dialogueLine = 0;
+let currentCustomer = null;
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+currentCustomer.id+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
-async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
+async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
 async function acceptCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("wash","Preparando o box de lavagem...");customerDialogue.hidden=true;setMessage("Serviço aceito! Selecione uma ferramenta para começar.");acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
-async function declineCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("menu","Agradecendo ao cliente...");customerDialogue.hidden=true;customerIndex=(customerIndex+1)%customers.length;currentCustomer=customers[customerIndex];await wait(650);await transitionTo("dialogue","Um novo cliente está chegando...");customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
+async function declineCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("menu","Agradecendo ao cliente...");customerDialogue.hidden=true;currentCustomer=nextCustomer();await wait(650);await transitionTo("dialogue","Um novo cliente está chegando...");customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
 function showLoadError(text) {
   loadError.style.display = "block";
   loadError.textContent = text;
@@ -437,6 +453,7 @@ async function finishMission() {
   updateMission(surfaceEffects.getProgress());
   setMessage("Lavagem completa! Preparando a entrega.");
   await transitionTo("delivery", "Lavagem finalizada! Preparando a entrega...");
+  completionCopy.textContent = currentCustomer.name + " vai receber o veículo limpo, sem espuma e brilhando.";
   completionPanel.hidden = false;
   setMessage("Veículo pronto para entrega.");
 }
