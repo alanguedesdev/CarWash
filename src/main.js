@@ -200,7 +200,6 @@ let missionCompleted = false;
 let rewardClaimed = false;
 let dragging = false;
 let lastX = 0;
-let lastToolAction = 0;
 let animationFrame = 0;
 let disposed = false;
 
@@ -460,6 +459,7 @@ async function finishMission() {
 
 function setTool(tool) {
   selectedTool = tool;
+  surfaceEffects?.resetBrushPath();
 
   for (const button of toolButtons) {
     button.classList.toggle("selected", button.dataset.tool === tool);
@@ -656,7 +656,7 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
 
   dragging = true;
   lastX = event.clientX;
-  lastToolAction = 0;
+  surfaceEffects?.resetBrushPath();
 
   try {
     renderer.domElement.setPointerCapture(event.pointerId);
@@ -682,9 +682,9 @@ renderer.domElement.addEventListener("pointermove", (event) => {
   if (!selectedTool) {
     carPivot.rotation.y += dx * 0.008;
     platform.rotation.y = carPivot.rotation.y;
-  } else if (performance.now() - lastToolAction > 90) {
+  } else {
+    // Um hit por evento: SurfaceEffects interpola o segmento em espaço 3D.
     useTool(event);
-    lastToolAction = performance.now();
   }
 
   lastX = event.clientX;
@@ -692,6 +692,7 @@ renderer.domElement.addEventListener("pointermove", (event) => {
 
 function stopDragging() {
   dragging = false;
+  surfaceEffects?.resetBrushPath();
 }
 
 renderer.domElement.addEventListener("pointerup", stopDragging);
