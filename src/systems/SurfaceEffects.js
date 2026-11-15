@@ -14,6 +14,7 @@ export default class SurfaceEffects {
     this.materials = new Map();
     this.dirtMarks = [];
     this.soapZones = [];
+    this.wetZones = [];
     this.totalDirt = 0;
     this.cleanedDirt = 0;
     this.cleaningRadiusMultiplier = 1;
@@ -38,6 +39,7 @@ export default class SurfaceEffects {
     this.materials = new Map();
     this.dirtMarks = [];
     this.soapZones = [];
+    this.wetZones = [];
     this.cleanedDirt = 0;
     model.updateMatrixWorld(true);
 
@@ -157,43 +159,60 @@ export default class SurfaceEffects {
   }
 
   applyToolAtPoint(mesh, point, tool) {
-    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
     const brushRadius = tool === "water"
       ? WATER_RADIUS * this.rinseRadiusMultiplier
-      : radius;
+      : RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
     const radiusSquared = brushRadius * brushRadius;
 
-    // Work in vehicle-local 3D space so marks on adjacent GLTF meshes
-    // (doors, bumpers, wheel arches, etc.) are reachable by the same stroke.
-    const nearbyMarks = this.dirtMarks.filter((mark) =>
-      !mark.removed && mark.position.distanceToSquared(point) <= radiusSquared
+    // Estados de lavagem são registrados por região, independentemente da
+    // existência de uma mancha de sujeira naquele ponto.
+    const nearbyWetZones = this.wetZones.filter((zone) =>
+      zone.position.distanceToSquared(point) <= radiusSquared
     );
     const nearbySoapZones = this.soapZones.filter((zone) =>
       zone.position.distanceToSquared(point) <= radiusSquared
     );
+    const nearbyMarks = this.dirtMarks.filter((mark) =>
+      !mark.removed && mark.position.distanceToSquared(point) <= radiusSquared
+    );
     const affectedMeshes = new Set([
       mesh,
       ...nearbyMarks.map((mark) => mark.mesh),
+      ...nearbyWetZones.map((zone) => zone.mesh),
       ...nearbySoapZones.map((zone) => zone.mesh),
     ]);
 
     if (tool === "water") {
       const rinsesExistingLayer = nearbySoapZones.length > 0 ||
         nearbyMarks.some((mark) => mark.soapy || mark.scrubbed);
+
       for (const targetMesh of affectedMeshes) {
         const shader = this.materials.get(targetMesh.uuid);
         if (!shader) continue;
         shader.addStamp(point, brushRadius, 2);
         if (rinsesExistingLayer) shader.addStamp(point, brushRadius * 1.08, 3);
       }
+
+      const wetZone = this.wetZones.find((zone) =>
+        zone.mesh === mesh &&
+        zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.2
+      );
+      if (wetZone) wetZone.position.copy(point);
+      else this.wetZones.push({ mesh, position: point.clone() });
+
       for (const mark of nearbyMarks) {
         mark.wet = true;
         if (mark.scrubbed) mark.removed = true;
         else if (rinsesExistingLayer) mark.soapy = false;
       }
-      this.soapZones = this.soapZones.filter((zone) =>
-        zone.position.distanceToSquared(point) > radiusSquared
-      );
+
+      if (rinsesExistingLayer) {
+        this.soapZones = this.soapZones.filter((zone) =>
+          zone.position.distanceToSquared(point) > radiusSquared
+        );
+      }
+
+      if (this.wetZones.length > 256) this.wetZones.splice(0, this.wetZones.length - 256);
       this.onMessage(rinsesExistingLayer
         ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
         : "Área molhada. Agora aplique o sabão.");
@@ -201,10 +220,9 @@ export default class SurfaceEffects {
     }
 
     if (tool === "soap") {
-      const eligibleMarks = nearbyMarks.filter((mark) => mark.wet && !mark.removed);
-      if (!eligibleMarks.length) return false;
-      const soapMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
-      for (const targetMesh of soapMeshes) {
+      if (!nearbyWetZones.length) return false;
+
+      for (const targetMesh of new Set([mesh, ...nearbyWetZones.map((zone) => zone.mesh)])) {
         this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 1);
         const duplicateZone = this.soapZones.some((zone) =>
           zone.mesh === targetMesh &&
@@ -213,28 +231,31 @@ export default class SurfaceEffects {
         if (!duplicateZone) this.soapZones.push({ mesh: targetMesh, position: point.clone() });
       }
       if (this.soapZones.length > 256) this.soapZones.splice(0, this.soapZones.length - 256);
-      for (const mark of eligibleMarks) mark.soapy = true;
-      this.onMessage("Produto aplicado. Passe a bucha para formar espuma.");
+      for (const mark of nearbyMarks) {
+        if (mark.wet && !mark.removed) mark.soapy = true;
+      }
+      this.onMessage("Sabão aplicado na região. Passe a bucha para esfregar.");
       return true;
     }
 
     if (tool === "sponge") {
-      const eligibleMarks = nearbyMarks.filter((mark) => mark.wet && mark.soapy && !mark.removed);
-      if (!eligibleMarks.length) return false;
-      const foamMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
+      if (!nearbySoapZones.length) return false;
+
+      const foamMeshes = new Set([mesh, ...nearbySoapZones.map((zone) => zone.mesh)]);
       for (const targetMesh of foamMeshes) {
         const shader = this.materials.get(targetMesh.uuid);
         if (!shader) continue;
-        const marksOnMesh = eligibleMarks.filter((mark) => mark.mesh === targetMesh);
-        for (const mark of marksOnMesh) {
-          if (!mark.scrubbed) shader.addCleanStamp(mark.position, brushRadius * 1.12);
-          mark.scrubbed = true;
-        }
-        // Type 4 is transient cartoon foam; permanent dirt removal is stored
-        // separately so stamp-buffer turnover cannot make dirt reappear.
+
+        // Limpa a sujeira procedural em toda a área esfregada, mesmo quando
+        // não há um ponto de sujeira amostrado exatamente sob a ferramenta.
+        shader.addCleanStamp(point, brushRadius * 1.18);
         shader.addStamp(point, brushRadius, 4);
       }
-      this.onMessage("A sujeira está reagindo com o produto. Enxágue para finalizar.");
+
+      for (const mark of nearbyMarks) {
+        if (mark.wet && mark.soapy && !mark.removed) mark.scrubbed = true;
+      }
+      this.onMessage("Bucha em ação! Sujeira removida e espuma pronta para o enxágue.");
       return true;
     }
     return false;
@@ -279,6 +300,7 @@ export default class SurfaceEffects {
     this.surfaces?.clear();
     this.dirtMarks = [];
     this.soapZones = [];
+    this.wetZones = [];
     this.lastBrushHit = null;
     this.model = null;
     this.totalDirt = 0;
