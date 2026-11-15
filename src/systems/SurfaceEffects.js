@@ -28,8 +28,9 @@ export default class SurfaceEffects {
     this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);
   }
 
-  attachModel(model) {
+  attachModel(model, { dirtProfile = this.dirtProfile } = {}) {
     this.dispose();
+    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(dirtProfile) ? dirtProfile : "mud";
     this.disposed = false;
     this.model = model;
     this.surfaces = new Map();
