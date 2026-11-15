@@ -193,12 +193,14 @@ export default class SurfaceEffects {
         if (rinsesExistingLayer) shader.addStamp(point, brushRadius * 1.08, 3);
       }
 
-      const wetZone = this.wetZones.find((zone) =>
+      // Keep distributed samples along the whole brush path. A wider merge
+      // radius caused consecutive samples to overwrite one another, leaving
+      // only the last part of a long stroke marked as wet.
+      const hasNearbyWetZone = this.wetZones.some((zone) =>
         zone.mesh === mesh &&
-        zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.2
+        zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.04
       );
-      if (wetZone) wetZone.position.copy(point);
-      else this.wetZones.push({ mesh, position: point.clone() });
+      if (!hasNearbyWetZone) this.wetZones.push({ mesh, position: point.clone() });
 
       for (const mark of nearbyMarks) {
         mark.wet = true;
@@ -226,7 +228,7 @@ export default class SurfaceEffects {
         this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 1);
         const duplicateZone = this.soapZones.some((zone) =>
           zone.mesh === targetMesh &&
-          zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.16
+          zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.0324
         );
         if (!duplicateZone) this.soapZones.push({ mesh: targetMesh, position: point.clone() });
       }
