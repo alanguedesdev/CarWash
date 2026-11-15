@@ -53,7 +53,7 @@ export default class SurfaceEffects {
     });
     candidates.sort((a, b) => b.area - a.area);
 
-    for (const { mesh, area } of candidates.slice(0, 100)) {
+    for (const { mesh, area } of candidates) {
       this.surfaces.set(mesh.uuid, { mesh, area });
       const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
       this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile, meshToModel }));
@@ -64,7 +64,7 @@ export default class SurfaceEffects {
     }
 
     const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
-    for (const { mesh, area } of candidates.slice(0, 100)) {
+    for (const { mesh, area } of candidates) {
       const count = Math.max(1, Math.round((area / Math.max(totalArea, 0.001)) * DIRT_COUNT));
       for (let i = 0; i < count; i++) {
         const sample = this.randomPointOnMesh(mesh);
@@ -131,22 +131,17 @@ export default class SurfaceEffects {
       ? WATER_RADIUS * this.rinseRadiusMultiplier
       : RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
     const previous = this.lastBrushHit;
-    const canBridge = previous && previous.tool === tool && previous.mesh === mesh;
+    const canBridge = previous && previous.tool === tool;
     const distance = canBridge ? previous.point.distanceTo(point) : 0;
     const spacing = Math.max(baseRadius * 0.32, 0.035);
     const steps = canBridge ? Math.min(64, Math.max(1, Math.ceil(distance / spacing))) : 1;
     let changed = false;
 
-    const paintMeshes = canBridge && previous.mesh !== mesh
-      ? [previous.mesh, mesh]
-      : [mesh];
     for (let i = 1; i <= steps; i++) {
       const sample = canBridge
         ? previous.point.clone().lerp(point, i / steps)
         : point.clone();
-      for (const paintMesh of paintMeshes) {
-        changed = this.applyToolAtPoint(paintMesh, sample, tool) || changed;
-      }
+      changed = this.applyToolAtPoint(mesh, sample, tool) || changed;
     }
 
     this.lastBrushHit = { mesh, point: point.clone(), tool };
@@ -162,29 +157,34 @@ export default class SurfaceEffects {
   }
 
   applyToolAtPoint(mesh, point, tool) {
-    const shader = this.materials.get(mesh.uuid);
-    if (!shader) return false;
-
     const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
-    if (tool === "water") {
-      const waterRadius = WATER_RADIUS * this.rinseRadiusMultiplier;
-      const waterRadiusSquared = waterRadius * waterRadius;
-      const rinsesExistingLayer = this.dirtMarks.some((mark) =>
-        mark.mesh === mesh &&
-        (mark.soapy || mark.scrubbed) &&
-        mark.position.distanceToSquared(point) <= waterRadiusSquared
-      );
-      shader.addStamp(point, waterRadius, 2);
-      if (rinsesExistingLayer) shader.addStamp(point, waterRadius * 1.08, 3);
+    const brushRadius = tool === "water"
+      ? WATER_RADIUS * this.rinseRadiusMultiplier
+      : radius;
+    const radiusSquared = brushRadius * brushRadius;
 
-      for (const mark of this.dirtMarks) {
-        if (mark.mesh !== mesh || mark.position.distanceToSquared(point) > waterRadiusSquared) continue;
+    // Work in vehicle-local 3D space so marks on adjacent GLTF meshes
+    // (doors, bumpers, wheel arches, etc.) are reachable by the same stroke.
+    const nearbyMarks = this.dirtMarks.filter((mark) =>
+      !mark.removed && mark.position.distanceToSquared(point) <= radiusSquared
+    );
+    const affectedMeshes = new Set([mesh, ...nearbyMarks.map((mark) => mark.mesh)]);
+
+    if (tool === "water") {
+      const rinsesExistingLayer = nearbyMarks.some((mark) => mark.soapy || mark.scrubbed);
+      for (const targetMesh of affectedMeshes) {
+        const shader = this.materials.get(targetMesh.uuid);
+        if (!shader) continue;
+        shader.addStamp(point, brushRadius, 2);
+        if (rinsesExistingLayer) shader.addStamp(point, brushRadius * 1.08, 3);
+      }
+      for (const mark of nearbyMarks) {
         mark.wet = true;
         if (mark.scrubbed) mark.removed = true;
         else if (rinsesExistingLayer) mark.soapy = false;
       }
       this.soapZones = this.soapZones.filter((zone) =>
-        zone.mesh !== mesh || zone.position.distanceToSquared(point) > waterRadiusSquared
+        zone.position.distanceToSquared(point) > radiusSquared
       );
       this.onMessage(rinsesExistingLayer
         ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
@@ -193,36 +193,27 @@ export default class SurfaceEffects {
     }
 
     if (tool === "soap") {
-      const radiusSquared = radius * radius;
-      const eligible = this.dirtMarks.some((mark) =>
-        mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && !mark.removed
-      );
-      if (!eligible) return false;
-      shader.addStamp(point, radius, 1);
-      this.soapZones.push({ mesh, position: point.clone() });
-      if (this.soapZones.length > 48) this.soapZones.shift();
-      for (const mark of this.dirtMarks) {
-        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && !mark.removed) {
-          mark.soapy = true;
-        }
+      const eligibleMarks = nearbyMarks.filter((mark) => mark.wet && !mark.removed);
+      if (!eligibleMarks.length) return false;
+      const soapMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
+      for (const targetMesh of soapMeshes) {
+        this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 1);
+        this.soapZones.push({ mesh: targetMesh, position: point.clone() });
       }
+      if (this.soapZones.length > 48) this.soapZones.splice(0, this.soapZones.length - 48);
+      for (const mark of eligibleMarks) mark.soapy = true;
       this.onMessage("Produto aplicado. Passe a bucha para formar espuma.");
       return true;
     }
 
     if (tool === "sponge") {
-      const radiusSquared = radius * radius;
-      const eligible = this.dirtMarks.some((mark) =>
-        mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared &&
-        mark.wet && mark.soapy && !mark.removed
-      );
-      if (!eligible) return false;
-      shader.addStamp(point, radius, 0);
-      for (const mark of this.dirtMarks) {
-        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && mark.soapy) {
-          mark.scrubbed = true;
-        }
+      const eligibleMarks = nearbyMarks.filter((mark) => mark.wet && mark.soapy && !mark.removed);
+      if (!eligibleMarks.length) return false;
+      const foamMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
+      for (const targetMesh of foamMeshes) {
+        this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 0);
       }
+      for (const mark of eligibleMarks) mark.scrubbed = true;
       this.onMessage("A sujeira está reagindo com o produto. Enxágue para finalizar.");
       return true;
     }
