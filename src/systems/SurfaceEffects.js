@@ -243,20 +243,28 @@ export default class SurfaceEffects {
     if (tool === "sponge") {
       if (!nearbySoapZones.length) return false;
 
-      const foamMeshes = new Set([mesh, ...nearbySoapZones.map((zone) => zone.mesh)]);
+      const eligibleMarks = nearbyMarks.filter((mark) =>
+        mark.wet && mark.soapy && !mark.removed
+      );
+      // Inclui explicitamente as malhas que possuem sujeira elegível. Em GLBs,
+      // a lataria costuma estar dividida em várias peças; limpar só a malha
+      // atingida pelo raycast atual fazia o progresso avançar sem limpar a
+      // textura das peças vizinhas.
+      const foamMeshes = new Set([
+        mesh,
+        ...nearbySoapZones.map((zone) => zone.mesh),
+        ...eligibleMarks.map((mark) => mark.mesh),
+      ]);
+
       for (const targetMesh of foamMeshes) {
         const shader = this.materials.get(targetMesh.uuid);
         if (!shader) continue;
 
-        // Limpa a sujeira procedural em toda a área esfregada, mesmo quando
-        // não há um ponto de sujeira amostrado exatamente sob a ferramenta.
         shader.addCleanStamp(point, brushRadius * 1.18);
         shader.addStamp(point, brushRadius, 4);
       }
 
-      for (const mark of nearbyMarks) {
-        if (mark.wet && mark.soapy && !mark.removed) mark.scrubbed = true;
-      }
+      for (const mark of eligibleMarks) mark.scrubbed = true;
       this.onMessage("Bucha em ação! Sujeira removida e espuma pronta para o enxágue.");
       return true;
     }
