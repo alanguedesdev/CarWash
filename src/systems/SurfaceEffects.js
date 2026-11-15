@@ -59,7 +59,7 @@ export default class SurfaceEffects {
     }
 
     const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
-    for (const { mesh, area } of candidates) {
+    for (const { mesh, area } of candidates.slice(0, 100)) {
       const count = Math.max(1, Math.round((area / Math.max(totalArea, 0.001)) * DIRT_COUNT));
       for (let i = 0; i < count; i++) {
         const sample = this.randomPointOnMesh(mesh);
