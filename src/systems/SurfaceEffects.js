@@ -54,7 +54,8 @@ export default class SurfaceEffects {
 
     for (const { mesh, area } of candidates.slice(0, 100)) {
       this.surfaces.set(mesh.uuid, { mesh, area });
-      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile }));
+      const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
+      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile, meshToModel }));
     }
     if (!this.surfaces.size) {
       this.onMessage("Não foi possível preparar as superfícies do carro.");
@@ -67,9 +68,11 @@ export default class SurfaceEffects {
       for (let i = 0; i < count; i++) {
         const sample = this.randomPointOnMesh(mesh);
         if (!sample) continue;
+        const worldPoint = mesh.localToWorld(sample.point.clone());
+        const modelPoint = model.worldToLocal(worldPoint);
         this.dirtMarks.push({
           mesh,
-          position: sample.point,
+          position: modelPoint,
           wet: false,
           soapy: false,
           scrubbed: false,
@@ -110,7 +113,7 @@ export default class SurfaceEffects {
     if (!hit?.object?.isMesh || !hit.point || !this.model) return null;
     const mesh = hit.object;
     if (!this.surfaces.has(mesh.uuid)) return null;
-    return { mesh, point: mesh.worldToLocal(hit.point.clone()) };
+    return { mesh, point: this.model.worldToLocal(hit.point.clone()) };
   }
 
   applyTool(hit, tool) {
