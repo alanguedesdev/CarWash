@@ -200,7 +200,6 @@ let missionCompleted = false;
 let rewardClaimed = false;
 let dragging = false;
 let lastX = 0;
-let lastToolAction = 0;
 let animationFrame = 0;
 let disposed = false;
 
