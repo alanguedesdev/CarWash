@@ -135,8 +135,7 @@ export default class SurfaceEffects {
         (mark.soapy || mark.scrubbed) &&
         mark.position.distanceToSquared(point) <= waterRadiusSquared
       );
-      // Canal G recebe umidade em qualquer aplicação; B/A só são limpos
-      // quando a água atinge uma camada de sabão/espuma já existente.
+      // G recebe umidade em qualquer aplicação; B/A só são limpos no enxágue.
       shader.addStamp(point, waterRadius, 2);
       if (rinsesExistingLayer) shader.addStamp(point, waterRadius * 1.08, 3);
 
@@ -188,7 +187,7 @@ export default class SurfaceEffects {
   setDirtProfile(profile) {
     this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";
     for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);
-  }\n\n  setDirtProfile(profile) {\n    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";\n    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);\n  }
+  }
 
   getPreparationProgress(property) {
     const prepared = this.dirtMarks.filter((mark) => mark[property]).length;
