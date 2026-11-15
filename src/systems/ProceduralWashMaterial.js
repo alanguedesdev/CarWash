@@ -8,7 +8,7 @@ const FRAGMENT_DECL = [
   "float washHash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}",
   "float washNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(washHash(i),washHash(i+vec3(1,0,0)),f.x),mix(washHash(i+vec3(0,1,0)),washHash(i+vec3(1,1,0)),f.x),f.y),mix(mix(washHash(i+vec3(0,0,1)),washHash(i+vec3(1,0,1)),f.x),mix(washHash(i+vec3(0,1,1)),washHash(i+vec3(1,1,1)),f.x),f.y),f.z);}",
   "float washTri(vec3 p,vec3 n,float s){vec3 w=pow(abs(normalize(n)),vec3(4.));w/=max(w.x+w.y+w.z,.0001);return washNoise(p.yzx*s)*w.x+washNoise(p.xzy*s)*w.y+washNoise(p.xyz*s)*w.z;}",
-  "vec3 washState(vec3 p){float scrub=0.,soap=0.,wet=0.,rinse=0.;for(int i=0;i<48;i++){if(i>=uWashCount)break;vec4 s=uWashStamps[i];float d=length(p-s.xyz);float a=1.-smoothstep(s.w*.5,s.w,d);float t=uWashTypes[i];if(t<.5)scrub=max(scrub,a);else if(t<1.5)soap=max(soap,a);else if(t<2.5)wet=max(wet,a);else rinse=max(rinse,a);}soap*=1.-rinse;wet=max(wet,rinse);return vec3(scrub,soap,wet);}"
+  "vec3 washState(vec3 p){float scrub=0.,soap=0.,wet=0.,rinse=0.;for(int i=0;i<48;i++){if(i>=uWashCount)break;vec4 s=uWashStamps[i];float d=length(p-s.xyz);float a=1.-smoothstep(s.w*.5,s.w,d);float t=uWashTypes[i];if(t<.5){scrub=max(scrub,a);soap=max(soap,a*.58);}else if(t<1.5)soap=max(soap,a);else if(t<2.5)wet=max(wet,a);else rinse=max(rinse,a);}soap*=1.-rinse;wet=max(wet,rinse);return vec3(scrub,soap,wet);}"
 ].join("\n");
 
 export default class ProceduralWashMaterial {
