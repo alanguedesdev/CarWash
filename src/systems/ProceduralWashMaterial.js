@@ -64,9 +64,18 @@ export default class ProceduralWashMaterial {
             "float foamNoise=washTri(vWashPos*19.+vec3(0.,uWashTime*.025,0.),vWashNormal,1.);",
             "float soapFoam=washMask.b*smoothstep(.22,.74,foamNoise);",
             "float denseFoam=washMask.a*smoothstep(.18,.68,foamNoise*.72+washTri(vWashPos*43.,vWashNormal,1.)*.28);",
-            "diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.12,.78,.91),soapFoam*.34);",
+            "diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.0,.96,1.0),soapFoam*.72);",
             "vec3 dirtyFoam=mix(vec3(.91,.97,.99),vec3(.48,.43,.36),dirt*.62);",
-            "diffuseColor.rgb=mix(diffuseColor.rgb,dirtyFoam,denseFoam*.96);",
+            "vec3 bubbleCoord=vWashPos*vec3(12.,9.,12.);",
+            "vec3 bubbleCell=floor(bubbleCoord);",
+            "vec3 bubbleLocal=fract(bubbleCoord)-.5;",
+            "float bubbleRadius=mix(.18,.43,washHash(bubbleCell));",
+            "float bubbleDistance=length(bubbleLocal);",
+            "float bubbleFill=1.-smoothstep(bubbleRadius-.035,bubbleRadius+.015,bubbleDistance);",
+            "float bubbleRim=smoothstep(bubbleRadius-.085,bubbleRadius-.035,bubbleDistance);",
+            "vec3 cartoonFoam=mix(dirtyFoam,vec3(.98,1.,1.),bubbleFill*.9);",
+            "cartoonFoam=mix(cartoonFoam,vec3(.02,.48,.62),bubbleRim*.9);",
+            "diffuseColor.rgb=mix(diffuseColor.rgb,cartoonFoam,denseFoam*.98);",
             "diffuseColor.rgb*=mix(1.,.74,washMask.g);"
           ].join("\n"))
           .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n" + [
