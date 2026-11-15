@@ -21,6 +21,7 @@ export default class SurfaceEffects {
     this.disposed = false;
     this.clock = new THREE.Clock();
     this.dirtProfile = "mud";
+    this.lastBrushHit = null;
   }
 
   setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
@@ -120,13 +121,46 @@ export default class SurfaceEffects {
     if (this.disposed) return false;
     const target = this.getLocalHit(hit);
     if (!target) {
+      this.resetBrushPath();
       this.onMessage("Passe a ferramenta diretamente sobre a lataria.");
       return false;
     }
-    const { mesh, point } = target;
-    const shader = this.materials.get(mesh.uuid);
-    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
 
+    const { mesh, point } = target;
+    const baseRadius = tool === "water"
+      ? WATER_RADIUS * this.rinseRadiusMultiplier
+      : RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
+    const previous = this.lastBrushHit;
+    const canBridge = previous && previous.tool === tool && previous.mesh === mesh;
+    const distance = canBridge ? previous.point.distanceTo(point) : 0;
+    const spacing = Math.max(baseRadius * 0.32, 0.035);
+    const steps = canBridge ? Math.min(64, Math.max(1, Math.ceil(distance / spacing))) : 1;
+    let changed = false;
+
+    for (let i = 1; i <= steps; i++) {
+      const sample = canBridge
+        ? previous.point.clone().lerp(point, i / steps)
+        : point.clone();
+      changed = this.applyToolAtPoint(mesh, sample, tool) || changed;
+    }
+
+    this.lastBrushHit = { mesh, point: point.clone(), tool };
+    if (changed) {
+      this.cleanedDirt = this.dirtMarks.filter((mark) => mark.removed).length;
+      this.onProgress(this.getProgress());
+    }
+    return changed;
+  }
+
+  resetBrushPath() {
+    this.lastBrushHit = null;
+  }
+
+  applyToolAtPoint(mesh, point, tool) {
+    const shader = this.materials.get(mesh.uuid);
+    if (!shader) return false;
+
+    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
     if (tool === "water") {
       const waterRadius = WATER_RADIUS * this.rinseRadiusMultiplier;
       const waterRadiusSquared = waterRadius * waterRadius;
@@ -135,7 +169,6 @@ export default class SurfaceEffects {
         (mark.soapy || mark.scrubbed) &&
         mark.position.distanceToSquared(point) <= waterRadiusSquared
       );
-      // G recebe umidade em qualquer aplicação; B/A só são limpos no enxágue.
       shader.addStamp(point, waterRadius, 2);
       if (rinsesExistingLayer) shader.addStamp(point, waterRadius * 1.08, 3);
 
@@ -151,35 +184,44 @@ export default class SurfaceEffects {
       this.onMessage(rinsesExistingLayer
         ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
         : "Área molhada. Agora aplique o sabão.");
-    } else if (tool === "soap") {
-      const eligible = this.dirtMarks.some((mark) => mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius && mark.wet && !mark.removed);
-      if (!eligible) {
-        this.onMessage("Molhe essa região antes de aplicar o sabão.");
-        return false;
-      }
-      shader.addStamp(point, radius * 1.7, 1);
+      return true;
+    }
+
+    if (tool === "soap") {
+      const radiusSquared = radius * radius;
+      const eligible = this.dirtMarks.some((mark) =>
+        mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && !mark.removed
+      );
+      if (!eligible) return false;
+      shader.addStamp(point, radius, 1);
       this.soapZones.push({ mesh, position: point.clone() });
       if (this.soapZones.length > 48) this.soapZones.shift();
       for (const mark of this.dirtMarks) {
-        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius) mark.soapy = true;
+        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && !mark.removed) {
+          mark.soapy = true;
+        }
       }
-      this.onMessage("Espuma aderida à lataria. Espalhe com a bucha.");
-    } else if (tool === "sponge") {
-      const scrubbed = this.dirtMarks.some((mark) => mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius && mark.wet && mark.soapy && !mark.removed);
-      if (!scrubbed) {
-        this.onMessage("Molhe e ensaboe essa região antes de esfregar.");
-        return false;
-      }
-      shader.addStamp(point, radius * 1.6, 0);
-      for (const mark of this.dirtMarks) {
-        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius && mark.wet && mark.soapy) mark.scrubbed = true;
-      }
-      this.onMessage("Bucha em movimento: sujeira dissolvida e espuma espalhada.");
-    } else return false;
+      this.onMessage("Produto aplicado. Passe a bucha para formar espuma.");
+      return true;
+    }
 
-    this.cleanedDirt = this.dirtMarks.filter((mark) => mark.removed).length;
-    this.onProgress(this.getProgress());
-    return true;
+    if (tool === "sponge") {
+      const radiusSquared = radius * radius;
+      const eligible = this.dirtMarks.some((mark) =>
+        mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared &&
+        mark.wet && mark.soapy && !mark.removed
+      );
+      if (!eligible) return false;
+      shader.addStamp(point, radius, 0);
+      for (const mark of this.dirtMarks) {
+        if (mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared && mark.wet && mark.soapy) {
+          mark.scrubbed = true;
+        }
+      }
+      this.onMessage("A sujeira está reagindo com o produto. Enxágue para finalizar.");
+      return true;
+    }
+    return false;
   }
 
   getFoamCount() { return this.soapZones.length; }
@@ -221,6 +263,7 @@ export default class SurfaceEffects {
     this.surfaces?.clear();
     this.dirtMarks = [];
     this.soapZones = [];
+    this.lastBrushHit = null;
     this.model = null;
     this.totalDirt = 0;
     this.cleanedDirt = 0;
