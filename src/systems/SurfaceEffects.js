@@ -3,6 +3,7 @@ import ProceduralWashMaterial from "./ProceduralWashMaterial.js";
 
 const DIRT_COUNT = 90;
 const RADIUS = 0.62;
+const WATER_RADIUS = 0.29;
 
 export default class SurfaceEffects {
   constructor({ onProgress = () => {}, onMessage = () => {} } = {}) {
@@ -19,6 +20,7 @@ export default class SurfaceEffects {
     this.rinseRadiusMultiplier = 1;
     this.disposed = false;
     this.clock = new THREE.Clock();
+    this.dirtProfile = "mud";
   }
 
   setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
@@ -26,8 +28,9 @@ export default class SurfaceEffects {
     this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);
   }
 
-  attachModel(model) {
+  attachModel(model, { dirtProfile = this.dirtProfile } = {}) {
     this.dispose();
+    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(dirtProfile) ? dirtProfile : "mud";
     this.disposed = false;
     this.model = model;
     this.surfaces = new Map();
@@ -51,7 +54,8 @@ export default class SurfaceEffects {
 
     for (const { mesh, area } of candidates.slice(0, 100)) {
       this.surfaces.set(mesh.uuid, { mesh, area });
-      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh));
+      const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
+      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile, meshToModel }));
     }
     if (!this.surfaces.size) {
       this.onMessage("Não foi possível preparar as superfícies do carro.");
@@ -64,9 +68,11 @@ export default class SurfaceEffects {
       for (let i = 0; i < count; i++) {
         const sample = this.randomPointOnMesh(mesh);
         if (!sample) continue;
+        const worldPoint = mesh.localToWorld(sample.point.clone());
+        const modelPoint = model.worldToLocal(worldPoint);
         this.dirtMarks.push({
           mesh,
-          position: sample.point,
+          position: modelPoint,
           wet: false,
           soapy: false,
           scrubbed: false,
@@ -107,7 +113,7 @@ export default class SurfaceEffects {
     if (!hit?.object?.isMesh || !hit.point || !this.model) return null;
     const mesh = hit.object;
     if (!this.surfaces.has(mesh.uuid)) return null;
-    return { mesh, point: mesh.worldToLocal(hit.point.clone()) };
+    return { mesh, point: this.model.worldToLocal(hit.point.clone()) };
   }
 
   applyTool(hit, tool) {
@@ -119,18 +125,32 @@ export default class SurfaceEffects {
     }
     const { mesh, point } = target;
     const shader = this.materials.get(mesh.uuid);
-    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : this.rinseRadiusMultiplier);
+    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
 
     if (tool === "water") {
-      shader.addStamp(point, radius * 1.8, 2);
-      shader.addStamp(point, radius * 1.8, 3);
+      const waterRadius = WATER_RADIUS * this.rinseRadiusMultiplier;
+      const waterRadiusSquared = waterRadius * waterRadius;
+      const rinsesExistingLayer = this.dirtMarks.some((mark) =>
+        mark.mesh === mesh &&
+        (mark.soapy || mark.scrubbed) &&
+        mark.position.distanceToSquared(point) <= waterRadiusSquared
+      );
+      // G recebe umidade em qualquer aplicação; B/A só são limpos no enxágue.
+      shader.addStamp(point, waterRadius, 2);
+      if (rinsesExistingLayer) shader.addStamp(point, waterRadius * 1.08, 3);
+
       for (const mark of this.dirtMarks) {
-        if (mark.mesh !== mesh || mark.position.distanceToSquared(point) > radius * radius) continue;
+        if (mark.mesh !== mesh || mark.position.distanceToSquared(point) > waterRadiusSquared) continue;
         mark.wet = true;
         if (mark.scrubbed) mark.removed = true;
+        else if (rinsesExistingLayer) mark.soapy = false;
       }
-      this.soapZones = this.soapZones.filter((zone) => zone.mesh !== mesh || zone.position.distanceToSquared(point) > (radius * 1.8) ** 2);
-      this.onMessage("Enxágue aplicado: a água remove espuma e a sujeira já esfregada.");
+      this.soapZones = this.soapZones.filter((zone) =>
+        zone.mesh !== mesh || zone.position.distanceToSquared(point) > waterRadiusSquared
+      );
+      this.onMessage(rinsesExistingLayer
+        ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
+        : "Área molhada. Agora aplique o sabão.");
     } else if (tool === "soap") {
       const eligible = this.dirtMarks.some((mark) => mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius && mark.wet && !mark.removed);
       if (!eligible) {
@@ -163,6 +183,11 @@ export default class SurfaceEffects {
   }
 
   getFoamCount() { return this.soapZones.length; }
+
+  setDirtProfile(profile) {
+    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";
+    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);
+  }
 
   getPreparationProgress(property) {
     const prepared = this.dirtMarks.filter((mark) => mark[property]).length;

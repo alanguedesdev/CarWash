@@ -1,0 +1,28 @@
+name: Validar CarWash
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - "feature/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependências
+        run: npm ci
+      - name: Validar build de produção
+        run: npm run build
