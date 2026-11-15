@@ -168,10 +168,18 @@ export default class SurfaceEffects {
     const nearbyMarks = this.dirtMarks.filter((mark) =>
       !mark.removed && mark.position.distanceToSquared(point) <= radiusSquared
     );
-    const affectedMeshes = new Set([mesh, ...nearbyMarks.map((mark) => mark.mesh)]);
+    const nearbySoapZones = this.soapZones.filter((zone) =>
+      zone.position.distanceToSquared(point) <= radiusSquared
+    );
+    const affectedMeshes = new Set([
+      mesh,
+      ...nearbyMarks.map((mark) => mark.mesh),
+      ...nearbySoapZones.map((zone) => zone.mesh),
+    ]);
 
     if (tool === "water") {
-      const rinsesExistingLayer = nearbyMarks.some((mark) => mark.soapy || mark.scrubbed);
+      const rinsesExistingLayer = nearbySoapZones.length > 0 ||
+        nearbyMarks.some((mark) => mark.soapy || mark.scrubbed);
       for (const targetMesh of affectedMeshes) {
         const shader = this.materials.get(targetMesh.uuid);
         if (!shader) continue;
@@ -198,9 +206,13 @@ export default class SurfaceEffects {
       const soapMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
       for (const targetMesh of soapMeshes) {
         this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 1);
-        this.soapZones.push({ mesh: targetMesh, position: point.clone() });
+        const duplicateZone = this.soapZones.some((zone) =>
+          zone.mesh === targetMesh &&
+          zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.16
+        );
+        if (!duplicateZone) this.soapZones.push({ mesh: targetMesh, position: point.clone() });
       }
-      if (this.soapZones.length > 48) this.soapZones.splice(0, this.soapZones.length - 48);
+      if (this.soapZones.length > 256) this.soapZones.splice(0, this.soapZones.length - 256);
       for (const mark of eligibleMarks) mark.soapy = true;
       this.onMessage("Produto aplicado. Passe a bucha para formar espuma.");
       return true;
@@ -211,9 +223,17 @@ export default class SurfaceEffects {
       if (!eligibleMarks.length) return false;
       const foamMeshes = new Set(eligibleMarks.map((mark) => mark.mesh));
       for (const targetMesh of foamMeshes) {
-        this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 0);
+        const shader = this.materials.get(targetMesh.uuid);
+        if (!shader) continue;
+        const marksOnMesh = eligibleMarks.filter((mark) => mark.mesh === targetMesh);
+        for (const mark of marksOnMesh) {
+          if (!mark.scrubbed) shader.addCleanStamp(mark.position, brushRadius * 1.12);
+          mark.scrubbed = true;
+        }
+        // Type 4 is transient cartoon foam; permanent dirt removal is stored
+        // separately so stamp-buffer turnover cannot make dirt reappear.
+        shader.addStamp(point, brushRadius, 4);
       }
-      for (const mark of eligibleMarks) mark.scrubbed = true;
       this.onMessage("A sujeira está reagindo com o produto. Enxágue para finalizar.");
       return true;
     }
