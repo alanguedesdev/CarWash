@@ -28,13 +28,13 @@ export default class ProceduralWashMaterial {
       this.uniformSets.push(uniforms);
       material.onBeforeCompile = (shader) => {
         Object.assign(shader.uniforms, uniforms);
-        shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\\n" + VERTEX_DECL)
-          .replace("#include <begin_vertex>", "#include <begin_vertex>\\nvWashPos=position;vWashNormal=normalize(normal);");
-        shader.fragmentShader = shader.fragmentShader.replace("#include <common>", "#include <common>\\n" + FRAGMENT_DECL)
-          .replace("#include <color_fragment>", "#include <color_fragment>\\n" +
+        shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\n" + VERTEX_DECL)
+          .replace("#include <begin_vertex>", "#include <begin_vertex>\nvWashPos=position;vWashNormal=normalize(normal);");
+        shader.fragmentShader = shader.fragmentShader.replace("#include <common>", "#include <common>\n" + FRAGMENT_DECL)
+          .replace("#include <color_fragment>", "#include <color_fragment>\n" +
             "float dn=washTri(vWashPos,vWashNormal,5.2);float dg=washTri(vWashPos*1.7,vWashNormal,13.);float dirt=smoothstep(.43,.76,dn*.78+dg*.22)*smoothstep(-.9,.35,vWashPos.y+.25);vec3 ws=washState(vWashPos);diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.36,.25,.15),dirt*(1.-ws.x*.98)*.72);float fp=washTri(vWashPos*18.+vec3(0.,uWashTime*.08,0.),vWashNormal,1.);float foam=ws.y*smoothstep(.28,.72,fp);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.88,.97,1.),foam*.82);diffuseColor.rgb*=mix(1.,.82,ws.z*.42);")
-          .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\\nvec3 wsR=washState(vWashPos);roughnessFactor=mix(roughnessFactor,.075,wsR.z*.88);roughnessFactor=mix(roughnessFactor,.32,wsR.y*.35);")
-          .replace("#include <normal_fragment_maps>", "#include <normal_fragment_maps>\\nvec3 wsN=washState(vWashPos);float flow=sin(vWashPos.y*34.-uWashTime*2.8+washTri(vWashPos*5.,vWashNormal,1.)*4.);float streak=smoothstep(.72,.98,flow)*wsN.z;normal=normalize(normal+vec3(dFdx(streak),dFdy(streak),0.)*1.8);");
+          .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nvec3 wsR=washState(vWashPos);roughnessFactor=mix(roughnessFactor,.075,wsR.z*.88);roughnessFactor=mix(roughnessFactor,.32,wsR.y*.35);")
+          .replace("#include <normal_fragment_maps>", "#include <normal_fragment_maps>\nvec3 wsN=washState(vWashPos);float flow=sin(vWashPos.y*34.-uWashTime*2.8+washTri(vWashPos*5.,vWashNormal,1.)*4.);float streak=smoothstep(.72,.98,flow)*wsN.z;normal=normalize(normal+vec3(dFdx(streak),dFdy(streak),0.)*1.8);");
       };
       material.customProgramCacheKey = () => "carwash-triplanar-procedural-v1";
       material.needsUpdate = true;
