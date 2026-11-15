@@ -3,6 +3,7 @@ import ProceduralWashMaterial from "./ProceduralWashMaterial.js";
 
 const DIRT_COUNT = 90;
 const RADIUS = 0.62;
+const WATER_RADIUS = 0.29;
 
 export default class SurfaceEffects {
   constructor({ onProgress = () => {}, onMessage = () => {} } = {}) {
@@ -19,6 +20,7 @@ export default class SurfaceEffects {
     this.rinseRadiusMultiplier = 1;
     this.disposed = false;
     this.clock = new THREE.Clock();
+    this.dirtProfile = "mud";
   }
 
   setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
@@ -51,7 +53,7 @@ export default class SurfaceEffects {
 
     for (const { mesh, area } of candidates.slice(0, 100)) {
       this.surfaces.set(mesh.uuid, { mesh, area });
-      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh));
+      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile }));
     }
     if (!this.surfaces.size) {
       this.onMessage("Não foi possível preparar as superfícies do carro.");
@@ -162,7 +164,7 @@ export default class SurfaceEffects {
     return true;
   }
 
-  getFoamCount() { return this.soapZones.length; }
+  getFoamCount() { return this.soapZones.length; }\n\n  setDirtProfile(profile) {\n    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";\n    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);\n  }
 
   getPreparationProgress(property) {
     const prepared = this.dirtMarks.filter((mark) => mark[property]).length;
