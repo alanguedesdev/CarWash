@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 const LIMIT = 64;
+const CLEAN_LIMIT = 128;
 
 const VERTEX_DECL = [
   "uniform mat4 uWashMeshToModel;",
@@ -10,6 +11,8 @@ const VERTEX_DECL = [
 
 const FRAGMENT_DECL = [
   "uniform vec4 uWashStamps[64];",
+  "uniform vec4 uWashCleanStamps[128];",
+  "uniform int uWashCleanCount;",
   "uniform float uWashTypes[64];",
   "uniform float uWashStampAges[64];",
   "uniform int uWashCount;",
@@ -20,7 +23,7 @@ const FRAGMENT_DECL = [
   "float washHash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}",
   "float washNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(washHash(i),washHash(i+vec3(1,0,0)),f.x),mix(washHash(i+vec3(0,1,0)),washHash(i+vec3(1,1,0)),f.x),f.y),mix(mix(washHash(i+vec3(0,0,1)),washHash(i+vec3(1,0,1)),f.x),mix(washHash(i+vec3(0,1,1)),washHash(i+vec3(1,1,1)),f.x),f.y),f.z);}",
   "float washTri(vec3 p,vec3 n,float s){vec3 w=pow(abs(normalize(n)),vec3(4.));w/=max(w.x+w.y+w.z,.0001);return washNoise(p.yzx*s)*w.x+washNoise(p.xzy*s)*w.y+washNoise(p.xyz*s)*w.z;}",
-  "vec4 washChannels(vec3 p){float dirtCut=0.,wet=0.,soap=0.,scrubFoam=0.,rinse=0.;for(int i=0;i<64;i++){if(i>=uWashCount)break;vec4 s=uWashStamps[i];float type=uWashTypes[i];float d=length(p-s.xyz);float edge=1.-smoothstep(s.w*.78,s.w,d);if(type<.5){dirtCut=max(dirtCut,edge);scrubFoam=max(scrubFoam,edge);}else if(type<1.5){rinse*=1.-edge;soap=max(soap,edge);}else if(type<2.5){float age=max(0.,uWashTime-uWashStampAges[i]);float alive=1.-smoothstep(7.,19.,age);wet=max(wet,edge*alive);float fall=s.y-p.y;float travel=min(age*.24,1.5);float lateral=length((p-s.xyz).xz);float narrow=1.-smoothstep(s.w*.12,s.w*.42,lateral);float vertical=smoothstep(.025,.11,fall-travel)*(1.-smoothstep(.13,.24,fall-travel));wet=max(wet,narrow*vertical*alive*.82);}else if(type<3.5){rinse=max(rinse,edge);} }soap*=1.-rinse;scrubFoam*=1.-rinse;return vec4(1.-dirtCut,wet,soap,scrubFoam);}",
+  "vec4 washChannels(vec3 p){float dirtCut=0.,wet=0.,soap=0.,scrubFoam=0.,rinse=0.;for(int i=0;i<128;i++){if(i>=uWashCleanCount)break;vec4 c=uWashCleanStamps[i];float cleanEdge=1.-smoothstep(c.w*.78,c.w,length(p-c.xyz));dirtCut=max(dirtCut,cleanEdge);}for(int i=0;i<64;i++){if(i>=uWashCount)break;vec4 s=uWashStamps[i];float type=uWashTypes[i];float d=length(p-s.xyz);float edge=1.-smoothstep(s.w*.78,s.w,d);if(type>3.5){scrubFoam=max(scrubFoam,edge);}else if(type<1.5){soap=max(soap,edge);}else if(type<2.5){float age=max(0.,uWashTime-uWashStampAges[i]);float alive=1.-smoothstep(7.,19.,age);wet=max(wet,edge*alive);float fall=s.y-p.y;float travel=min(age*.24,1.5);float lateral=length((p-s.xyz).xz);float narrow=1.-smoothstep(s.w*.12,s.w*.42,lateral);float vertical=smoothstep(.025,.11,fall-travel)*(1.-smoothstep(.13,.24,fall-travel));wet=max(wet,narrow*vertical*alive*.82);}else if(type<3.5){rinse=max(rinse,edge);} }soap*=1.-rinse;scrubFoam*=1.-rinse;return vec4(1.-dirtCut,wet,soap,scrubFoam);}",
   "float washDirtProfile(vec3 p,vec3 n){float noise=washTri(p,n,5.2)*.72+washTri(p*1.7,n,13.)*.28;float lower=1.-smoothstep(-.7,.45,p.y);float top=max(dot(normalize(n),vec3(0.,1.,0.)),0.);if(uDirtProfile==1)return smoothstep(.3,.72,noise)*.58;if(uDirtProfile==2){float spots=washTri(p*2.8,n,9.);return smoothstep(.73,.9,spots)*lower*.95;}if(uDirtProfile==3){float cut=washTri(p*1.4,n,7.);return step(.68,cut)*smoothstep(.6,.9,top)*.9;}return smoothstep(.37,.7,noise)*mix(.28,1.,lower);}"
 ].join("\n");
 
@@ -36,6 +39,8 @@ export default class ProceduralWashMaterial {
       const material = source.clone();
       const uniforms = {
         uWashStamps: { value: Array.from({ length: LIMIT }, () => new THREE.Vector4()) },
+        uWashCleanStamps: { value: Array.from({ length: CLEAN_LIMIT }, () => new THREE.Vector4()) },
+        uWashCleanCount: { value: 0 },
         uWashTypes: { value: new Float32Array(LIMIT) },
         uWashStampAges: { value: new Float32Array(LIMIT) },
         uWashCount: { value: 0 },
@@ -93,11 +98,20 @@ export default class ProceduralWashMaterial {
             "normal=normalize(normal+vec3(dFdx(runoff),dFdy(runoff),0.)*1.65);"
           ].join("\n"));
       };
-      material.customProgramCacheKey = () => "carwash-rgba-triplanar-v2";
+      material.customProgramCacheKey = () => "carwash-rgba-triplanar-v3";
       material.needsUpdate = true;
       return material;
     });
     mesh.material = Array.isArray(this.original) ? this.materials : this.materials[0];
+  }
+
+  addCleanStamp(point, radius) {
+    for (const uniforms of this.uniformSets) {
+      const count = uniforms.uWashCleanCount.value;
+      if (count >= CLEAN_LIMIT) continue;
+      uniforms.uWashCleanStamps.value[count].set(point.x, point.y, point.z, radius);
+      uniforms.uWashCleanCount.value = count + 1;
+    }
   }
 
   addStamp(point, radius, type) {
