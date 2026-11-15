@@ -121,18 +121,33 @@ export default class SurfaceEffects {
     }
     const { mesh, point } = target;
     const shader = this.materials.get(mesh.uuid);
-    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : this.rinseRadiusMultiplier);
+    const radius = RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
 
     if (tool === "water") {
-      shader.addStamp(point, radius * 1.8, 2);
-      shader.addStamp(point, radius * 1.8, 3);
+      const waterRadius = WATER_RADIUS * this.rinseRadiusMultiplier;
+      const waterRadiusSquared = waterRadius * waterRadius;
+      const rinsesExistingLayer = this.dirtMarks.some((mark) =>
+        mark.mesh === mesh &&
+        (mark.soapy || mark.scrubbed) &&
+        mark.position.distanceToSquared(point) <= waterRadiusSquared
+      );
+      // Canal G recebe umidade em qualquer aplicação; B/A só são limpos
+      // quando a água atinge uma camada de sabão/espuma já existente.
+      shader.addStamp(point, waterRadius, 2);
+      if (rinsesExistingLayer) shader.addStamp(point, waterRadius * 1.08, 3);
+
       for (const mark of this.dirtMarks) {
-        if (mark.mesh !== mesh || mark.position.distanceToSquared(point) > radius * radius) continue;
+        if (mark.mesh !== mesh || mark.position.distanceToSquared(point) > waterRadiusSquared) continue;
         mark.wet = true;
         if (mark.scrubbed) mark.removed = true;
+        else if (rinsesExistingLayer) mark.soapy = false;
       }
-      this.soapZones = this.soapZones.filter((zone) => zone.mesh !== mesh || zone.position.distanceToSquared(point) > (radius * 1.8) ** 2);
-      this.onMessage("Enxágue aplicado: a água remove espuma e a sujeira já esfregada.");
+      this.soapZones = this.soapZones.filter((zone) =>
+        zone.mesh !== mesh || zone.position.distanceToSquared(point) > waterRadiusSquared
+      );
+      this.onMessage(rinsesExistingLayer
+        ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
+        : "Área molhada. Agora aplique o sabão.");
     } else if (tool === "soap") {
       const eligible = this.dirtMarks.some((mark) => mark.mesh === mesh && mark.position.distanceToSquared(point) <= radius * radius && mark.wet && !mark.removed);
       if (!eligible) {
@@ -164,7 +179,12 @@ export default class SurfaceEffects {
     return true;
   }
 
-  getFoamCount() { return this.soapZones.length; }\n\n  setDirtProfile(profile) {\n    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";\n    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);\n  }
+  getFoamCount() { return this.soapZones.length; }
+
+  setDirtProfile(profile) {
+    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";
+    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);
+  }\n\n  setDirtProfile(profile) {\n    this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";\n    for (const shader of this.materials.values()) shader.setDirtProfile(this.dirtProfile);\n  }
 
   getPreparationProgress(property) {
     const prepared = this.dirtMarks.filter((mark) => mark[property]).length;
