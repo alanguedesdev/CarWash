@@ -137,11 +137,16 @@ export default class SurfaceEffects {
     const steps = canBridge ? Math.min(64, Math.max(1, Math.ceil(distance / spacing))) : 1;
     let changed = false;
 
+    const paintMeshes = canBridge && previous.mesh !== mesh
+      ? [previous.mesh, mesh]
+      : [mesh];
     for (let i = 1; i <= steps; i++) {
       const sample = canBridge
         ? previous.point.clone().lerp(point, i / steps)
         : point.clone();
-      changed = this.applyToolAtPoint(mesh, sample, tool) || changed;
+      for (const paintMesh of paintMeshes) {
+        changed = this.applyToolAtPoint(paintMesh, sample, tool) || changed;
+      }
     }
 
     this.lastBrushHit = { mesh, point: point.clone(), tool };
