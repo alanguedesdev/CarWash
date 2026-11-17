@@ -8,7 +8,8 @@ const AXES = [
 ];
 
 const VERTEX_DECL = [
-  "uniform mat4 uWashMeshToModel;",\n  "uniform mat3 uWashMeshNormalMatrix;",
+  "uniform mat4 uWashMeshToModel;",
+  "uniform mat3 uWashMeshNormalMatrix;",
   "varying vec3 vWashPos;",
   "varying vec3 vWashNormal;"
 ].join("\n");
