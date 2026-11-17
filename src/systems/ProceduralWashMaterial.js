@@ -159,10 +159,10 @@ export default class ProceduralWashMaterial {
     return { clean: result[0], wet: result[1], soap: result[2], foam: result[3] };
   }
 
-  paint(point, radius, tool, time = this.currentTime) {
+  paint(point, radius, tool, time = this.currentTime, normal = new THREE.Vector3(0, 1, 0)) {
     let changed = false;
     let rinsed = false;
-    const centerMask = this.sample(point);
+    const centerMask = this.sample(point, normal);
     if (tool === "soap" && centerMask.wet < 0.08) return { changed: false, rinsed: false };
     if (tool === "sponge" && centerMask.soap < 0.08) return { changed: false, rinsed: false };
     if (tool === "water") rinsed = centerMask.soap > 0.08 || centerMask.foam > 0.08;
