@@ -170,9 +170,7 @@ export const CUSTOMERS = [
       "Tenho muito carinho pelo meu carro e prefiro serviços feitos com calma e cuidado.",
       "Gostaria de uma lavagem manual cuidadosa, sem produtos agressivos e preservando a pintura."
     ]
-  }
-
-  ,
+  },
   {
     "id": "helena",
     "avatar": "gemini-svg",
@@ -188,4 +186,4 @@ export const CUSTOMERS = [
       "Quero uma lavagem completa, com atenção aos detalhes e um acabamento caprichado. Pode me ajudar?"
     ]
   }
-];\n
+];
