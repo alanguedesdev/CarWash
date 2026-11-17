@@ -1,38 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="title desc">
-<title id="title">Rafael</title><desc id="desc">Rafael, cliente do Meu Lava-Jato, ilustrado em estilo cartoon toy-like com volume suave e expressão acolhedora.</desc>
-<defs>
- <linearGradient id="skin" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#e9b18c"/><stop offset="1" stop-color="#d99a76"/></linearGradient>
- <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ed765d"/><stop offset="1" stop-color="#c94e43"/></linearGradient>
- <linearGradient id="hair" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#49302a"/><stop offset="1" stop-color="#30201f"/></linearGradient>
- <radialGradient id="blush"><stop stop-color="#e98e83" stop-opacity=".38"/><stop offset="1" stop-color="#e98e83" stop-opacity="0"/></radialGradient>
- <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
-</defs>
-<ellipse cx="200" cy="550" rx="145" ry="12" fill="#263b38" opacity=".12" filter="url(#shadow)"/>
-<!-- Roupa e pescoço -->
-<path d="M22 560 C30 474 57 428 105 404 C132 390 161 384 200 384 C239 384 268 390 295 404 C343 428 370 474 378 560Z" fill="url(#shirt)"/>
-<path d="M145 368 C151 393 150 414 132 430 C151 451 176 463 200 463 C224 463 249 451 268 430 C250 414 249 393 255 368Z" fill="url(#skin)"/>
-<path d="M145 373 C164 394 181 402 200 402 C219 402 236 394 255 373 L254 417 C231 437 169 437 146 417Z" fill="#754c40" opacity=".14"/>
-<path d="M155 432 Q200 459 245 432" fill="none" stroke="#f4c76b" stroke-width="7" stroke-linecap="round" opacity=".85"/>
-<!-- Cabelo posterior em massa contínua e macia -->
-<path d="M91 183 C75 111 105 47 171 32 C235 17 296 49 313 111 C327 163 307 247 304 304 C299 355 265 389 236 384 L252 191Z" fill="url(#hair)"/>
-<!-- Orelhas integradas, sem contorno preto -->
-<path d="M119 224 C94 204 79 224 86 258 C91 284 107 297 126 286Z" fill="url(#skin)"/>
-<path d="M281 224 C306 204 321 224 314 258 C309 284 293 297 274 286Z" fill="url(#skin)"/>
-<path d="M105 246 Q113 235 122 250 M295 246 Q287 235 278 250" fill="none" stroke="#875b49" stroke-width="4" stroke-linecap="round" opacity=".2"/>
-<!-- Rosto e queixo arredondados -->
-<path d="M111 151 C111 101 151 78 200 78 C249 78 289 101 289 151 L282 265 C277 333 244 374 200 378 C156 374 123 333 118 265Z" fill="url(#skin)"/>
-<path d="M116 169 C139 137 163 132 200 137 C237 132 261 137 284 169 L279 190 C248 171 229 166 200 168 C171 166 152 171 121 190Z" fill="#49302a" opacity=".12"/>
-<!-- Franja fluida com mechas arredondadas -->
-<path d="M96 191 C75 143 82 85 127 53 C160 29 204 20 246 37 C287 53 316 91 310 137 C307 155 300 174 288 191 C274 153 253 132 226 125 C195 146 151 170 96 191Z" fill="url(#hair)"/>
-<path d="M116 143 C133 94 169 70 205 70 C245 70 274 92 287 128 C259 108 237 105 215 118 C184 135 151 143 116 143Z" fill="#6a493b" opacity=".48"/>
-<path d="M134 91 C160 55 199 43 231 51" fill="none" stroke="#80604c" stroke-width="10" stroke-linecap="round" opacity=".2"/>
-<!-- Expressão -->
-<path d="M137 218 Q158 207 180 218 M220 218 Q242 207 263 218" fill="none" stroke="#684c40" stroke-width="5" stroke-linecap="round" opacity=".6"/>
-<ellipse cx="160" cy="246" rx="15" ry="19" fill="#fffdf8"/><ellipse cx="240" cy="246" rx="15" ry="19" fill="#fffdf8"/>
-<ellipse cx="163" cy="249" rx="7" ry="10" fill="#34413d"/><ellipse cx="243" cy="249" rx="7" ry="10" fill="#34413d"/>
-<circle cx="165" cy="245" r="3.5" fill="#fff"/><circle cx="245" cy="245" r="3.5" fill="#fff"/>
-<path d="M200 255 C190 278 188 291 200 295 C207 297 214 293 218 288" fill="none" stroke="#a96f5d" stroke-width="5" stroke-linecap="round" opacity=".5"/>
-<path d="M153 316 C166 309 182 312 200 315 C218 312 234 309 247 316 C239 343 220 356 200 356 C180 356 161 343 153 316Z" fill="#934c4d" opacity=".9"/>
-<path d="M169 319 Q200 334 231 319" fill="none" stroke="#fff3e9" stroke-width="7" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="title desc"><title id="title">Rafael</title><desc id="desc">Avatar vetorial completo em estilo cartoon toy-like, com formas orgânicas e sombras suaves.</desc><defs><linearGradient id="skin" x2=".1" y2="1"><stop stop-color="#e0a27b"/><stop offset="1" stop-color="#e0a27b"/></linearGradient><linearGradient id="hair" x2=".2" y2="1"><stop stop-color="#342522"/><stop offset="1" stop-color="#342522"/></linearGradient><linearGradient id="shirt" x2="0" y2="1"><stop stop-color="#e15e49"/><stop offset="1" stop-color="#e15e49"/></linearGradient><radialGradient id="blush"><stop stop-color="#ed9889" stop-opacity=".4"/><stop offset="1" stop-color="#ed9889" stop-opacity="0"/></radialGradient></defs>
+<path d="M20 560C28 470 57 422 109 400C140 386 169 382 200 382C231 382 260 386 291 400C343 422 372 470 380 560Z" fill="url(#shirt)"/>
+<path d="M145 365C153 403 149 418 130 432C153 455 176 465 200 465C224 465 247 455 270 432C251 418 247 403 255 365Z" fill="url(#skin)"/>
+<path d="M145 373C165 396 182 403 200 403C218 403 235 396 255 373L252 418C229 438 171 438 148 418Z" fill="#342522" opacity=".13"/>
+<path d="M92 185C75 112 105 48 169 31C235 14 296 48 313 111C327 165 307 247 304 305C299 355 264 386 236 383L252 191Z" fill="url(#hair)"/>
+<path d="M118 224C95 205 79 224 86 258C91 283 107 297 126 286Z" fill="url(#skin)"/><path d="M282 224C305 205 321 224 314 258C309 283 293 297 274 286Z" fill="url(#skin)"/>
+<path d="M111 151C111 101 151 78 200 78C249 78 289 101 289 151L282 265C277 333 244 374 200 378C156 374 123 333 118 265Z" fill="url(#skin)"/>
+<path d="M90 188C70 125 91 61 151 39C211 16 284 39 310 96C329 138 310 180 288 197C267 155 243 137 216 132C173 163 131 180 90 188Z" fill="url(#hair)"/>
+<path d="M116 143C133 94 169 70 205 70C245 70 274 92 287 128C259 108 237 105 215 118C184 135 151 143 116 143Z" fill="#fff" opacity=".08"/>
+<path d="M137 218Q158 207 180 218M220 218Q242 207 263 218" fill="none" stroke="#765448" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<ellipse cx="160" cy="246" rx="15" ry="19" fill="#fffdf8"/><ellipse cx="240" cy="246" rx="15" ry="19" fill="#fffdf8"/><ellipse cx="163" cy="249" rx="7" ry="10" fill="#34413d"/><ellipse cx="243" cy="249" rx="7" ry="10" fill="#34413d"/><circle cx="165" cy="245" r="3.5" fill="#fff"/><circle cx="245" cy="245" r="3.5" fill="#fff"/>
+<path d="M200 255C190 278 188 291 200 295C207 297 214 293 218 288" fill="none" stroke="#a96f5d" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+<path d="M153 316C166 309 182 312 200 315C218 312 234 309 247 316C239 343 220 356 200 356C180 356 161 343 153 316Z" fill="#934c4d"/><path d="M169 319Q200 334 231 319" fill="none" stroke="#fff3e9" stroke-width="7" stroke-linecap="round"/>
 <ellipse cx="130" cy="286" rx="30" ry="18" fill="url(#blush)"/><ellipse cx="270" cy="286" rx="30" ry="18" fill="url(#blush)"/>
-</svg>
+<path d="M155 432Q200 459 245 432" fill="none" stroke="#f1c75f" stroke-width="7" stroke-linecap="round" opacity=".85"/></svg>
