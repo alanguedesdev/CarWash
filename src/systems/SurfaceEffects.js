@@ -174,8 +174,8 @@ export default class SurfaceEffects {
     const previous = this.lastBrushHit;
     const canBridge = previous && previous.tool === tool && previous.mesh === mesh;
     const distance = canBridge ? previous.point.distanceTo(point) : 0;
-    const spacing = Math.max(baseRadius * 0.32, 0.035);
-    const steps = canBridge ? Math.min(64, Math.max(1, Math.ceil(distance / spacing))) : 1;
+    const spacing = Math.max(baseRadius * 0.24, 0.03);
+    const steps = canBridge ? Math.min(128, Math.max(1, Math.ceil(distance / spacing))) : 1;
     let changed = false;
 
     for (let i = 1; i <= steps; i++) {
