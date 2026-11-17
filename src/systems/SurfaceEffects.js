@@ -200,45 +200,54 @@ export default class SurfaceEffects {
     const shader = this.materials.get(mesh.uuid);
     if (!shader) return false;
     const result = shader.paint(point, brushRadius, tool, this.clock.getElapsedTime(), normal);
-    if (!result.changed) return false;
-
     const radiusSquared = brushRadius * brushRadius;
     const nearbyMarks = this.dirtMarks.filter((mark) =>
       mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared * 1.25
     );
+    let marksChanged = false;
 
     if (tool === "water") {
       for (const mark of nearbyMarks) {
-        mark.wet = true;
-        const markClean = shader.isCleanAt(mark.position, mark.normal);
-        if (result.rinsed && mark.scrubbed && markClean) {
+        const mask = shader.sample(mark.position, mark.normal);
+        if (mask.wet > 0.05 && !mark.wet) { mark.wet = true; marksChanged = true; }
+        if (result.rinsed && mark.scrubbed && shader.isCleanAt(mark.position, mark.normal) && !mark.removed) {
           mark.removed = true;
           mark.soapy = false;
-        } else if (result.rinsed) {
+          marksChanged = true;
+        } else if (result.rinsed && mark.soapy) {
           mark.soapy = false;
+          marksChanged = true;
         }
       }
-      this.onMessage(result.rinsed
-        ? "Enxágue aplicado: espuma removida e sujeira finalizada nesta região."
-        : "Área molhada. Agora aplique o sabão.");
+      if (result.changed || marksChanged) {
+        this.onMessage(result.rinsed
+          ? "Enxágue aplicado: espuma removida e sujeira finalizada nesta região."
+          : "Área molhada. Agora aplique o sabão.");
+      }
     } else if (tool === "soap") {
       for (const mark of nearbyMarks) {
         const mask = shader.sample(mark.position, mark.normal);
-        if (mark.wet && mask.soap > 0.05) mark.soapy = true;
+        if (mask.wet > 0.05 && mask.soap > 0.05 && !mark.soapy && !mark.removed) {
+          mark.soapy = true;
+          mark.wet = true;
+          marksChanged = true;
+        }
       }
-      this.onMessage("Sabão aplicado na região. Passe a bucha para esfregar.");
+      if (result.changed || marksChanged) this.onMessage("Sabão aplicado na região. Passe a bucha para esfregar.");
     } else if (tool === "sponge") {
       for (const mark of nearbyMarks) {
         const mask = shader.sample(mark.position, mark.normal);
-        if (mark.wet && mark.soapy && shader.isCleanAt(mark.position, mark.normal) && mask.foam > 0.05) {
+        if (mask.wet > 0.05 && mask.soap > 0.05 && mask.foam > 0.05 &&
+            shader.isCleanAt(mark.position, mark.normal) && !mark.scrubbed && !mark.removed) {
           mark.scrubbed = true;
+          marksChanged = true;
         }
       }
-      this.onMessage("Bucha em ação! Sujeira removida e espuma pronta para o enxágue.");
+      if (result.changed || marksChanged) this.onMessage("Bucha em ação! Sujeira removida e espuma pronta para o enxágue.");
     }
 
     shader.flush();
-    return true;
+    return result.changed || marksChanged;
   }
 
   getFoamCount() {
