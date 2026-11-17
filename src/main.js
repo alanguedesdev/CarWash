@@ -383,7 +383,9 @@ const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
 const completionCopy = hud.querySelector("#completion-copy");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),menuInfoPanel=hud.querySelector("#menu-info-panel"),menuInfoTitle=hud.querySelector("#menu-info-title"),menuInfoContent=hud.querySelector("#menu-info-content"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
-customerDialogue.style.backgroundImage = `linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("${import.meta.env.BASE_URL}images/main-menu-bg.jpg")`;
+const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/main-menu-bg.svg`;
+customerDialogue.style.backgroundImage = `linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("${dialogueBackgroundUrl}")`;
+const dialogueBackgroundPreload = new Image(); dialogueBackgroundPreload.decoding = "async"; dialogueBackgroundPreload.src = dialogueBackgroundUrl;
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons=[...hud.querySelectorAll("[data-tool]")];
@@ -443,7 +445,25 @@ function nextCustomer() {
 }
 let dialogueLine = 0;
 let currentCustomer = null;
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+currentCustomer.id+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
+function setCustomerPortrait(customer){
+  const safeId = /^[a-z0-9-]+$/i.test(customer?.id || "") ? customer.id : "rafael";
+  dialoguePortrait.hidden = false;
+  dialoguePortrait.loading = "eager";
+  dialoguePortrait.decoding = "async";
+  dialoguePortrait.draggable = false;
+  dialoguePortrait.onerror = () => {
+    if (safeId !== "rafael") {
+      dialoguePortrait.onerror = null;
+      dialoguePortrait.src = import.meta.env.BASE_URL + "characters/rafael.svg";
+      dialoguePortrait.alt = "Cliente do Meu Lava-Jato";
+    } else {
+      dialoguePortrait.hidden = true;
+    }
+  };
+  dialoguePortrait.alt = "Ilustração de " + customer.name;
+  dialoguePortrait.src = import.meta.env.BASE_URL + "characters/" + encodeURIComponent(safeId) + ".svg";
+}
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";setCustomerPortrait(currentCustomer);}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
