@@ -164,9 +164,9 @@ export default class SceneManager {
       throw new Error(`Cena desconhecida: ${name}`);
     }
 
-    this.reception.visible = ["menu","dialogue","reception"].includes(name);
+    this.reception.visible = ["dialogue","reception"].includes(name);
     this.customer.visible = false;
-    this.washEnvironment.visible = name === "wash";
+    this.washEnvironment.visible = name === "menu" || name === "wash";
     this.delivery.visible = name === "delivery";
     const backgroundKey=name==="menu"||name==="dialogue"?"reception":name;
     this.scene.background=this.backgrounds[backgroundKey].clone();
