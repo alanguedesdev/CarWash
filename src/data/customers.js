@@ -2,6 +2,7 @@
 export const CUSTOMERS = [
   {
     "id": "rafael",
+    "avatar": "gemini-svg (3)",
     "name": "Rafael Martins",
     "age": 28,
     "occupation": "Analista de sistemas",
@@ -58,6 +59,7 @@ export const CUSTOMERS = [
   },
   {
     "id": "lucas",
+    "avatar": "gemini-svg (1)",
     "name": "Lucas Ferreira",
     "age": 19,
     "occupation": "Estudante",
@@ -72,6 +74,7 @@ export const CUSTOMERS = [
   },
   {
     "id": "mariana",
+    "avatar": "gemini-svg (2)",
     "name": "Mariana Oliveira",
     "age": 29,
     "occupation": "Fotógrafa",
@@ -168,4 +171,21 @@ export const CUSTOMERS = [
       "Gostaria de uma lavagem manual cuidadosa, sem produtos agressivos e preservando a pintura."
     ]
   }
-];
+
+  ,
+  {
+    "id": "helena",
+    "avatar": "gemini-svg",
+    "name": "Helena Martins",
+    "age": 32,
+    "occupation": "Empreendedora",
+    "personality": "Simpática e cuidadosa",
+    "request": "Quero uma lavagem completa, com atenção aos detalhes e um acabamento caprichado.",
+    "service": "Lavagem completa + acabamento",
+    "lines": [
+      "Olá! Sou Helena Martins, tenho 32 anos e sou empreendedora.",
+      "Uso bastante meu carro durante a semana e gostaria de deixá-lo limpo e bem cuidado.",
+      "Quero uma lavagem completa, com atenção aos detalhes e um acabamento caprichado. Pode me ajudar?"
+    ]
+  }
+];\n
