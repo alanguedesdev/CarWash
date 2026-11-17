@@ -1,31 +1,38 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" role="img" aria-labelledby="title desc">
-<title id="title">Rafael</title>
-<desc id="desc">Retrato ilustrado de cliente do CarWash, enquadrado dos ombros para cima.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="title desc">
+<title id="title">Rafael</title><desc id="desc">Rafael, cliente do Meu Lava-Jato, ilustrado em estilo cartoon toy-like com volume suave e expressão acolhedora.</desc>
 <defs>
- <linearGradient id="skin" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#e8a77f"/><stop offset="1" stop-color="#e8a77f"/></linearGradient>
- <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e85d46"/><stop offset="1" stop-color="#243b4a"/></linearGradient>
+ <linearGradient id="skin" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#e9b18c"/><stop offset="1" stop-color="#d99a76"/></linearGradient>
+ <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ed765d"/><stop offset="1" stop-color="#c94e43"/></linearGradient>
+ <linearGradient id="hair" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#49302a"/><stop offset="1" stop-color="#30201f"/></linearGradient>
+ <radialGradient id="blush"><stop stop-color="#e98e83" stop-opacity=".38"/><stop offset="1" stop-color="#e98e83" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
 </defs>
-<!-- Corpo e pescoço -->
-<path d="M28 520 Q36 414 104 386 Q145 365 200 365 Q255 365 296 386 Q364 414 372 520Z" fill="url(#shirt)" stroke="#243b4a" stroke-width="9" stroke-linejoin="round"/>
-<path d="M164 350 L164 417 Q200 447 236 417 L236 350Z" fill="url(#skin)"/>
-<!-- Cabelo posterior, sempre atrás do rosto -->
-<g fill="#30201f" stroke="#243b4a" stroke-width="8" stroke-linejoin="round">
-
-</g>
-<!-- Orelhas e rosto -->
-<path d="M112 208 Q79 188 83 242 Q87 281 119 278 M288 208 Q321 188 317 242 Q313 281 281 278" fill="url(#skin)" stroke="#243b4a" stroke-width="7"/>
-<path d="M112 157 Q112 104 200 100 Q288 104 288 157 L281 274 Q274 346 200 365 Q126 346 119 274Z" fill="url(#skin)" stroke="#243b4a" stroke-width="8" stroke-linejoin="round"/>
-<!-- Cabelo frontal: não invade olhos, nariz ou boca -->
-<g fill="#30201f" stroke="#243b4a" stroke-width="8" stroke-linejoin="round"><path d="M104 191 Q83 92 169 55 Q263 19 310 105 Q286 101 260 122 Q206 163 104 191Z"/></g>
-
+<ellipse cx="200" cy="550" rx="145" ry="12" fill="#263b38" opacity=".12" filter="url(#shadow)"/>
+<!-- Roupa e pescoço -->
+<path d="M22 560 C30 474 57 428 105 404 C132 390 161 384 200 384 C239 384 268 390 295 404 C343 428 370 474 378 560Z" fill="url(#shirt)"/>
+<path d="M145 368 C151 393 150 414 132 430 C151 451 176 463 200 463 C224 463 249 451 268 430 C250 414 249 393 255 368Z" fill="url(#skin)"/>
+<path d="M145 373 C164 394 181 402 200 402 C219 402 236 394 255 373 L254 417 C231 437 169 437 146 417Z" fill="#754c40" opacity=".14"/>
+<path d="M155 432 Q200 459 245 432" fill="none" stroke="#f4c76b" stroke-width="7" stroke-linecap="round" opacity=".85"/>
+<!-- Cabelo posterior em massa contínua e macia -->
+<path d="M91 183 C75 111 105 47 171 32 C235 17 296 49 313 111 C327 163 307 247 304 304 C299 355 265 389 236 384 L252 191Z" fill="url(#hair)"/>
+<!-- Orelhas integradas, sem contorno preto -->
+<path d="M119 224 C94 204 79 224 86 258 C91 284 107 297 126 286Z" fill="url(#skin)"/>
+<path d="M281 224 C306 204 321 224 314 258 C309 284 293 297 274 286Z" fill="url(#skin)"/>
+<path d="M105 246 Q113 235 122 250 M295 246 Q287 235 278 250" fill="none" stroke="#875b49" stroke-width="4" stroke-linecap="round" opacity=".2"/>
+<!-- Rosto e queixo arredondados -->
+<path d="M111 151 C111 101 151 78 200 78 C249 78 289 101 289 151 L282 265 C277 333 244 374 200 378 C156 374 123 333 118 265Z" fill="url(#skin)"/>
+<path d="M116 169 C139 137 163 132 200 137 C237 132 261 137 284 169 L279 190 C248 171 229 166 200 168 C171 166 152 171 121 190Z" fill="#49302a" opacity=".12"/>
+<!-- Franja fluida com mechas arredondadas -->
+<path d="M96 191 C75 143 82 85 127 53 C160 29 204 20 246 37 C287 53 316 91 310 137 C307 155 300 174 288 191 C274 153 253 132 226 125 C195 146 151 170 96 191Z" fill="url(#hair)"/>
+<path d="M116 143 C133 94 169 70 205 70 C245 70 274 92 287 128 C259 108 237 105 215 118 C184 135 151 143 116 143Z" fill="#6a493b" opacity=".48"/>
+<path d="M134 91 C160 55 199 43 231 51" fill="none" stroke="#80604c" stroke-width="10" stroke-linecap="round" opacity=".2"/>
 <!-- Expressão -->
-<path d="M139 218 Q160 204 181 218 M219 218 Q240 204 261 218" fill="none" stroke="#243b4a" stroke-width="9" stroke-linecap="round"/>
-<ellipse cx="160" cy="245" rx="13" ry="17" fill="#fff"/><ellipse cx="240" cy="245" rx="13" ry="17" fill="#fff"/>
-<ellipse cx="163" cy="248" rx="7" ry="11" fill="#26383c"/><ellipse cx="243" cy="248" rx="7" ry="11" fill="#26383c"/>
-<path d="M200 249 Q184 290 199 298 Q210 303 220 295" fill="none" stroke="#9c5f50" stroke-width="8" stroke-linecap="round"/>
-<path d="M122 286 Q132 345 200 355 Q268 345 278 286 Q263 326 200 326 Q137 326 122 286Z" fill="#30201f" opacity=".96"/>
-<path d="M164 319 Q200 343 236 319" fill="none" stroke="#9e4c50" stroke-width="10" stroke-linecap="round"/>
-<path d="M171 318 Q200 331 229 318" fill="none" stroke="#fff0e5" stroke-width="5" stroke-linecap="round"/>
-
+<path d="M137 218 Q158 207 180 218 M220 218 Q242 207 263 218" fill="none" stroke="#684c40" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<ellipse cx="160" cy="246" rx="15" ry="19" fill="#fffdf8"/><ellipse cx="240" cy="246" rx="15" ry="19" fill="#fffdf8"/>
+<ellipse cx="163" cy="249" rx="7" ry="10" fill="#34413d"/><ellipse cx="243" cy="249" rx="7" ry="10" fill="#34413d"/>
+<circle cx="165" cy="245" r="3.5" fill="#fff"/><circle cx="245" cy="245" r="3.5" fill="#fff"/>
+<path d="M200 255 C190 278 188 291 200 295 C207 297 214 293 218 288" fill="none" stroke="#a96f5d" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+<path d="M153 316 C166 309 182 312 200 315 C218 312 234 309 247 316 C239 343 220 356 200 356 C180 356 161 343 153 316Z" fill="#934c4d" opacity=".9"/>
+<path d="M169 319 Q200 334 231 319" fill="none" stroke="#fff3e9" stroke-width="7" stroke-linecap="round"/>
+<ellipse cx="130" cy="286" rx="30" ry="18" fill="url(#blush)"/><ellipse cx="270" cy="286" rx="30" ry="18" fill="url(#blush)"/>
 </svg>
