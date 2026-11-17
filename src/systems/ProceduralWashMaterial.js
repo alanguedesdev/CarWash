@@ -8,7 +8,7 @@ const AXES = [
 ];
 
 const VERTEX_DECL = [
-  "uniform mat4 uWashMeshToModel;",
+  "uniform mat4 uWashMeshToModel;",\n  "uniform mat3 uWashMeshNormalMatrix;",
   "varying vec3 vWashPos;",
   "varying vec3 vWashNormal;"
 ].join("\n");
@@ -55,14 +55,14 @@ export default class ProceduralWashMaterial {
         uWashBoundsSize: { value: this.boundsSize.clone() },
         uWashTime: { value: 0 },
         uDirtProfile: { value: profiles[dirtProfile] ?? 0 },
-        uWashMeshToModel: { value: meshToModel.clone() },
+        uWashMeshToModel: { value: meshToModel.clone() },\n        uWashMeshNormalMatrix: { value: new THREE.Matrix3().getNormalMatrix(meshToModel) },
       };
       this.uniformSets.push(uniforms);
       material.onBeforeCompile = (shader) => {
         Object.assign(shader.uniforms, uniforms);
         shader.vertexShader = shader.vertexShader
           .replace("#include <common>", "#include <common>\n" + VERTEX_DECL)
-          .replace("#include <begin_vertex>", "#include <begin_vertex>\nvec4 washModelPosition=uWashMeshToModel*vec4(position,1.);vWashPos=washModelPosition.xyz;vWashNormal=normalize(mat3(uWashMeshToModel)*normal);");
+          .replace("#include <begin_vertex>", "#include <begin_vertex>\nvec4 washModelPosition=uWashMeshToModel*vec4(position,1.);vWashPos=washModelPosition.xyz;vWashNormal=normalize(uWashMeshNormalMatrix*normal);");
         shader.fragmentShader = shader.fragmentShader
           .replace("#include <common>", "#include <common>\n" + FRAGMENT_DECL)
           .replace("#include <color_fragment>", "#include <color_fragment>\n" + [
@@ -125,7 +125,7 @@ export default class ProceduralWashMaterial {
     texture.flipY = false;
     texture.colorSpace = THREE.NoColorSpace;
     texture.needsUpdate = true;
-    texture.userData.fadeStarts = new Float32Array(TEXTURE_SIZE * TEXTURE_SIZE);
+    texture.userData.fadeStarts = new Float32Array(TEXTURE_SIZE * TEXTURE_SIZE);\n    texture.userData.fadeOrigins = new Uint8Array(TEXTURE_SIZE * TEXTURE_SIZE);
     texture.userData.fadeStarts.fill(-1);
     return texture;
   }
@@ -268,7 +268,7 @@ export default class ProceduralWashMaterial {
         texture.userData.fadeStarts[index] = -1;
         this.fadeIndices.delete(encoded);
       } else {
-        texture.image.data[offset + 1] = Math.max(0, Math.round(texture.image.data[offset + 1] * (1 - age / 9)));
+        texture.image.data[offset + 1] = Math.max(0, Math.round(texture.userData.fadeOrigins[index] * (1 - age / 9)));
       }
       this.dirtyTextures.add(axis);
       changed = true;
