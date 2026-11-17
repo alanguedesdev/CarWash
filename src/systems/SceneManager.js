@@ -54,81 +54,151 @@ export default class SceneManager {
     const root = new THREE.Group();
     root.name = "MainMenuShowcase";
 
-    // Fachada mostarda e moldura azul-petróleo: volumes grandes e arestas duras.
-    addBox(root, "MenuGarageWall", [15, 7.2, 0.48], [0, 2.65, -4.9], "#e9c978");
-    addBox(root, "MenuGarageTopBeam", [15.5, 0.62, 1.15], [0, 5.85, -4.35], "#f0dba8");
-    addBox(root, "MenuGarageLeftPier", [4.1, 4.35, 0.72], [-4.75, 2.05, -4.42], "#f4e5c4");
-    addBox(root, "MenuGarageRightPier", [3.25, 4.35, 0.72], [5.85, 2.05, -4.42], "#f1dfb6");
-    addBox(root, "MenuGarageHeader", [6.4, 0.58, 0.72], [1.0, 4.85, -4.28], "#d8b45f");
-    addBox(root, "MenuGarageHeaderInset", [5.8, 0.16, 0.12], [1.0, 4.48, -3.88], "#47616a");
-    // Box de lavagem escuro, com painéis em perspectiva de profundidade.
-    addBox(root, "MenuBayShadow", [6.15, 3.95, 0.22], [1.0, 2.35, -4.48], "#253b43");
-    addBox(root, "MenuBayBackWall", [5.55, 3.45, 0.16], [1.0, 2.35, -4.28], "#344b53");
-    for (let i = 0; i < 5; i++) {
-      addBox(root, "MenuBayWallPanel", [0.08, 3.2, 0.05], [-1.25 + i * 1.1, 2.35, -4.16], "#435b61", { castShadow: false });
-    }
-    addBox(root, "MenuBayLeftTrim", [0.34, 4.2, 0.62], [-2.25, 2.2, -4.0], "#d4b36f");
-    addBox(root, "MenuBayRightTrim", [0.34, 4.2, 0.62], [4.25, 2.2, -4.0], "#d4b36f");
-    addBox(root, "MenuGarageFloor", [17, 0.22, 12], [0, -0.16, 0], "#d9c18d");
-    addBox(root, "MenuGarageRamp", [8.8, 0.12, 5.4], [1.0, -0.015, 0.1], "#b8a77d");
-    addBox(root, "MenuGarageSideWall", [0.45, 3.1, 7], [6.9, 1.35, -1.1], "#e4c77e");
-    addBox(root, "MenuGarageSidePanel", [0.12, 2.15, 2.8], [6.63, 1.9, -1.25], "#60777a");
-    // Faixas e luminárias geométricas.
-    for (const x of [-1.0, 1.0, 3.0]) {
-      const lamp = addBox(root, "MenuGarageLight", [0.72, 0.09, 0.42], [x, 4.18, -3.72], "#fff0c6", { castShadow: false });
-      lamp.material.emissive = new THREE.Color("#ffe5a4");
-      lamp.material.emissiveIntensity = 0.65;
-    }
-    addBox(root, "MenuGarageYellowStripe", [15, 0.24, 0.12], [0, 0.45, -4.55], "#d9a943", { castShadow: false });
+    const addPanel = (name, size, position, color, z = 0) => {
+      const mesh = addBox(root, name, size, position, color, { roughness: 0.9 });
+      mesh.position.z += z;
+      return mesh;
+    };
 
-    // Carro compacto vermelho low-poly, inspirado no veículo da imagem de referência.
+    // Fachada de fundo: grandes blocos creme, amarelo-mel e azul acinzentado.
+    addPanel("MenuFacadeMain", [16.5, 8.2, 0.55], [0, 2.45, -5.55], "#ead7ad");
+    addPanel("MenuFacadeLeftWing", [5.0, 5.4, 0.62], [-5.6, 2.0, -4.95], "#f4e7ca");
+    addPanel("MenuFacadeRightWing", [3.5, 5.4, 0.62], [6.45, 2.0, -4.95], "#f0dfb9");
+    addPanel("MenuFacadeUpperCornice", [16.9, 0.68, 1.35], [0, 5.75, -4.9], "#f5e7c9");
+    addPanel("MenuFacadeUpperShadow", [16.1, 0.2, 0.8], [0, 5.25, -4.48], "#566b70");
+    addPanel("MenuFacadeTopDarkInset", [8.4, 0.22, 0.85], [1.6, 6.12, -4.48], "#52656a");
+    addPanel("MenuFacadeLeftBlueBand", [5.2, 0.72, 0.2], [-5.5, 1.3, -4.58], "#60767a");
+
+    // Moldura arquitetônica do box, com volumes sobrepostos como na referência.
+    addPanel("MenuBayOuterHeader", [7.4, 0.68, 1.15], [2.0, 4.65, -4.12], "#e6d2a8");
+    addPanel("MenuBayHeaderShadow", [6.85, 0.18, 0.78], [2.0, 4.18, -3.68], "#8d8a76");
+    addPanel("MenuBayLeftColumn", [0.72, 4.65, 1.0], [-1.72, 2.05, -3.82], "#f5e8ca");
+    addPanel("MenuBayLeftColumnInset", [0.28, 3.9, 0.22], [-1.2, 2.0, -3.25], "#b4a88b");
+    addPanel("MenuBayRightColumn", [0.7, 4.75, 1.0], [5.72, 2.0, -3.8], "#f3e4c3");
+    addPanel("MenuBayRightColumnBlueInset", [0.18, 3.55, 0.2], [5.3, 2.05, -3.18], "#637a7d");
+    // Interior escuro e painéis de alvenaria no fundo do box.
+    addPanel("MenuBayOpening", [6.55, 4.05, 0.18], [2.0, 2.05, -4.35], "#26343d");
+    addPanel("MenuBayBackWall", [5.9, 3.52, 0.12], [2.0, 2.02, -4.22], "#38434a");
+    for (let i = 0; i < 7; i++) {
+      addPanel("MenuBayBackWallBlock", [0.78, 0.42, 0.06], [-0.72 + (i % 4) * 1.6, 0.72 + Math.floor(i / 4) * 2.35, -4.1], i % 2 ? "#3f4549" : "#514c47");
+    }
+    addPanel("MenuBayCeiling", [6.5, 0.22, 1.1], [2.0, 4.12, -3.65], "#d5c5a4");
+    addPanel("MenuBayFloor", [7.6, 0.18, 5.2], [2.0, -0.02, -1.0], "#cbbd9e");
+
+    // Piso externo e rampa facetada.
+    addPanel("MenuGarageFloor", [18, 0.24, 15], [0, -0.2, 0.3], "#d6c7a7");
+    addPanel("MenuGarageFrontApron", [9.2, 0.14, 4.4], [2.0, -0.04, 1.1], "#b6a98e");
+    addPanel("MenuGarageApronHighlight", [7.8, 0.08, 3.5], [2.0, 0.04, 0.95], "#e8d8b6");
+    addPanel("MenuGarageSideConsole", [1.45, 1.75, 1.05], [6.2, 0.7, 0.1], "#65777a");
+    addPanel("MenuGarageSideConsoleTop", [1.72, 0.2, 1.2], [6.2, 1.67, 0.1], "#40575d");
+    addPanel("MenuGarageSideConsoleScreen", [1.08, 0.64, 0.08], [6.2, 1.23, 0.67], "#87918a");
+
+    // Carro compacto vermelho: silhueta de hatchback facetada, sem personagem.
     const car = new THREE.Group();
-    car.name = "MenuRedCompactCar";
-    car.position.set(1.05, 0.02, -0.15);
-    car.rotation.y = -0.22;
-    const red = "#c94e4b", redLight = "#e66b61", redDark = "#8f3839";
-    addBox(car, "CarUnderbody", [1.78, 0.34, 2.75], [0, 0.63, 0], "#39464b");
-    addBox(car, "CarLowerBody", [1.94, 0.62, 2.85], [0, 0.91, 0], red);
-    addBox(car, "CarHood", [1.86, 0.35, 0.92], [0, 1.24, 0.91], redLight);
-    addBox(car, "CarFrontFace", [1.78, 0.42, 0.14], [0, 0.91, 1.47], redDark);
-    addBox(car, "CarRoofCabin", [1.43, 0.76, 1.42], [0, 1.66, -0.18], red);
-    addBox(car, "CarRoofTop", [1.3, 0.13, 1.18], [0, 2.08, -0.2], redLight);
-    // Para-brisa e vidro traseiro inclinados.
-    const windshield = addBox(car, "CarWindshield", [1.24, 0.57, 0.055], [0, 1.67, 0.57], "#a9b8b5", { metalness: 0.08, roughness: 0.34 });
-    windshield.rotation.x = -0.34;
-    const rearGlass = addBox(car, "CarRearGlass", [1.18, 0.52, 0.055], [0, 1.66, -0.91], "#70868a", { metalness: 0.08, roughness: 0.38 });
-    rearGlass.rotation.x = 0.34;
+    car.name = "MenuReferenceRedHatchback";
+    car.position.set(2.55, 0.0, -0.12);
+    car.rotation.y = 0.36;
+
+    const bodyShape = new THREE.Shape();
+    bodyShape.moveTo(-1.48, 0.34);
+    bodyShape.lineTo(-1.48, 0.86);
+    bodyShape.lineTo(-0.98, 0.94);
+    bodyShape.lineTo(-0.58, 1.48);
+    bodyShape.lineTo(-0.18, 1.72);
+    bodyShape.lineTo(0.64, 1.68);
+    bodyShape.lineTo(1.08, 1.12);
+    bodyShape.lineTo(1.48, 0.94);
+    bodyShape.lineTo(1.48, 0.34);
+    bodyShape.closePath();
+    const bodyGeometry = new THREE.ExtrudeGeometry(bodyShape, { depth: 1.78, bevelEnabled: false, curveSegments: 1 });
+    bodyGeometry.rotateY(-Math.PI / 2);
+    bodyGeometry.computeVertexNormals();
+    const body = new THREE.Mesh(bodyGeometry, material("#c94c49", 0.88));
+    body.name = "MenuCarFacetedRedBody";
+    body.position.set(0.89, 0.12, 0);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    car.add(body);
+
+    // Capô e frente em planos triangulados para a leitura low-poly.
+    addBox(car, "MenuCarHood", [1.64, 0.25, 0.86], [0, 1.12, 1.08], "#df5b53");
+    addBox(car, "MenuCarHoodFacet", [1.5, 0.08, 0.62], [0, 1.27, 0.98], "#e97868");
+    addBox(car, "MenuCarFrontGrille", [1.25, 0.34, 0.12], [0, 0.83, 1.54], "#493f3b");
+    addBox(car, "MenuCarFrontBumper", [1.85, 0.2, 0.18], [0, 0.53, 1.56], "#e6d9bb");
+    addBox(car, "MenuCarLowerGrille", [0.72, 0.13, 0.06], [0, 0.67, 1.65], "#27383c");
+    for (const x of [-0.69, 0.69]) {
+      addBox(car, "MenuCarHeadlight", [0.34, 0.18, 0.08], [x, 0.96, 1.62], "#f5e7bd");
+      addBox(car, "MenuCarIndicator", [0.12, 0.09, 0.04], [x * 1.18, 0.78, 1.64], "#e6a95d");
+    }
+
+    // Cabine com para-brisa amplo e janelas laterais escuras.
+    const cabinShape = new THREE.Shape();
+    cabinShape.moveTo(-0.78, 1.34);
+    cabinShape.lineTo(-0.42, 1.83);
+    cabinShape.lineTo(0.38, 1.84);
+    cabinShape.lineTo(0.83, 1.36);
+    cabinShape.closePath();
+    const cabinGeometry = new THREE.ExtrudeGeometry(cabinShape, { depth: 1.48, bevelEnabled: false, curveSegments: 1 });
+    cabinGeometry.rotateY(-Math.PI / 2);
+    cabinGeometry.computeVertexNormals();
+    const cabin = new THREE.Mesh(cabinGeometry, material("#b94343", 0.84));
+    cabin.name = "MenuCarCabin";
+    cabin.position.set(0.74, 0.1, 0);
+    cabin.castShadow = true;
+    car.add(cabin);
+
+    const windshield = addBox(car, "MenuCarWindshield", [1.22, 0.56, 0.055], [0, 1.72, 0.91], "#9aa9a7", { roughness: 0.38, metalness: 0.05 });
+    windshield.rotation.x = -0.48;
+    const rearWindow = addBox(car, "MenuCarRearWindow", [1.15, 0.42, 0.055], [0, 1.72, -1.0], "#52656b", { roughness: 0.4 });
+    rearWindow.rotation.x = 0.42;
     for (const side of [-1, 1]) {
-      const sideGlass = addBox(car, "CarSideWindow", [0.055, 0.48, 1.0], [side * 0.73, 1.68, -0.18], "#849b9d", { metalness: 0.08, roughness: 0.35 });
-      sideGlass.rotation.x = -0.02;
-      addBox(car, "CarWindowDivider", [0.075, 0.55, 0.08], [side * 0.765, 1.68, -0.2], redDark);
+      const glass = addBox(car, "MenuCarSideGlass", [0.055, 0.43, 0.93], [side * 0.755, 1.63, -0.13], "#52666b", { roughness: 0.38, metalness: 0.04 });
+      glass.rotation.x = -0.06;
+      addBox(car, "MenuCarWindowPillar", [0.085, 0.56, 0.09], [side * 0.79, 1.64, -0.15], "#8f3938");
     }
-    addBox(car, "CarFrontBumper", [1.9, 0.2, 0.22], [0, 0.58, 1.48], "#e5d8b7");
-    addBox(car, "CarRearBumper", [1.88, 0.18, 0.2], [0, 0.58, -1.47], "#d7c9a8");
-    for (const x of [-0.72, 0.72]) {
-      addBox(car, "CarHeadlight", [0.38, 0.2, 0.08], [x, 1.02, 1.54], "#fff0c4", { castShadow: false });
-      addBox(car, "CarTailLight", [0.34, 0.18, 0.08], [x, 1.02, -1.49], "#f18a69");
-    }
-    for (const x of [-0.98, 0.98]) {
-      for (const z of [-0.92, 0.92]) {
-        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.2, 6), material("#26363d", 0.92));
-        wheel.name = "CarLowPolyWheel";
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(x, 0.48, z);
-        wheel.castShadow = true;
-        car.add(wheel);
-        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.215, 6), material("#b8b6a6", 0.55, 0.15));
+    addBox(car, "MenuCarRoof", [1.28, 0.12, 0.9], [0, 1.99, -0.12], "#dc5a52");
+    addBox(car, "MenuCarRearBumper", [1.82, 0.16, 0.18], [0, 0.55, -1.54], "#d5c8a9");
+
+    for (const x of [-0.91, 0.91]) {
+      for (const z of [-0.98, 0.98]) {
+        const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.37, 0.2, 6), material("#30383b", 0.96));
+        tire.name = "MenuCarLowPolyTire";
+        tire.rotation.z = Math.PI / 2;
+        tire.position.set(x, 0.43, z);
+        tire.castShadow = true;
+        car.add(tire);
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.215, 6), material("#b8b5a7", 0.6, 0.12));
         hub.rotation.z = Math.PI / 2;
-        hub.position.set(x * 1.015, 0.48, z);
+        hub.position.set(x * 1.015, 0.43, z);
         car.add(hub);
       }
     }
+    car.traverse((object) => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
     root.add(car);
 
-    // Detalhes laterais da oficina para dar profundidade sem poluir a composição.
-    addBox(root, "MenuToolCabinet", [0.9, 1.45, 0.65], [5.65, 0.78, 0.65], "#60777a");
-    addBox(root, "MenuToolCabinetTop", [1.08, 0.16, 0.78], [5.65, 1.56, 0.65], "#344e57");
-    addBox(root, "MenuToolCabinetDrawer", [0.72, 0.38, 0.06], [5.65, 1.13, 0.99], "#8b9a91");
+    // Luminárias e pequenos volumes de serviço no entorno do box.
+    for (const x of [0.0, 2.0, 4.0]) {
+      const lamp = addPanel("MenuGarageCeilingLight", [0.9, 0.09, 0.48], [x, 3.96, -3.32], "#fff0c8");
+      lamp.material.emissive = new THREE.Color("#ffe3a5");
+      lamp.material.emissiveIntensity = 0.48;
+    }
+    addPanel("MenuGarageRightShelf", [2.15, 0.16, 0.72], [6.1, 2.45, -1.1], "#e6d1a8");
+    addPanel("MenuGarageRightCabinet", [1.0, 1.2, 0.72], [6.25, 1.75, -1.02], "#667b7d");
+    addPanel("MenuGarageRightCabinetTop", [1.2, 0.16, 0.86], [6.25, 2.43, -1.02], "#465d63");
+
+    const warmKey = new THREE.DirectionalLight("#fff0d1", 1.05);
+    warmKey.position.set(-4, 7, 5);
+    warmKey.castShadow = true;
+    warmKey.shadow.mapSize.set(512, 512);
+    root.add(warmKey);
+    const ambient = new THREE.HemisphereLight("#fff3d6", "#58626a", 0.48);
+    root.add(ambient);
+
     root.visible = false;
     return root;
   }
