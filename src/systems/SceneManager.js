@@ -96,8 +96,10 @@ export default class SceneManager {
     // Carro compacto vermelho: silhueta de hatchback facetada, sem personagem.
     const car = new THREE.Group();
     car.name = "MenuReferenceRedHatchback";
-    car.position.set(2.55, 0.0, -0.12);
-    car.rotation.y = 0.36;
+    car.position.set(2.25, 0.0, -0.72);
+    car.scale.setScalar(0.74);
+    // Frente voltada para a câmera, em três-quartos como na referência.
+    car.rotation.y = Math.PI - 0.36;
 
     const bodyShape = new THREE.Shape();
     bodyShape.moveTo(-1.48, 0.34);
