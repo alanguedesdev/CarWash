@@ -1276,3 +1276,29 @@ body {
  .game-hud.scene-menu .menu-quick-actions{top:10px;right:10px;gap:5px}
  .game-hud.scene-menu .menu-quick-actions button{width:37px}
 }
+
+/* Correção de proporção: o painel da referência ocupa quase metade da tela. */
+.game-hud.scene-menu .main-menu-card{
+  width:min(560px,43vw);
+  min-height:0;
+  padding:clamp(28px,3.4vw,42px);
+}
+.game-hud.scene-menu .main-menu-card:before{
+  top:-49px;
+  padding:10px 16px 9px;
+}
+.game-hud.scene-menu .main-menu-card h1{
+  font-size:clamp(54px,6.8vw,82px);
+}
+.game-hud.scene-menu .menu-description{
+  max-width:390px;
+  font-size:clamp(12px,.92vw,15px)!important;
+}
+.game-hud.scene-menu .menu-feature-row{margin-top:18px}
+.game-hud.scene-menu #play-game{min-height:54px}
+@media(max-width:700px){
+ .game-hud.scene-menu .main-menu-card{width:min(460px,56vw);padding:20px 18px}
+}
+@media(max-width:480px){
+ .game-hud.scene-menu .main-menu-card{width:min(360px,86vw);padding:17px 15px}
+}
