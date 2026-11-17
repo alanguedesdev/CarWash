@@ -42,11 +42,95 @@ export default class SceneManager {
     };
 
     this.reception = this.createReception();
+    this.menuBackdrop = this.createMenuBackdrop();
     this.customer = this.createCustomer();
     this.reception.add(this.customer);
     this.delivery = this.createDelivery();
-    this.scene.add(this.reception, this.delivery);
+    this.scene.add(this.reception, this.delivery, this.menuBackdrop);
     this.show("reception");
+  }
+
+  createMenuBackdrop() {
+    const root = new THREE.Group();
+    root.name = "MainMenuShowcase";
+
+    // Fachada mostarda e moldura azul-petróleo: volumes grandes e arestas duras.
+    addBox(root, "MenuGarageWall", [15, 7.2, 0.48], [0, 2.65, -4.9], "#e9c978");
+    addBox(root, "MenuGarageTopBeam", [15.5, 0.62, 1.15], [0, 5.85, -4.35], "#f0dba8");
+    addBox(root, "MenuGarageLeftPier", [4.1, 4.35, 0.72], [-4.75, 2.05, -4.42], "#f4e5c4");
+    addBox(root, "MenuGarageRightPier", [3.25, 4.35, 0.72], [5.85, 2.05, -4.42], "#f1dfb6");
+    addBox(root, "MenuGarageHeader", [6.4, 0.58, 0.72], [1.0, 4.85, -4.28], "#d8b45f");
+    addBox(root, "MenuGarageHeaderInset", [5.8, 0.16, 0.12], [1.0, 4.48, -3.88], "#47616a");
+    // Box de lavagem escuro, com painéis em perspectiva de profundidade.
+    addBox(root, "MenuBayShadow", [6.15, 3.95, 0.22], [1.0, 2.35, -4.48], "#253b43");
+    addBox(root, "MenuBayBackWall", [5.55, 3.45, 0.16], [1.0, 2.35, -4.28], "#344b53");
+    for (let i = 0; i < 5; i++) {
+      addBox(root, "MenuBayWallPanel", [0.08, 3.2, 0.05], [-1.25 + i * 1.1, 2.35, -4.16], "#435b61", { castShadow: false });
+    }
+    addBox(root, "MenuBayLeftTrim", [0.34, 4.2, 0.62], [-2.25, 2.2, -4.0], "#d4b36f");
+    addBox(root, "MenuBayRightTrim", [0.34, 4.2, 0.62], [4.25, 2.2, -4.0], "#d4b36f");
+    addBox(root, "MenuGarageFloor", [17, 0.22, 12], [0, -0.16, 0], "#d9c18d");
+    addBox(root, "MenuGarageRamp", [8.8, 0.12, 5.4], [1.0, -0.015, 0.1], "#b8a77d");
+    addBox(root, "MenuGarageSideWall", [0.45, 3.1, 7], [6.9, 1.35, -1.1], "#e4c77e");
+    addBox(root, "MenuGarageSidePanel", [0.12, 2.15, 2.8], [6.63, 1.9, -1.25], "#60777a");
+    // Faixas e luminárias geométricas.
+    for (const x of [-1.0, 1.0, 3.0]) {
+      const lamp = addBox(root, "MenuGarageLight", [0.72, 0.09, 0.42], [x, 4.18, -3.72], "#fff0c6", { castShadow: false });
+      lamp.material.emissive = new THREE.Color("#ffe5a4");
+      lamp.material.emissiveIntensity = 0.65;
+    }
+    addBox(root, "MenuGarageYellowStripe", [15, 0.24, 0.12], [0, 0.45, -4.55], "#d9a943", { castShadow: false });
+
+    // Carro compacto vermelho low-poly, inspirado no veículo da imagem de referência.
+    const car = new THREE.Group();
+    car.name = "MenuRedCompactCar";
+    car.position.set(1.05, 0.02, -0.15);
+    car.rotation.y = -0.22;
+    const red = "#c94e4b", redLight = "#e66b61", redDark = "#8f3839";
+    addBox(car, "CarUnderbody", [1.78, 0.34, 2.75], [0, 0.63, 0], "#39464b");
+    addBox(car, "CarLowerBody", [1.94, 0.62, 2.85], [0, 0.91, 0], red);
+    addBox(car, "CarHood", [1.86, 0.35, 0.92], [0, 1.24, 0.91], redLight);
+    addBox(car, "CarFrontFace", [1.78, 0.42, 0.14], [0, 0.91, 1.47], redDark);
+    addBox(car, "CarRoofCabin", [1.43, 0.76, 1.42], [0, 1.66, -0.18], red);
+    addBox(car, "CarRoofTop", [1.3, 0.13, 1.18], [0, 2.08, -0.2], redLight);
+    // Para-brisa e vidro traseiro inclinados.
+    const windshield = addBox(car, "CarWindshield", [1.24, 0.57, 0.055], [0, 1.67, 0.57], "#a9b8b5", { metalness: 0.08, roughness: 0.34 });
+    windshield.rotation.x = -0.34;
+    const rearGlass = addBox(car, "CarRearGlass", [1.18, 0.52, 0.055], [0, 1.66, -0.91], "#70868a", { metalness: 0.08, roughness: 0.38 });
+    rearGlass.rotation.x = 0.34;
+    for (const side of [-1, 1]) {
+      const sideGlass = addBox(car, "CarSideWindow", [0.055, 0.48, 1.0], [side * 0.73, 1.68, -0.18], "#849b9d", { metalness: 0.08, roughness: 0.35 });
+      sideGlass.rotation.x = -0.02;
+      addBox(car, "CarWindowDivider", [0.075, 0.55, 0.08], [side * 0.765, 1.68, -0.2], redDark);
+    }
+    addBox(car, "CarFrontBumper", [1.9, 0.2, 0.22], [0, 0.58, 1.48], "#e5d8b7");
+    addBox(car, "CarRearBumper", [1.88, 0.18, 0.2], [0, 0.58, -1.47], "#d7c9a8");
+    for (const x of [-0.72, 0.72]) {
+      addBox(car, "CarHeadlight", [0.38, 0.2, 0.08], [x, 1.02, 1.54], "#fff0c4", { castShadow: false });
+      addBox(car, "CarTailLight", [0.34, 0.18, 0.08], [x, 1.02, -1.49], "#f18a69");
+    }
+    for (const x of [-0.98, 0.98]) {
+      for (const z of [-0.92, 0.92]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.2, 6), material("#26363d", 0.92));
+        wheel.name = "CarLowPolyWheel";
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(x, 0.48, z);
+        wheel.castShadow = true;
+        car.add(wheel);
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.215, 6), material("#b8b6a6", 0.55, 0.15));
+        hub.rotation.z = Math.PI / 2;
+        hub.position.set(x * 1.015, 0.48, z);
+        car.add(hub);
+      }
+    }
+    root.add(car);
+
+    // Detalhes laterais da oficina para dar profundidade sem poluir a composição.
+    addBox(root, "MenuToolCabinet", [0.9, 1.45, 0.65], [5.65, 0.78, 0.65], "#60777a");
+    addBox(root, "MenuToolCabinetTop", [1.08, 0.16, 0.78], [5.65, 1.56, 0.65], "#344e57");
+    addBox(root, "MenuToolCabinetDrawer", [0.72, 0.38, 0.06], [5.65, 1.13, 0.99], "#8b9a91");
+    root.visible = false;
+    return root;
   }
 
   createCustomer(){const g=new THREE.Group();g.name="ReceptionCustomer";g.position.set(-3.25,0,.35);const add=(geo,color,pos)=>{const o=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:.9}));o.position.set(...pos);o.castShadow=true;g.add(o);return o;};add(new THREE.CapsuleGeometry(.34,.72,4,8),"#477b91",[0,1.18,0]);add(new THREE.SphereGeometry(.31,16,12),"#c98963",[0,2.02,0]);add(new THREE.SphereGeometry(.32,16,10,0,Math.PI*2,0,Math.PI*.48),"#49352d",[0,2.12,-.015]);add(new THREE.CapsuleGeometry(.105,.58,3,6),"#354c5b",[-.16,.43,0]);add(new THREE.CapsuleGeometry(.105,.58,3,6),"#354c5b",[.16,.43,0]);for(const side of [-1,1]){const arm=add(new THREE.CapsuleGeometry(.09,.48,3,6),"#477b91",[side*.39,1.25,0]);arm.rotation.z=side*-.18;add(new THREE.SphereGeometry(.1,10,8),"#c98963",[side*.43,.88,.02]);add(new THREE.SphereGeometry(.025,8,8),"#293b40",[side*.11,2.04,.285]);}return g;}
@@ -164,9 +248,10 @@ export default class SceneManager {
       throw new Error(`Cena desconhecida: ${name}`);
     }
 
+    this.menuBackdrop.visible = name === "menu";
     this.reception.visible = ["dialogue","reception"].includes(name);
     this.customer.visible = false;
-    this.washEnvironment.visible = name === "menu" || name === "wash";
+    this.washEnvironment.visible = name === "wash";
     this.delivery.visible = name === "delivery";
     const backgroundKey=name==="menu"||name==="dialogue"?"reception":name;
     this.scene.background=this.backgrounds[backgroundKey].clone();
@@ -174,7 +259,7 @@ export default class SceneManager {
   }
 
   dispose() {
-    for (const root of [this.reception, this.delivery]) {
+    for (const root of [this.reception, this.delivery, this.menuBackdrop]) {
       root.traverse((object) => {
         if (!object.isMesh) return;
         object.geometry.dispose();
