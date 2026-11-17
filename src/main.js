@@ -383,7 +383,15 @@ const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
 const completionCopy = hud.querySelector("#completion-copy");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),menuInfoPanel=hud.querySelector("#menu-info-panel"),menuInfoTitle=hud.querySelector("#menu-info-title"),menuInfoContent=hud.querySelector("#menu-info-content"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
-const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/main-menu-bg.svg`;
+// Assets da conversa: os quatro SVGs novos são reutilizados pelo catálogo inteiro.
+const CUSTOMER_AVATARS = {
+  rafael: "gemini-svg (3).svg",
+  mariana: "gemini-svg (2).svg",
+  lucas: "gemini-svg (1).svg",
+  helena: "gemini-svg.svg",
+};
+const DEFAULT_CUSTOMER_AVATARS = Object.values(CUSTOMER_AVATARS);
+const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/dialogue-background.svg`;
 customerDialogue.style.backgroundImage = `linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("${dialogueBackgroundUrl}")`;
 const dialogueBackgroundPreload = new Image(); dialogueBackgroundPreload.decoding = "async"; dialogueBackgroundPreload.src = dialogueBackgroundUrl;
 const sceneTransition = hud.querySelector("#scene-transition");
@@ -445,7 +453,7 @@ function nextCustomer() {
 }
 let dialogueLine = 0;
 let currentCustomer = null;
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+currentCustomer.id+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";const avatarFile = currentCustomer.avatarSvg || CUSTOMER_AVATARS[currentCustomer.id] || DEFAULT_CUSTOMER_AVATARS[Math.abs(currentCustomer.id.split("").reduce((sum,char)=>sum+char.charCodeAt(0),0)) % DEFAULT_CUSTOMER_AVATARS.length];dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+avatarFile;dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
