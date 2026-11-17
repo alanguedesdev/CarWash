@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
+  <defs>
+    <clipPath id="bodyClipRafael">
+      <path d="M 75 420 C 75 335, 130 315, 200 315 C 270 315, 325 335, 325 420 Z" />
+    </clipPath>
+  </defs>
+
+  <!-- Cabelo Traseiro / Base -->
+  <path d="M 105 175 C 95 100, 145 55, 205 55 C 265 55, 305 100, 295 175 Z" fill="#3E2723" />
+
+  <!-- Tronco / Moletom Vermelho -->
+  <g clip-path="url(#bodyClipRafael)">
+    <path d="M 75 420 C 75 335, 130 315, 200 315 C 270 315, 325 335, 325 420 Z" fill="#D32F2F" />
+    <!-- Camiseta Interna Azul -->
+    <path d="M 155 315 L 245 315 L 230 420 L 170 420 Z" fill="#1E3A8A" />
+    <!-- Estampa Pixel Sutil na Camiseta -->
+    <rect x="188" y="370" width="24" height="14" rx="3" fill="#60A5FA" />
+    <circle cx="194" cy="377" r="2" fill="#FFFFFF" />
+    <circle cx="206" cy="377" r="2" fill="#FBBF24" />
+    <!-- Detalhe Gola Moletom -->
+    <path d="M 148 318 Q 165 365 175 420" fill="none" stroke="#991B1B" stroke-width="8" stroke-linecap="round" />
+    <path d="M 252 318 Q 235 365 225 420" fill="none" stroke="#991B1B" stroke-width="8" stroke-linecap="round" />
+    <!-- Cordões do Moletom -->
+    <line x1="168" y1="355" x2="168" y2="395" stroke="#FEF2F2" stroke-width="4" stroke-linecap="round" />
+    <line x1="232" y1="355" x2="232" y2="395" stroke="#FEF2F2" stroke-width="4" stroke-linecap="round" />
+  </g>
+  <!-- Contorno Tronco -->
+  <path d="M 75 420 C 75 335, 130 315, 200 315 C 270 315, 325 335, 325 420" fill="none" stroke="#2D1B18" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Pescoço -->
+  <rect x="172" y="265" width="56" height="65" rx="22" fill="#E09F7D" stroke="#2D1B18" stroke-width="5" />
+  <!-- Sombra do Queixo no Pescoço -->
+  <path d="M 174 282 Q 200 302 226 282 L 226 296 Q 200 314 174 296 Z" fill="#C47D5B" />
+
+  <!-- Orelhas -->
+  <path d="M 118 182 C 96 182, 94 225, 120 225" fill="#E09F7D" stroke="#2D1B18" stroke-width="5" stroke-linecap="round" />
+  <path d="M 114 195 C 106 195, 106 213, 115 213" fill="none" stroke="#C47D5B" stroke-width="3.5" stroke-linecap="round" />
+  <path d="M 282 182 C 304 182, 306 225, 280 225" fill="#E09F7D" stroke="#2D1B18" stroke-width="5" stroke-linecap="round" />
+  <path d="M 286 195 C 294 195, 294 213, 285 213" fill="none" stroke="#C47D5B" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Cabeça -->
+  <path d="M 118 155 C 118 95, 282 95, 282 155 L 282 210 C 282 262, 245 288, 200 288 C 155 288, 118 262, 118 210 Z" fill="#F2B594" stroke="#2D1B18" stroke-width="5" />
+
+  <!-- Barba e Bigode Suaves -->
+  <path d="M 118 195 C 122 258, 156 288, 200 288 C 244 288, 278 258, 282 195 L 273 195 C 268 238, 242 256, 200 256 C 158 256, 132 238, 127 195 Z" fill="#4E342E" />
+  <path d="M 164 240 C 175 230, 225 230, 236 240 C 232 248, 215 246, 200 246 C 185 246, 168 248, 164 240 Z" fill="#4E342E" />
+
+  <!-- Bochechas Rosadas -->
+  <ellipse cx="148" cy="222" rx="12" ry="7" fill="#E57373" opacity="0.35" />
+  <ellipse cx="252" cy="222" rx="12" ry="7" fill="#E57373" opacity="0.35" />
+
+  <!-- Olhos Expressivos -->
+  <g>
+    <circle cx="163" cy="192" r="14" fill="#FFFFFF" stroke="#2D1B18" stroke-width="3.5" />
+    <circle cx="165" cy="192" r="7.5" fill="#2D1B18" />
+    <circle cx="168" cy="189" r="3" fill="#FFFFFF" />
+
+    <circle cx="237" cy="192" r="14" fill="#FFFFFF" stroke="#2D1B18" stroke-width="3.5" />
+    <circle cx="235" cy="192" r="7.5" fill="#2D1B18" />
+    <circle cx="238" cy="189" r="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- Sobrancelhas -->
+  <path d="M 146 168 Q 163 160 180 168" fill="none" stroke="#3E2723" stroke-width="6" stroke-linecap="round" />
+  <path d="M 220 168 Q 237 160 254 168" fill="none" stroke="#3E2723" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Nariz -->
+  <path d="M 196 198 C 192 214, 196 220, 206 218" fill="none" stroke="#C47D5B" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Sorriso -->
+  <path d="M 180 250 Q 200 268 220 250 Z" fill="#FFFFFF" stroke="#2D1B18" stroke-width="3.5" stroke-linejoin="round" />
+
+  <!-- Cabelo Frontal Volumoso (Topete Toy-like) -->
+  <path d="M 114 168 C 105 110, 138 62, 195 66 C 215 48, 255 58, 268 85 C 292 92, 298 135, 286 168 C 276 135, 250 124, 215 128 C 175 132, 135 138, 114 168 Z" fill="#4E342E" stroke="#2D1B18" stroke-width="5" stroke-linejoin="round" />
+  <!-- Brilho no Cabelo -->
+  <path d="M 152 88 Q 195 75 235 90" fill="none" stroke="#6D4C41" stroke-width="6" stroke-linecap="round" />
+</svg>

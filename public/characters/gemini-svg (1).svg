@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
+  <defs>
+    <clipPath id="bodyClipLucas">
+      <path d="M 78 420 C 78 336, 132 316, 200 316 C 268 316, 322 336, 322 420 Z" />
+    </clipPath>
+  </defs>
+
+  <!-- Cabelo Traseiro -->
+  <path d="M 108 175 C 102 105, 145 65, 200 65 C 255 65, 298 105, 292 175 Z" fill="#5D4037" />
+
+  <!-- Tronco / Camiseta Verde-Água -->
+  <g clip-path="url(#bodyClipLucas)">
+    <path d="M 78 420 C 78 336, 132 316, 200 316 C 268 316, 322 336, 322 420 Z" fill="#10B981" />
+    <!-- Sombra Lateral -->
+    <path d="M 78 420 C 78 336, 132 316, 158 316 L 142 420 Z" fill="#059669" opacity="0.5" />
+    <!-- Gola Careca Branca -->
+    <path d="M 156 316 Q 200 356 244 316" fill="none" stroke="#ECFDF5" stroke-width="10" stroke-linecap="round" />
+    <!-- Listras Esportivas na Manga -->
+    <path d="M 96 365 L 128 380" stroke="#FBBF24" stroke-width="7" stroke-linecap="round" />
+    <path d="M 304 365 L 272 380" stroke="#FBBF24" stroke-width="7" stroke-linecap="round" />
+  </g>
+  <path d="M 78 420 C 78 336, 132 316, 200 316 C 268 316, 322 336, 322 420" fill="none" stroke="#261A15" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Pescoço -->
+  <rect x="174" y="264" width="52" height="64" rx="20" fill="#E8AE8C" stroke="#261A15" stroke-width="5" />
+  <path d="M 176 280 Q 200 300 224 280 L 224 294 Q 200 312 176 294 Z" fill="#CC8E6B" />
+
+  <!-- Orelhas -->
+  <path d="M 118 184 C 98 184, 96 224, 120 224" fill="#F7C2A3" stroke="#261A15" stroke-width="5" stroke-linecap="round" />
+  <path d="M 282 184 C 302 184, 304 224, 280 224" fill="#F7C2A3" stroke="#261A15" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Cabeça -->
+  <path d="M 118 158 C 118 98, 282 98, 282 158 L 282 208 C 282 258, 244 286, 200 286 C 156 286, 118 258, 118 208 Z" fill="#F7C2A3" stroke="#261A15" stroke-width="5" />
+
+  <!-- Sardas Suaves -->
+  <circle cx="146" cy="214" r="2.2" fill="#CC8E6B" />
+  <circle cx="155" cy="218" r="2.2" fill="#CC8E6B" />
+  <circle cx="254" cy="214" r="2.2" fill="#CC8E6B" />
+  <circle cx="245" cy="218" r="2.2" fill="#CC8E6B" />
+
+  <!-- Olhos -->
+  <g>
+    <circle cx="163" cy="192" r="14" fill="#FFFFFF" stroke="#261A15" stroke-width="3.5" />
+    <circle cx="165" cy="192" r="7.5" fill="#261A15" />
+    <circle cx="168" cy="189" r="3" fill="#FFFFFF" />
+
+    <circle cx="237" cy="192" r="14" fill="#FFFFFF" stroke="#261A15" stroke-width="3.5" />
+    <circle cx="235" cy="192" r="7.5" fill="#261A15" />
+    <circle cx="238" cy="189" r="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- Sobrancelhas -->
+  <path d="M 146 167 Q 163 158 179 167" fill="none" stroke="#5D4037" stroke-width="5.5" stroke-linecap="round" />
+  <path d="M 221 167 Q 237 158 254 167" fill="none" stroke="#5D4037" stroke-width="5.5" stroke-linecap="round" />
+
+  <!-- Nariz -->
+  <path d="M 197 198 C 193 212, 197 218, 206 216" fill="none" stroke="#CC8E6B" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Sorriso Largo -->
+  <path d="M 176 242 Q 200 264 224 242 Z" fill="#FFFFFF" stroke="#261A15" stroke-width="3.5" stroke-linejoin="round" />
+
+  <!-- Cabelo Descolado / Mechas Arredondadas -->
+  <path d="M 114 170 C 108 112, 142 74, 185 72 C 196 56, 224 58, 232 76 C 268 78, 294 114, 286 170 C 272 142, 245 128, 212 134 C 195 118, 178 134, 155 138 C 135 142, 122 154, 114 170 Z" fill="#6D4C41" stroke="#261A15" stroke-width="5" stroke-linejoin="round" />
+  <path d="M 155 96 Q 200 84 240 98" fill="none" stroke="#8D6E63" stroke-width="6" stroke-linecap="round" />
+</svg>
