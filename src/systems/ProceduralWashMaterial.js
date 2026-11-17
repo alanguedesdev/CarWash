@@ -128,7 +128,8 @@ export default class ProceduralWashMaterial {
     texture.flipY = false;
     texture.colorSpace = THREE.NoColorSpace;
     texture.needsUpdate = true;
-    texture.userData.fadeStarts = new Float32Array(TEXTURE_SIZE * TEXTURE_SIZE);\n    texture.userData.fadeOrigins = new Uint8Array(TEXTURE_SIZE * TEXTURE_SIZE);
+    texture.userData.fadeStarts = new Float32Array(TEXTURE_SIZE * TEXTURE_SIZE);
+    texture.userData.fadeOrigins = new Uint8Array(TEXTURE_SIZE * TEXTURE_SIZE);
     texture.userData.fadeStarts.fill(-1);
     return texture;
   }
