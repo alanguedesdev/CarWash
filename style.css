@@ -1162,3 +1162,40 @@ body {
   .dialogue-card p { min-height:40px;margin-bottom:8px;padding:8px 11px;font-size:11px; }
   .dialogue-footnote { margin-top:5px; }
 }
+
+/* Tela inicial: garagem low-poly amarela e painel modular inspirado na referência. */
+.main-menu{place-items:center start;padding:clamp(18px,4.7vw,68px);background:linear-gradient(90deg,rgba(28,45,49,.34),rgba(28,45,49,.10) 48%,rgba(28,45,49,.02))}
+.main-menu::before,.main-menu::after,.menu-glow{display:none}
+.main-menu-card{width:min(460px,43vw);max-height:calc(100% - 26px);overflow:auto;padding:clamp(22px,3.2vw,38px);border:2px solid #fffaf0;border-radius:13px;border-bottom:8px solid #c7a66b;background:linear-gradient(145deg,#fff8e8,#f1e4c7);box-shadow:0 20px 42px #24261957,inset 0 2px 0 #fff;color:#354b50;text-align:left}
+.menu-brand-mark{margin-bottom:20px;color:#68736b;letter-spacing:1.45px}
+.menu-brand-icon{border-radius:5px;background:#365966;box-shadow:0 3px 0 #243e46}
+.menu-eyebrow{color:#9c7547!important;letter-spacing:1.6px}
+.main-menu-card h1{color:#334d56;font-size:clamp(48px,6.2vw,76px);letter-spacing:-3.5px;text-shadow:0 3px 0 #c6b99b,0 5px 8px #2736372e}
+.main-menu-card h1 span{color:#d77c58}
+.menu-title-line{color:#927b55;margin:12px 0 16px}
+.menu-description{color:#596761!important;font-size:13px!important}
+.menu-feature-row{margin:16px 0 8px;gap:6px}
+.menu-feature-row span{border:1px solid #e5d7b9;border-radius:7px;background:#fffaf0;color:#52635d;padding:7px 9px}
+#menu-progress{color:#6f725f;margin:11px 0 15px}
+#play-game{width:min(100%,340px);border-radius:7px;border-bottom:5px solid #286345;background:linear-gradient(100deg,#50b77c,#32986b)}
+.menu-hint{color:#7d7866}
+.main-menu-footer{color:#fff4d3}
+.menu-quick-actions{position:absolute;top:clamp(16px,3.2vw,34px);right:clamp(16px,3.2vw,34px);display:flex;gap:12px}
+.menu-quick-actions button{display:grid;place-items:center;width:clamp(44px,5vw,58px);aspect-ratio:1;border:2px solid #fff6d6bf;border-radius:7px;border-bottom:5px solid #29454c;background:linear-gradient(145deg,#52717a,#304e58);color:#f8e6b8;box-shadow:0 7px 15px #1a272745,inset 0 1px 0 #ffffff47;cursor:pointer;transition:transform .16s,filter .16s}
+.menu-quick-actions button:hover{transform:translateY(-3px);filter:brightness(1.12)}
+.menu-quick-actions button span{font-size:clamp(21px,2.5vw,29px);line-height:1}
+.menu-info-panel[hidden]{display:none!important}
+.menu-info-panel{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:#192b2f8f;backdrop-filter:blur(3px)}
+.menu-info-card{position:relative;width:min(390px,100%);padding:26px;border:2px solid #fff5d9;border-bottom:6px solid #c7a66b;border-radius:12px;background:linear-gradient(145deg,#fff8e8,#f0e2c2);color:#354b50;box-shadow:0 18px 45px #0005}
+.menu-info-card>small{color:#9c7547;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.menu-info-card h2{margin:7px 30px 14px;font-size:25px}
+.menu-info-card p,.menu-info-card li{color:#5b6b63;font-size:12px;line-height:1.55}
+.menu-info-card ul{padding-left:19px}
+.menu-info-close{position:absolute;top:13px;right:13px;width:31px;height:31px;border:0;border-radius:5px;background:#35535d;color:#fff4d6;font-size:22px;cursor:pointer}
+.menu-info-stat{display:flex;align-items:center;gap:12px;padding:12px;margin:8px 0;border-radius:7px;background:#e9dfc6}
+.menu-info-stat strong{color:#34855d;font-size:25px}
+.menu-info-stat span{color:#58675f;font-size:12px;font-weight:800}
+.menu-info-note{margin-top:14px;padding-top:10px;border-top:1px solid #dfd1b2}
+@media(max-width:900px){.main-menu-card{width:min(440px,53vw)}}
+@media(max-width:560px){.main-menu{place-items:center;padding:12px;background:#1d30314a}.main-menu-card{width:min(470px,100%);padding:22px 18px}.menu-quick-actions{top:10px;right:10px;gap:6px}.menu-quick-actions button{width:38px;border-radius:6px}.menu-quick-actions button span{font-size:19px}.main-menu-footer{display:none}}
+@media(max-height:520px) and (orientation:landscape){.main-menu-card{width:min(430px,48vw);padding:15px 22px}.menu-brand-mark{margin-bottom:9px}.menu-title-line{margin:7px 0 9px}.menu-feature-row{margin:9px 0 4px}#menu-progress{margin:6px 0 8px}.menu-quick-actions{top:12px;right:14px}}
