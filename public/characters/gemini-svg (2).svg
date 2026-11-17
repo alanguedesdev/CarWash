@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
+  <defs>
+    <clipPath id="bodyClipMariana">
+      <path d="M 80 420 C 80 338, 135 318, 200 318 C 265 318, 320 338, 320 420 Z" />
+    </clipPath>
+  </defs>
+
+  <!-- Coque / Cabelo Traseiro -->
+  <circle cx="200" cy="72" r="46" fill="#2A1B18" stroke="#1F1210" stroke-width="5" />
+  <path d="M 108 175 C 102 100, 145 68, 200 68 C 255 68, 298 100, 292 175 Z" fill="#2A1B18" />
+
+  <!-- Tronco / Blusa Roxa -->
+  <g clip-path="url(#bodyClipMariana)">
+    <path d="M 80 420 C 80 338, 135 318, 200 318 C 265 318, 320 338, 320 420 Z" fill="#8E24AA" />
+    <!-- Sombra Lateral -->
+    <path d="M 80 420 C 80 338, 135 318, 160 318 L 145 420 Z" fill="#6A1B9A" opacity="0.5" />
+    <!-- Gola Amarela -->
+    <path d="M 155 318 Q 200 362 245 318" fill="none" stroke="#FBC02D" stroke-width="10" stroke-linecap="round" />
+    <!-- Alça de Câmera / Detalhe Transversal -->
+    <path d="M 122 325 L 255 420" stroke="#374151" stroke-width="16" />
+    <path d="M 122 325 L 255 420" stroke="#F59E0B" stroke-width="4" stroke-dasharray="10 8" />
+  </g>
+  <path d="M 80 420 C 80 338, 135 318, 200 318 C 265 318, 320 338, 320 420" fill="none" stroke="#1F1210" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Pescoço -->
+  <rect x="174" y="264" width="52" height="64" rx="20" fill="#B57554" stroke="#1F1210" stroke-width="5" />
+  <path d="M 176 280 Q 200 300 224 280 L 224 294 Q 200 312 176 294 Z" fill="#965A3C" />
+
+  <!-- Orelhas e Brincos Dourados -->
+  <path d="M 118 184 C 98 184, 96 224, 120 224" fill="#C68663" stroke="#1F1210" stroke-width="5" stroke-linecap="round" />
+  <circle cx="110" cy="226" r="7" fill="#FBBF24" stroke="#1F1210" stroke-width="3.5" />
+
+  <path d="M 282 184 C 302 184, 304 224, 280 224" fill="#C68663" stroke="#1F1210" stroke-width="5" stroke-linecap="round" />
+  <circle cx="290" cy="226" r="7" fill="#FBBF24" stroke="#1F1210" stroke-width="3.5" />
+
+  <!-- Cabeça -->
+  <path d="M 118 158 C 118 98, 282 98, 282 158 L 282 208 C 282 258, 244 286, 200 286 C 156 286, 118 258, 118 208 Z" fill="#C68663" stroke="#1F1210" stroke-width="5" />
+
+  <!-- Bochechas -->
+  <ellipse cx="148" cy="222" rx="13" ry="7" fill="#E57373" opacity="0.35" />
+  <ellipse cx="252" cy="222" rx="13" ry="7" fill="#E57373" opacity="0.35" />
+
+  <!-- Olhos com Cílios Suaves -->
+  <g>
+    <path d="M 147 186 L 152 190" stroke="#1F1210" stroke-width="3.5" stroke-linecap="round" />
+    <circle cx="163" cy="192" r="14" fill="#FFFFFF" stroke="#1F1210" stroke-width="3.5" />
+    <circle cx="165" cy="192" r="7.5" fill="#1F1210" />
+    <circle cx="168" cy="189" r="3" fill="#FFFFFF" />
+
+    <path d="M 253 186 L 248 190" stroke="#1F1210" stroke-width="3.5" stroke-linecap="round" />
+    <circle cx="237" cy="192" r="14" fill="#FFFFFF" stroke="#1F1210" stroke-width="3.5" />
+    <circle cx="235" cy="192" r="7.5" fill="#1F1210" />
+    <circle cx="238" cy="189" r="3" fill="#FFFFFF" />
+  </g>
+
+  <!-- Sobrancelhas -->
+  <path d="M 146 168 Q 163 160 179 167" fill="none" stroke="#2A1B18" stroke-width="5.5" stroke-linecap="round" />
+  <path d="M 221 167 Q 237 160 254 168" fill="none" stroke="#2A1B18" stroke-width="5.5" stroke-linecap="round" />
+
+  <!-- Nariz -->
+  <path d="M 197 198 C 193 212, 197 218, 206 216" fill="none" stroke="#965A3C" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Sorriso Aberto -->
+  <path d="M 176 242 Q 200 266 224 242 Z" fill="#FFFFFF" stroke="#1F1210" stroke-width="3.5" stroke-linejoin="round" />
+
+  <!-- Franja Lateral Arredondada -->
+  <path d="M 114 176 C 110 112, 152 76, 206 78 C 258 80, 292 115, 286 176 C 272 145, 248 128, 218 122 C 185 144, 145 156, 114 176 Z" fill="#36221E" stroke="#1F1210" stroke-width="5" stroke-linejoin="round" />
+  <path d="M 155 102 Q 198 88 242 104" fill="none" stroke="#523630" stroke-width="6" stroke-linecap="round" />
+</svg>
