@@ -1202,3 +1202,77 @@ body {
 
 /* A loja também pode ser aberta diretamente pelo atalho do menu inicial. */
 .game-hud.scene-menu .shop-overlay:not([hidden]){display:grid!important;z-index:45}
+
+/* Composição fiel à referência: painel à esquerda e carro vermelho na garagem à direita. */
+.game-hud.scene-menu .main-menu{
+  place-items:center start;
+  padding:clamp(14px,4.7vw,58px);
+  background:linear-gradient(90deg,rgba(24,39,42,.05) 0%,rgba(24,39,42,.02) 46%,rgba(24,39,42,.10) 100%);
+}
+.game-hud.scene-menu .main-menu-card{
+  position:relative;
+  width:min(440px,43vw);
+  min-height:0;
+  max-height:calc(100% - 24px);
+  overflow:visible;
+  margin:0;
+  padding:clamp(24px,3.2vw,38px);
+  border:2px solid #fff1cf;
+  border-radius:12px;
+  border-bottom:8px solid #b9a47c;
+  background:linear-gradient(145deg,rgba(255,249,232,.98),rgba(238,225,194,.98));
+  box-shadow:0 18px 42px rgba(35,39,34,.38),inset 0 2px 0 #fff;
+  text-align:left;
+}
+.game-hud.scene-menu .main-menu-card:before{
+  content:"MEU LAVA-JATO";
+  position:absolute;
+  left:-2px;top:-48px;
+  padding:9px 14px 8px;
+  border:1px solid #e4d2aa;
+  border-bottom:3px solid #c8b184;
+  border-radius:7px 7px 0 0;
+  background:#f6ebd2;
+  color:#43575b;
+  font-size:clamp(12px,1.5vw,17px);
+  font-weight:900;
+  letter-spacing:1.1px;
+  box-shadow:0 5px 14px #263b3d25;
+}
+.game-hud.scene-menu .menu-brand-mark{margin:0 0 18px;font-size:9px;letter-spacing:1.3px;color:#7b806f}
+.game-hud.scene-menu .menu-brand-icon{background:#42616a;color:#fff0c6;box-shadow:0 3px 0 #2b454c}
+.game-hud.scene-menu .menu-eyebrow{font-size:9px!important;color:#a27b4d!important;letter-spacing:1.5px}
+.game-hud.scene-menu .main-menu-card h1{margin:9px 0 7px;color:#344d55;font-size:clamp(48px,6.4vw,72px);font-weight:1000;letter-spacing:-4px;line-height:.98;text-shadow:0 3px 0 #c9bda0,0 5px 7px #263a3d35}
+.game-hud.scene-menu .main-menu-card h1 span{color:#d77a58}
+.game-hud.scene-menu .menu-title-line{justify-content:flex-start;margin:10px 0 16px;color:#9c8158;font-size:8px;letter-spacing:1px}
+.game-hud.scene-menu .menu-title-line i{width:22px;background:#c59b63}
+.game-hud.scene-menu .menu-description{max-width:330px;margin:0;color:#58645d!important;font-size:12px!important;line-height:1.55}
+.game-hud.scene-menu .menu-feature-row{justify-content:flex-start;flex-wrap:wrap;margin:15px 0 9px;gap:6px}
+.game-hud.scene-menu .menu-feature-row span{padding:6px 8px;border:1px solid #e8d9b8;border-radius:15px;background:#fffaf0;color:#59675e;font-size:9px}
+.game-hud.scene-menu #menu-progress{margin:11px 0 14px;color:#817456;font-size:9px;font-weight:800}
+.game-hud.scene-menu #play-game{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:100%;min-height:49px;padding:0 15px 0 19px;border:1px solid #79c28d;border-bottom:5px solid #26734e;border-radius:7px;background:linear-gradient(105deg,#54b77d,#30976a);box-shadow:0 5px 10px #244b3a2b;color:#f7f5dc;font-size:12px;letter-spacing:.3px}
+.game-hud.scene-menu #play-game b{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#ffffff35;font-size:19px}
+.game-hud.scene-menu .menu-hint{display:block;margin-top:10px;color:#7b7868;font-size:8px;letter-spacing:1px}
+.game-hud.scene-menu .main-menu-footer{left:clamp(18px,4.7vw,58px);bottom:13px;color:#fff3d2;font-size:8px;letter-spacing:1.7px}
+.game-hud.scene-menu .menu-quick-actions{top:clamp(15px,3vw,28px);right:clamp(15px,3vw,30px);gap:10px}
+.game-hud.scene-menu .menu-quick-actions button{width:clamp(43px,5vw,54px);border:1px solid #82918a;border-bottom:5px solid #273f48;border-radius:6px;background:linear-gradient(145deg,#59747b,#344f58);box-shadow:0 7px 15px #1b30374a,inset 0 1px 0 #ffffff4d}
+.game-hud.scene-menu .menu-quick-actions button span{font-size:clamp(20px,2.2vw,26px);color:#f5e7c4}
+@media(max-width:700px){
+ .game-hud.scene-menu .main-menu{padding:50px 12px 14px;background:linear-gradient(90deg,#243a3d40,#243a3d05)}
+ .game-hud.scene-menu .main-menu-card{width:min(390px,62vw);padding:18px 16px}
+ .game-hud.scene-menu .main-menu-card:before{top:-37px;padding:6px 10px;font-size:11px}
+ .game-hud.scene-menu .menu-brand-mark{margin-bottom:10px}
+ .game-hud.scene-menu .main-menu-card h1{font-size:clamp(38px,8vw,54px)}
+ .game-hud.scene-menu .menu-title-line{margin:6px 0 9px}
+ .game-hud.scene-menu .menu-description{font-size:10px!important}
+ .game-hud.scene-menu .menu-feature-row{margin:8px 0 5px}
+ .game-hud.scene-menu #menu-progress{margin:6px 0 8px}
+ .game-hud.scene-menu #play-game{min-height:40px}
+ .game-hud.scene-menu .main-menu-footer{display:none}
+}
+@media(max-width:480px){
+ .game-hud.scene-menu .main-menu{place-items:end start;padding:12px}
+ .game-hud.scene-menu .main-menu-card{width:min(340px,84vw);padding:17px 15px}
+ .game-hud.scene-menu .menu-quick-actions{top:10px;right:10px;gap:5px}
+ .game-hud.scene-menu .menu-quick-actions button{width:37px}
+}
