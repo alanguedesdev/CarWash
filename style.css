@@ -1371,3 +1371,93 @@ body {
  .game-hud.scene-menu .menu-quick-actions button{width:37px}
  .game-hud.scene-menu .main-menu-footer{display:none}
 }
+
+/* Diálogo: cenário raster estático; somente a interface e o retrato do cliente são dinâmicos. */
+.game-hud.scene-dialogue .customer-dialogue{
+  position:absolute;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:flex-start;
+  overflow:hidden;padding:0 0 clamp(24px,4vh,48px) clamp(24px,4vw,72px);
+  background-color:#d8bd7c;
+  background-image:linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("./images/main-menu-bg.jpg");
+  background-size:cover;background-position:center center;background-repeat:no-repeat;
+}
+.game-hud.scene-dialogue .dialogue-scene-glow{display:none}
+.game-hud.scene-dialogue .dialogue-brand{
+  position:absolute;z-index:4;top:clamp(12px,2vh,22px);left:clamp(14px,2vw,28px);
+  display:flex;flex-direction:column;gap:3px;padding:10px 15px 9px;
+  border-left:5px solid #d77e5d;border-bottom:3px solid #b99a62;border-radius:0 5px 5px 0;
+  background:rgba(248,232,194,.96);box-shadow:0 5px 14px rgba(35,42,34,.22);color:#29464e;
+}
+.game-hud.scene-dialogue .dialogue-brand strong{font-size:clamp(15px,1.8vw,23px);letter-spacing:1.2px}
+.game-hud.scene-dialogue .dialogue-brand span{font-size:clamp(9px,.9vw,12px);color:#6c624c}
+.game-hud.scene-dialogue .dialogue-character{
+  position:absolute;z-index:1;right:clamp(18px,5vw,84px);bottom:0;
+  width:min(39vw,520px);height:min(88%,760px);display:flex;align-items:flex-end;justify-content:center;
+  overflow:visible;pointer-events:none;filter:drop-shadow(0 12px 12px rgba(31,39,33,.22));
+}
+.game-hud.scene-dialogue .dialogue-character img{
+  display:block;width:100%;height:100%;max-width:100%;max-height:100%;
+  object-fit:contain;object-position:center bottom;image-rendering:auto;
+}
+.game-hud.scene-dialogue .dialogue-card{
+  position:relative;z-index:3;width:min(590px,calc(100% - min(36vw,520px)));
+  margin:0;padding:clamp(20px,2.6vw,34px);
+  border:2px solid #fffdf4;border-bottom:7px solid #d4b474;border-radius:20px;
+  background:#FDF6E7;color:#29464e;
+  box-shadow:0 18px 42px rgba(27,39,35,.3),inset 0 2px 0 #fff;
+  animation:dialogue-card-enter .32s ease-out both;
+}
+.game-hud.scene-dialogue .dialogue-card-top{display:flex;align-items:center;gap:9px;margin:0 0 14px}
+.game-hud.scene-dialogue .dialogue-live-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#10B981;box-shadow:0 0 0 4px rgba(16,185,129,.15)}
+.game-hud.scene-dialogue .dialogue-card-top small{
+  display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;
+  background:#10B981;color:white;font-size:9px;font-weight:1000;letter-spacing:1px;
+}
+.game-hud.scene-dialogue .dialogue-step{margin-left:auto;color:#b69b68;font-size:9px;letter-spacing:2px}
+.game-hud.scene-dialogue .dialogue-card h2{
+  margin:0 0 12px;color:#29464e;font-size:clamp(22px,2.5vw,32px);font-weight:1000;line-height:1.15;
+}
+.game-hud.scene-dialogue .dialogue-card p{
+  min-height:78px;margin:0 0 16px;padding:16px 18px;border:1px solid #eee3cf;border-radius:14px;
+  background:#fff;color:#59675f;font-size:clamp(13px,1.05vw,16px);line-height:1.6;cursor:pointer;
+  box-shadow:inset 0 2px 4px rgba(66,57,37,.04);
+}
+.game-hud.scene-dialogue .dialogue-actions{display:flex;gap:10px;flex-wrap:wrap}
+.game-hud.scene-dialogue .dialogue-actions button{
+  display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;flex:1;
+  padding:12px 18px;border:0;border-bottom:5px solid #087a55;border-radius:11px;
+  background:linear-gradient(180deg,#20c58b,#10a875);color:white;font-size:12px;font-weight:1000;letter-spacing:.8px;
+  box-shadow:0 5px 12px rgba(16,185,129,.18);transition:transform .14s,filter .14s;
+}
+.game-hud.scene-dialogue .dialogue-actions button:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.game-hud.scene-dialogue .dialogue-actions button:active{transform:translateY(3px);border-bottom-width:2px}
+.game-hud.scene-dialogue .dialogue-actions button b{font-size:18px}
+.game-hud.scene-dialogue .dialogue-actions .secondary{background:#b78361;border-bottom-color:#8c6047}
+.game-hud.scene-dialogue .dialogue-footnote{margin-top:13px;color:#9b8969;font-size:9px;font-weight:900;letter-spacing:1.2px;text-align:left}
+@media(max-width:800px){
+ .game-hud.scene-dialogue .customer-dialogue{padding:0 16px 18px;background-position:56% center}
+ .game-hud.scene-dialogue .dialogue-character{right:-2%;width:min(48vw,390px);height:69%}
+ .game-hud.scene-dialogue .dialogue-card{width:min(560px,65%);padding:18px;border-radius:17px}
+ .game-hud.scene-dialogue .dialogue-card p{min-height:64px}
+}
+@media(max-width:560px){
+ .game-hud.scene-dialogue .customer-dialogue{align-items:flex-end;padding:0 10px 12px;background-position:58% center}
+ .game-hud.scene-dialogue .dialogue-brand{top:9px;left:9px;padding:7px 10px}
+ .game-hud.scene-dialogue .dialogue-brand strong{font-size:12px}
+ .game-hud.scene-dialogue .dialogue-brand span{font-size:8px}
+ .game-hud.scene-dialogue .dialogue-character{right:-4%;bottom:29%;width:min(68vw,290px);height:55%;opacity:1}
+ .game-hud.scene-dialogue .dialogue-card{width:100%;padding:14px 14px 11px;border-radius:16px}
+ .game-hud.scene-dialogue .dialogue-card-top{margin-bottom:8px}
+ .game-hud.scene-dialogue .dialogue-card-top small{font-size:8px;padding:6px 9px}
+ .game-hud.scene-dialogue .dialogue-card h2{font-size:19px;margin-bottom:8px}
+ .game-hud.scene-dialogue .dialogue-card p{min-height:48px;margin-bottom:10px;padding:10px 12px;font-size:11px}
+ .game-hud.scene-dialogue .dialogue-actions{gap:6px}
+ .game-hud.scene-dialogue .dialogue-actions button{min-height:41px;padding:9px 7px;font-size:9px}
+ .game-hud.scene-dialogue .dialogue-footnote{margin-top:7px;font-size:7px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ .game-hud.scene-dialogue .customer-dialogue{padding-bottom:12px}
+ .game-hud.scene-dialogue .dialogue-character{height:82%;width:min(35vw,340px);right:2%}
+ .game-hud.scene-dialogue .dialogue-card{padding:12px 17px 9px}
+ .game-hud.scene-dialogue .dialogue-card p{min-height:40px;margin-bottom:8px;padding:8px 11px;font-size:11px}
+ .game-hud.scene-dialogue .dialogue-footnote{margin-top:5px}
+}
