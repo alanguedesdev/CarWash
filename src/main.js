@@ -383,6 +383,7 @@ const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
 const completionCopy = hud.querySelector("#completion-copy");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),menuInfoPanel=hud.querySelector("#menu-info-panel"),menuInfoTitle=hud.querySelector("#menu-info-title"),menuInfoContent=hud.querySelector("#menu-info-content"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
+customerDialogue.style.backgroundImage = `linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("${import.meta.env.BASE_URL}images/main-menu-bg.jpg")`;
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons=[...hud.querySelectorAll("[data-tool]")];
