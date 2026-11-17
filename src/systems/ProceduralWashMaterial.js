@@ -172,11 +172,13 @@ export default class ProceduralWashMaterial {
     if (tool === "sponge" && centerMask.soap < 0.08) return { changed: false, rinsed: false };
     if (tool === "water") rinsed = centerMask.soap > 0.08 || centerMask.foam > 0.08;
 
-    const pointArray = [point.x, point.y, point.z];
-    const min = [this.boundsMin.x, this.boundsMin.y, this.boundsMin.z];
     const size = [this.boundsSize.x, this.boundsSize.y, this.boundsSize.z];
+    const axisWeights = [Math.pow(Math.abs(normal.x), 4), Math.pow(Math.abs(normal.y), 4), Math.pow(Math.abs(normal.z), 4)];
+    const axisWeightSum = axisWeights.reduce((sum, value) => sum + value, 0) || 1;
 
     for (let axis = 0; axis < 3; axis++) {
+      if (axisWeights[axis] / axisWeightSum < 0.015) continue;
+      const axisChangedBefore = changed;
       const { u, v } = AXES[axis];
       const tex = this.textures[axis];
       const data = tex.image.data;
@@ -228,7 +230,7 @@ export default class ProceduralWashMaterial {
           }
         }
       }
-      if (changed) this.dirtyTextures.add(axis);
+      if (changed !== axisChangedBefore) this.dirtyTextures.add(axis);
     }
 
     return { changed, rinsed };
