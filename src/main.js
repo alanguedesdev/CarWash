@@ -409,7 +409,7 @@ function nextCustomer() {
 }
 let dialogueLine = 0;
 let currentCustomer = null;
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+currentCustomer.id+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
+function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+encodeURIComponent(currentCustomer.avatar||currentCustomer.id)+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
