@@ -418,7 +418,7 @@ async function transitionTo(nextScene, label) {
   sceneTransition.classList.add("is-visible");
   await wait(500);
 
-  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="menu"||nextScene==="wash"||nextScene==="delivery"; if(nextScene==="menu")updateMenuProgress(); hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
+  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="wash"||nextScene==="delivery"; if(nextScene==="menu")updateMenuProgress(); hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
 
   await wait(120);
   sceneTransition.classList.remove("is-visible");
@@ -628,7 +628,7 @@ function loadCar() {
       carModel.scale.setScalar(5.5 / maxDimension);
 
       carPivot.add(carModel);
-      carPivot.visible = activeScene === "menu" || activeScene === "wash" || activeScene === "delivery";
+      carPivot.visible = activeScene === "wash" || activeScene === "delivery";
       carModel.updateMatrixWorld(true);
 
       const scaledBounds = new THREE.Box3().setFromObject(carModel);
