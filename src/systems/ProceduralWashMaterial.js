@@ -38,6 +38,7 @@ export default class ProceduralWashMaterial {
     this.boundsMin = bounds.min.clone();
     this.boundsSize = bounds.getSize(new THREE.Vector3());
     this.fadeIndices = new Set();
+    this.foamPixels = 0;
     this.lastFadeUpdate = 0;
     this.textures = AXES.map(() => this.createMaskTexture());
     this.dirtyTextures = new Set();
@@ -199,7 +200,7 @@ export default class ProceduralWashMaterial {
           if (tool === "water") {
             if (data[offset + 1] < strength) { data[offset + 1] = strength; changed = true; }
             if (rinsed) {
-              if (data[offset + 2] || data[offset + 3]) changed = true;
+              if (data[offset + 2] || data[offset + 3]) { changed = true; this.foamPixels = Math.max(0, this.foamPixels - 1); }
               data[offset + 2] = 0;
               data[offset + 3] = 0;
               if (data[offset + 1] > 0) {
@@ -209,11 +210,13 @@ export default class ProceduralWashMaterial {
             }
           } else if (tool === "soap") {
             if (data[offset + 1] > 12 && data[offset + 2] < strength) {
+              if (data[offset + 2] <= 12 && data[offset + 3] <= 12) this.foamPixels++;
               data[offset + 2] = strength;
               changed = true;
             }
           } else if (tool === "sponge") {
             if (data[offset + 1] > 12 && data[offset + 2] > 12) {
+              if (data[offset + 2] <= 12 && data[offset + 3] <= 12) this.foamPixels++;
               if (data[offset] < strength) { data[offset] = strength; changed = true; }
               if (data[offset + 3] < strength) { data[offset + 3] = strength; changed = true; }
             }
@@ -236,12 +239,7 @@ export default class ProceduralWashMaterial {
   }
 
   getFoamCount() {
-    let count = 0;
-    for (const texture of this.textures) {
-      const data = texture.image.data;
-      for (let i = 3; i < data.length; i += 4) if (data[i] > 12 || data[i - 1] > 12) count++;
-    }
-    return count;
+    return this.foamPixels;
   }
 
   setDirtProfile(profile) {
