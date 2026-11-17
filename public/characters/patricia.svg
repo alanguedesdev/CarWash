@@ -1,31 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" role="img" aria-labelledby="title desc">
-<title id="title">Patricia</title>
-<desc id="desc">Retrato ilustrado de cliente do CarWash, enquadrado dos ombros para cima.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="title desc">
+<title id="title">Patrícia</title><desc id="desc">Personagem cartunesco 2D do Meu Lava-Jato, com formas arredondadas, expressão amigável e cores vivas.</desc>
 <defs>
- <linearGradient id="skin" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#e7b18d"/><stop offset="1" stop-color="#e7b18d"/></linearGradient>
- <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9c61cf"/><stop offset="1" stop-color="#43313e"/></linearGradient>
+ <linearGradient id="skin" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#d69a79"/><stop offset="1" stop-color="#d69a79"/></linearGradient>
+ <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6685b9"/><stop offset="1" stop-color="#6685b9" /></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
 </defs>
-<!-- Corpo e pescoço -->
-<path d="M28 520 Q36 414 104 386 Q145 365 200 365 Q255 365 296 386 Q364 414 372 520Z" fill="url(#shirt)" stroke="#43313e" stroke-width="9" stroke-linejoin="round"/>
-<path d="M164 350 L164 417 Q200 447 236 417 L236 350Z" fill="url(#skin)"/>
-<!-- Cabelo posterior, sempre atrás do rosto -->
-<g fill="#4b3029" stroke="#43313e" stroke-width="8" stroke-linejoin="round">
-<path d="M103 154 Q83 225 99 320 Q108 345 132 317 L137 187Z M297 154 Q317 225 301 320 Q292 345 268 317 L263 187Z"/>
-</g>
+<!-- Silhueta e roupa com curvas suaves -->
+<path d="M22 560 Q30 435 95 401 Q137 378 200 378 Q263 378 305 401 Q370 435 378 560Z" fill="url(#shirt)" stroke="#344b50" stroke-width="10" stroke-linejoin="round"/>
+<path d="M145 375 Q200 420 255 375 L250 445 Q200 482 150 445Z" fill="#d69a79" stroke="#344b50" stroke-width="7" stroke-linejoin="round"/>
+<path d="M38 560 Q52 460 116 426 Q150 410 200 410 Q250 410 284 426 Q348 460 362 560Z" fill="#6685b9" opacity=".95"/>
+<path d="M155 420 Q200 452 245 420" fill="none" stroke="#f0c56a" stroke-width="9" stroke-linecap="round"/>
+<path d="M99 158 Q75 90 130 55 Q205 10 277 54 Q330 90 302 182 L296 330 Q275 367 250 348 L252 178Z" fill="#3b2926" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
 <!-- Orelhas e rosto -->
-<path d="M112 208 Q79 188 83 242 Q87 281 119 278 M288 208 Q321 188 317 242 Q313 281 281 278" fill="url(#skin)" stroke="#43313e" stroke-width="7"/>
-<path d="M112 157 Q112 104 200 100 Q288 104 288 157 L281 274 Q274 346 200 365 Q126 346 119 274Z" fill="url(#skin)" stroke="#43313e" stroke-width="8" stroke-linejoin="round"/>
-<!-- Cabelo frontal: não invade olhos, nariz ou boca -->
-<g fill="#4b3029" stroke="#43313e" stroke-width="8" stroke-linejoin="round"><path d="M98 180 Q82 67 201 49 Q318 53 314 181 Q264 145 220 156 Q154 176 98 180Z"/></g>
+<ellipse cx="91" cy="248" rx="27" ry="40" fill="#d69a79" stroke="#344b50" stroke-width="8"/>
+<ellipse cx="309" cy="248" rx="27" ry="40" fill="#d69a79" stroke="#344b50" stroke-width="8"/>
+<path d="M108 150 Q112 91 200 88 Q288 91 292 150 L282 280 Q272 365 200 382 Q128 365 118 280Z" fill="url(#skin)" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
+<!-- Franja -->
+<path d="M105 190 Q84 89 158 56 Q245 20 301 93 L293 184 Q251 143 211 148 Q156 163 105 190Z" fill="#3b2926" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
 
-<!-- Expressão -->
-<path d="M139 218 Q160 204 181 218 M219 218 Q240 204 261 218" fill="none" stroke="#43313e" stroke-width="9" stroke-linecap="round"/>
-<ellipse cx="160" cy="245" rx="13" ry="17" fill="#fff"/><ellipse cx="240" cy="245" rx="13" ry="17" fill="#fff"/>
-<ellipse cx="163" cy="248" rx="7" ry="11" fill="#26383c"/><ellipse cx="243" cy="248" rx="7" ry="11" fill="#26383c"/>
-<path d="M200 249 Q184 290 199 298 Q210 303 220 295" fill="none" stroke="#9c5f50" stroke-width="8" stroke-linecap="round"/>
+<!-- Expressão alegre -->
+<path d="M137 222 Q158 207 180 222 M220 222 Q242 207 263 222" fill="none" stroke="#344b50" stroke-width="8" stroke-linecap="round"/>
+<ellipse cx="160" cy="248" rx="14" ry="18" fill="#fff"/><ellipse cx="240" cy="248" rx="14" ry="18" fill="#fff"/>
+<ellipse cx="163" cy="251" rx="7" ry="10" fill="#26383c"/><ellipse cx="243" cy="251" rx="7" ry="10" fill="#26383c"/>
+<circle cx="165" cy="247" r="3.5" fill="#fff"/><circle cx="245" cy="247" r="3.5" fill="#fff"/>
+<path d="M200 254 Q186 284 199 294 Q208 299 218 291" fill="none" stroke="#a76756" stroke-width="7" stroke-linecap="round"/>
 
-<path d="M164 319 Q200 343 236 319" fill="none" stroke="#9e4c50" stroke-width="10" stroke-linecap="round"/>
-<path d="M171 318 Q200 331 229 318" fill="none" stroke="#fff0e5" stroke-width="5" stroke-linecap="round"/>
-<g fill="none" stroke="#263b45" stroke-width="7"><rect x="129" y="223" width="62" height="46" rx="14"/><rect x="209" y="223" width="62" height="46" rx="14"/><path d="M191 242 Q200 235 209 242"/></g>
+<path d="M151 320 Q200 365 249 320 Q240 357 200 360 Q160 357 151 320Z" fill="#8e3f43"/>
+<path d="M166 324 Q200 346 234 324" fill="none" stroke="#fff2e8" stroke-width="8" stroke-linecap="round"/>
+<ellipse cx="128" cy="286" rx="18" ry="9" fill="#e98f83" opacity=".38"/><ellipse cx="272" cy="286" rx="18" ry="9" fill="#e98f83" opacity=".38"/>
+<g fill="none" stroke="#344b50" stroke-width="7"><rect x="119" y="218" width="67" height="45" rx="15"/><rect x="214" y="218" width="67" height="45" rx="15"/><path d="M186 237 Q200 230 214 237"/></g>
 </svg>
