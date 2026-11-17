@@ -2,7 +2,6 @@
 export const CUSTOMERS = [
   {
     "id": "rafael",
-    "avatarSvg": "avatar-rafael.svg",
     "name": "Rafael Martins",
     "age": 28,
     "occupation": "Analista de sistemas",
@@ -17,7 +16,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "camila",
-    "avatarSvg": "avatar-mariana.svg",
     "name": "Camila Souza",
     "age": 26,
     "occupation": "Arquiteta",
@@ -32,7 +30,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "bruno",
-    "avatarSvg": "avatar-lucas.svg",
     "name": "Bruno Almeida",
     "age": 34,
     "occupation": "Representante comercial",
@@ -47,7 +44,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "fernanda",
-    "avatarSvg": "avatar-helena.svg",
     "name": "Fernanda Costa",
     "age": 31,
     "occupation": "Médica veterinária",
@@ -62,7 +58,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "lucas",
-    "avatarSvg": "avatar-lucas.svg",
     "name": "Lucas Ferreira",
     "age": 19,
     "occupation": "Estudante",
@@ -77,7 +72,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "mariana",
-    "avatarSvg": "avatar-mariana.svg",
     "name": "Mariana Oliveira",
     "age": 29,
     "occupation": "Fotógrafa",
@@ -92,7 +86,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "eduardo",
-    "avatarSvg": "avatar-rafael.svg",
     "name": "Eduardo Lima",
     "age": 46,
     "occupation": "Professor",
@@ -107,7 +100,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "patricia",
-    "avatarSvg": "avatar-helena.svg",
     "name": "Patrícia Mendes",
     "age": 38,
     "occupation": "Contadora",
@@ -122,7 +114,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "thiago",
-    "avatarSvg": "avatar-lucas.svg",
     "name": "Thiago Santos",
     "age": 27,
     "occupation": "Personal trainer",
@@ -137,7 +128,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "juliana",
-    "avatarSvg": "avatar-mariana.svg",
     "name": "Juliana Rocha",
     "age": 24,
     "occupation": "Designer",
@@ -152,7 +142,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "andre",
-    "avatarSvg": "avatar-lucas.svg",
     "name": "André Ribeiro",
     "age": 22,
     "occupation": "Estudante de jogos digitais",
@@ -167,7 +156,6 @@ export const CUSTOMERS = [
   },
   {
     "id": "roberto",
-    "avatarSvg": "avatar-rafael.svg",
     "name": "Roberto Nascimento",
     "age": 63,
     "occupation": "Aposentado",
