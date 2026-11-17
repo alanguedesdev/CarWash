@@ -167,11 +167,6 @@ export default class ProceduralWashMaterial {
   paint(point, radius, tool, time = this.currentTime, normal = new THREE.Vector3(0, 1, 0)) {
     let changed = false;
     let rinsed = false;
-    const centerMask = this.sample(point, normal);
-    if (tool === "soap" && centerMask.wet < 0.08) return { changed: false, rinsed: false };
-    if (tool === "sponge" && centerMask.soap < 0.08) return { changed: false, rinsed: false };
-    if (tool === "water") rinsed = centerMask.soap > 0.08 || centerMask.foam > 0.08;
-
     const size = [this.boundsSize.x, this.boundsSize.y, this.boundsSize.z];
     const axisWeights = [Math.pow(Math.abs(normal.x), 4), Math.pow(Math.abs(normal.y), 4), Math.pow(Math.abs(normal.z), 4)];
     const axisWeightSum = axisWeights.reduce((sum, value) => sum + value, 0) || 1;
@@ -205,8 +200,10 @@ export default class ProceduralWashMaterial {
 
           if (tool === "water") {
             if (data[offset + 1] < strength) { data[offset + 1] = strength; changed = true; }
-            if (rinsed) {
-              if (data[offset + 2] || data[offset + 3]) { changed = true; this.foamPixels = Math.max(0, this.foamPixels - 1); }
+            if (data[offset + 2] > 8 || data[offset + 3] > 8) {
+              rinsed = true;
+              changed = true;
+              this.foamPixels = Math.max(0, this.foamPixels - 1);
               data[offset + 2] = 0;
               data[offset + 3] = 0;
               if (data[offset + 1] > 0) {
