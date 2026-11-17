@@ -322,6 +322,19 @@ hud.innerHTML = `
       <small class="menu-hint">TOQUE PARA CONTINUAR</small>
     </div>
     <div class="main-menu-footer"><span>CAR WASH</span><i></i><span>LAVE · EVOLUA · CONQUISTE</span></div>
+      <nav class="menu-quick-actions" aria-label="Atalhos do menu">
+        <button type="button" data-menu-action="settings" aria-label="Configurações" title="Configurações"><span>⚙</span></button>
+        <button type="button" data-menu-action="achievements" aria-label="Conquistas" title="Conquistas"><span>🏆</span></button>
+        <button type="button" data-menu-action="shop" aria-label="Loja" title="Loja"><span>🛒</span></button>
+      </nav>
+      <section class="menu-info-panel" id="menu-info-panel" hidden role="dialog" aria-modal="true" aria-labelledby="menu-info-title">
+        <div class="menu-info-card">
+          <button class="menu-info-close" type="button" aria-label="Fechar">×</button>
+          <small>MEU LAVA-JATO</small>
+          <h2 id="menu-info-title">Configurações</h2>
+          <div id="menu-info-content"></div>
+        </div>
+      </section>
   </section>
   <section id="customer-dialogue" class="customer-dialogue" hidden>
     <div class="dialogue-scene-glow"></div>
@@ -368,10 +381,29 @@ const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
 const completionCopy = hud.querySelector("#completion-copy");
-const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
+const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),menuInfoPanel=hud.querySelector("#menu-info-panel"),menuInfoTitle=hud.querySelector("#menu-info-title"),menuInfoContent=hud.querySelector("#menu-info-content"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
-const toolButtons=[...hud.querySelectorAll("[data-tool]")]; menuProgress.textContent="Carreira salva · "+career.stats.completedJobs+" serviços concluídos";
+const toolButtons=[...hud.querySelectorAll("[data-tool]")];
+function updateMenuProgress(){const jobs=career.stats.completedJobs;menuProgress.textContent="Carreira salva • "+jobs+" "+(jobs===1?"serviço concluído":"serviços concluídos");}
+updateMenuProgress();
+function closeMenuInfo(){menuInfoPanel.hidden=true;}
+function openMenuInfo(type){
+  if(type==="shop"){career.openShop();return;}
+  if(type==="achievements"){
+    const jobs=career.stats.completedJobs, level=career.getLevel();
+    menuInfoTitle.textContent="Conquistas";
+    menuInfoContent.innerHTML=`<div class="menu-info-stat"><strong>${jobs}</strong><span>serviços concluídos</span></div><div class="menu-info-stat"><strong>${level.level}</strong><span>nível atual · ${level.name}</span></div><p>Continue atendendo clientes para evoluir seu lava-jato e liberar novos equipamentos.</p>`;
+  } else {
+    menuInfoTitle.textContent="Configurações";
+    menuInfoContent.innerHTML=`<p>Controles do jogo</p><ul><li>Arraste o cenário para girar o veículo.</li><li>Selecione água, sabão ou bucha para lavar.</li><li>Use a roda do mouse para girar a plataforma.</li></ul><p class="menu-info-note">Seu progresso é salvo automaticamente neste dispositivo.</p>`;
+  }
+  menuInfoPanel.hidden=false;
+}
+hud.querySelectorAll("[data-menu-action]").forEach(button=>button.addEventListener("click",()=>openMenuInfo(button.dataset.menuAction)));
+hud.querySelector(".menu-info-close").addEventListener("click",closeMenuInfo);
+menuInfoPanel.addEventListener("click",event=>{if(event.target===menuInfoPanel)closeMenuInfo();});
+window.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenuInfo();});
 
 function setMessage(text) {
   message.textContent = text;
@@ -386,7 +418,7 @@ async function transitionTo(nextScene, label) {
   sceneTransition.classList.add("is-visible");
   await wait(500);
 
-  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="wash"||nextScene==="delivery"; hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
+  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="menu"||nextScene==="wash"||nextScene==="delivery"; hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
 
   await wait(120);
   sceneTransition.classList.remove("is-visible");
@@ -596,6 +628,7 @@ function loadCar() {
       carModel.scale.setScalar(5.5 / maxDimension);
 
       carPivot.add(carModel);
+      carPivot.visible = activeScene === "menu" || activeScene === "wash" || activeScene === "delivery";
       carModel.updateMatrixWorld(true);
 
       const scaledBounds = new THREE.Box3().setFromObject(carModel);
