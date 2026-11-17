@@ -463,6 +463,23 @@ function setCustomerPortrait(customer){
   dialoguePortrait.alt = "Ilustração de " + customer.name;
   dialoguePortrait.src = import.meta.env.BASE_URL + "characters/" + encodeURIComponent(safeId) + ".svg";
 }
+function setCustomerPortrait(customer){
+  const allowedAvatars = new Set(["avatar-rafael.svg","avatar-mariana.svg","avatar-lucas.svg","avatar-helena.svg"]);
+  const avatarFile = allowedAvatars.has(customer?.avatarSvg) ? customer.avatarSvg : "avatar-rafael.svg";
+  dialoguePortrait.hidden = false;
+  dialoguePortrait.loading = "eager";
+  dialoguePortrait.decoding = "async";
+  dialoguePortrait.draggable = false;
+  dialoguePortrait.onerror = () => {
+    dialoguePortrait.onerror = null;
+    if (avatarFile !== "avatar-rafael.svg") {
+      dialoguePortrait.src = import.meta.env.BASE_URL + "characters/avatar-rafael.svg";
+      dialoguePortrait.alt = "Cliente do Meu Lava-Jato";
+    } else dialoguePortrait.hidden = true;
+  };
+  dialoguePortrait.alt = customer.name;
+  dialoguePortrait.src = import.meta.env.BASE_URL + "characters/" + avatarFile;
+}
 function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";setCustomerPortrait(currentCustomer);}
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
