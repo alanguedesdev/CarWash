@@ -79,9 +79,9 @@ export default class ProceduralWashMaterial {
             "dirtColor*=mix(.72,1.25,mudGrain);",
             "diffuseColor.rgb=mix(diffuseColor.rgb,dirtColor,dirt*.76);",
             "float foamNoise=washTri(vWashPos*19.+vec3(0.,uWashTime*.025,0.),vWashNormal,1.);",
-            "float soapFoam=washMask.b*smoothstep(.22,.74,foamNoise);",
-            "float denseFoam=washMask.a*smoothstep(.18,.68,foamNoise*.72+washTri(vWashPos*43.,vWashNormal,1.)*.28);",
-            "diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.0,.96,1.0),soapFoam*.72);",
+            "float soapVariation=washTri(vWashPos*7.5+vec3(0.,uWashTime*.012,0.),vWashNormal,1.);",
+            "vec3 soapColor=mix(vec3(.30,.72,.78),vec3(.72,.94,.96),soapVariation);",
+            "diffuseColor.rgb=mix(diffuseColor.rgb,soapColor,washMask.b*.48);",
             "vec3 dirtyFoam=mix(vec3(.91,.97,.99),vec3(.48,.43,.36),dirt*.62);",
             "vec3 bubbleCoord=vWashPos*vec3(12.,9.,12.);",
             "vec3 bubbleCell=floor(bubbleCoord);",
@@ -90,16 +90,17 @@ export default class ProceduralWashMaterial {
             "float bubbleDistance=length(bubbleLocal);",
             "float bubbleFill=1.-smoothstep(bubbleRadius-.035,bubbleRadius+.015,bubbleDistance);",
             "float bubbleRim=smoothstep(bubbleRadius-.085,bubbleRadius-.035,bubbleDistance);",
-            "vec3 cartoonFoam=mix(dirtyFoam,vec3(.98,1.,1.),bubbleFill*.9);",
-            "cartoonFoam=mix(cartoonFoam,vec3(.02,.48,.62),bubbleRim*.9);",
-            "diffuseColor.rgb=mix(diffuseColor.rgb,cartoonFoam,denseFoam*.98);",
-            "diffuseColor.rgb*=mix(1.,.74,washMask.g);"
+            "float foamVariation=washTri(vWashPos*5.5,vWashNormal,1.);",
+            "vec3 cartoonFoam=mix(dirtyFoam,vec3(.98,1.,1.),.28+bubbleFill*.42+foamVariation*.12);",
+            "cartoonFoam=mix(cartoonFoam,vec3(.02,.48,.62),bubbleRim*.32);",
+            "diffuseColor.rgb=mix(diffuseColor.rgb,cartoonFoam,washMask.a*.96);",
+            "diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.94+vec3(.025,.055,.065),washMask.g*.32);"
           ].join("\n"))
           .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n" + [
             "vec4 washSurface=washChannels(vWashPos,vWashNormal);",
-            "roughnessFactor=mix(roughnessFactor,.065,washSurface.g*.9);",
-            "roughnessFactor=mix(roughnessFactor,.28,washSurface.b*.38);",
-            "roughnessFactor=mix(roughnessFactor,.19,washSurface.a*.55);"
+            "roughnessFactor=mix(roughnessFactor,.12,washSurface.g*.88);",
+            "roughnessFactor=mix(roughnessFactor,.24,washSurface.b*.52);",
+            "roughnessFactor=mix(roughnessFactor,.3,washSurface.a*.62);"
           ].join("\n"))
           .replace("#include <normal_fragment_maps>", "#include <normal_fragment_maps>\n" + [
             "vec4 washFlow=washChannels(vWashPos,vWashNormal);",
@@ -208,6 +209,7 @@ export default class ProceduralWashMaterial {
               data[offset + 3] = 0;
               if (data[offset + 1] > 0) {
                 fadeStarts[fadeIndex] = time;
+                tex.userData.fadeOrigins[fadeIndex] = data[offset + 1];
                 this.fadeIndices.add(axis * TEXTURE_SIZE * TEXTURE_SIZE + fadeIndex);
               }
             }
