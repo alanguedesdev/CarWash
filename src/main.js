@@ -337,7 +337,8 @@ hud.innerHTML = `
       </section>
   </section>
   <section id="customer-dialogue" class="customer-dialogue" hidden>
-    <div class="dialogue-scene-glow"></div>
+    <div class="dialogue-brand"><strong>MEU LAVA-JATO</strong><span>Todo grande negócio começa pequeno!</span></div>
+    <div class="dialogue-scene-glow" aria-hidden="true"></div>
     <div class="dialogue-character" aria-hidden="true"><img id="dialogue-portrait" alt=""></div>
     <div class="dialogue-card">
       <div class="dialogue-card-top"><span class="dialogue-live-dot"></span><small>ATENDIMENTO · NOVO CLIENTE</small><span class="dialogue-step">● ● ●</span></div>
