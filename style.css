@@ -1199,3 +1199,6 @@ body {
 @media(max-width:900px){.main-menu-card{width:min(440px,53vw)}}
 @media(max-width:560px){.main-menu{place-items:center;padding:12px;background:#1d30314a}.main-menu-card{width:min(470px,100%);padding:22px 18px}.menu-quick-actions{top:10px;right:10px;gap:6px}.menu-quick-actions button{width:38px;border-radius:6px}.menu-quick-actions button span{font-size:19px}.main-menu-footer{display:none}}
 @media(max-height:520px) and (orientation:landscape){.main-menu-card{width:min(430px,48vw);padding:15px 22px}.menu-brand-mark{margin-bottom:9px}.menu-title-line{margin:7px 0 9px}.menu-feature-row{margin:9px 0 4px}#menu-progress{margin:6px 0 8px}.menu-quick-actions{top:12px;right:14px}}
+
+/* A loja também pode ser aberta diretamente pelo atalho do menu inicial. */
+.game-hud.scene-menu .shop-overlay:not([hidden]){display:grid!important;z-index:45}
