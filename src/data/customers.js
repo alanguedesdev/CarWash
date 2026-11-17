@@ -167,5 +167,20 @@ export const CUSTOMERS = [
       "Tenho muito carinho pelo meu carro e prefiro serviços feitos com calma e cuidado.",
       "Gostaria de uma lavagem manual cuidadosa, sem produtos agressivos e preservando a pintura."
     ]
+  },
+  {
+    "id": "helena",
+    "name": "Helena Martins",
+    "age": 32,
+    "occupation": "Empreendedora",
+    "personality": "Alegre e comunicativa",
+    "request": "Quero uma lavagem completa para deixar meu carro pronto para a semana.",
+    "service": "Lavagem completa",
+    "avatarSvg": "gemini-svg.svg",
+    "lines": [
+      "Oi! Sou Helena, tudo bem? Deixei meu carro acumular sujeira durante a semana.",
+      "Tenho alguns compromissos e queria o carro bem limpinho e cheiroso.",
+      "Pode fazer uma lavagem completa? Quero sair daqui com ele brilhando!"
+    ]
   }
 ];
