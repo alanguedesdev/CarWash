@@ -391,7 +391,7 @@ const CUSTOMER_AVATARS = {
   helena: "gemini-svg.svg",
 };
 const DEFAULT_CUSTOMER_AVATARS = Object.values(CUSTOMER_AVATARS);
-const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/dialogue-background.svg`;
+const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/fundo-svg.svg`;
 customerDialogue.style.setProperty("--dialogue-background-image", `url("${dialogueBackgroundUrl}")`);
 const dialogueBackgroundPreload = new Image(); dialogueBackgroundPreload.decoding = "async"; dialogueBackgroundPreload.src = dialogueBackgroundUrl;
 const sceneTransition = hud.querySelector("#scene-transition");
