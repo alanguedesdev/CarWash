@@ -321,7 +321,8 @@ export default class SceneManager {
     }
 
     this.menuBackdrop.visible = false;
-    // A recepção 3D é preservada para outras cenas; o diálogo usa cenário estático em CSS.\n    this.reception.visible = name === "reception";
+    // A recepção 3D é preservada para outras cenas; o diálogo usa cenário estático em CSS.
+    this.reception.visible = name === "reception";
     this.customer.visible = false;
     this.washEnvironment.visible = name === "wash";
     this.delivery.visible = name === "delivery";
