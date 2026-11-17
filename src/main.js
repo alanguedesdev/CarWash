@@ -392,7 +392,7 @@ const CUSTOMER_AVATARS = {
 };
 const DEFAULT_CUSTOMER_AVATARS = Object.values(CUSTOMER_AVATARS);
 const dialogueBackgroundUrl = `${import.meta.env.BASE_URL}images/dialogue-background.svg`;
-customerDialogue.style.backgroundImage = `linear-gradient(90deg,rgba(28,43,42,.08),rgba(28,43,42,0) 58%),url("${dialogueBackgroundUrl}")`;
+customerDialogue.style.setProperty("--dialogue-background-image", `url("${dialogueBackgroundUrl}")`);
 const dialogueBackgroundPreload = new Image(); dialogueBackgroundPreload.decoding = "async"; dialogueBackgroundPreload.src = dialogueBackgroundUrl;
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
