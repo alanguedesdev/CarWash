@@ -1,32 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="title desc">
-<title id="title">Camila</title><desc id="desc">Personagem cartunesco 2D do Meu Lava-Jato, com formas arredondadas, expressão amigável e cores vivas.</desc>
+<title id="title">Camila</title><desc id="desc">Personagem 2D do Meu Lava-Jato em estilo cartoon toy-like, com formas orgânicas, volume suave e expressão acolhedora.</desc>
 <defs>
- <linearGradient id="skin" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#bd7959"/><stop offset="1" stop-color="#bd7959"/></linearGradient>
- <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8a5ac4"/><stop offset="1" stop-color="#8a5ac4" /></linearGradient>
- <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+ <linearGradient id="skin" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#bd7959"/><stop offset=".58" stop-color="#bd7959"/><stop offset="1" stop-color="#bd7959"/></linearGradient>
+ <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8a5ac4"/><stop offset="1" stop-color="#8a5ac4" /></linearGradient>
+ <linearGradient id="hair" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#3a2028"/><stop offset="1" stop-color="#3a2028" /></linearGradient>
+ <radialGradient id="cheek"><stop stop-color="#e98e83" stop-opacity=".42"/><stop offset="1" stop-color="#e98e83" stop-opacity="0"/></radialGradient>
+ <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
 </defs>
-<!-- Silhueta e roupa com curvas suaves -->
-<path d="M22 560 Q30 435 95 401 Q137 378 200 378 Q263 378 305 401 Q370 435 378 560Z" fill="url(#shirt)" stroke="#344b50" stroke-width="10" stroke-linejoin="round"/>
-<path d="M145 375 Q200 420 255 375 L250 445 Q200 482 150 445Z" fill="#bd7959" stroke="#344b50" stroke-width="7" stroke-linejoin="round"/>
-<path d="M38 560 Q52 460 116 426 Q150 410 200 410 Q250 410 284 426 Q348 460 362 560Z" fill="#8a5ac4" opacity=".95"/>
-<path d="M155 420 Q200 452 245 420" fill="none" stroke="#f4b8cf" stroke-width="9" stroke-linecap="round"/>
-<path d="M99 158 Q75 90 130 55 Q205 10 277 54 Q330 90 302 182 L296 330 Q275 367 250 348 L252 178Z" fill="#3a2028" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
-<!-- Orelhas e rosto -->
-<ellipse cx="91" cy="248" rx="27" ry="40" fill="#bd7959" stroke="#344b50" stroke-width="8"/>
-<ellipse cx="309" cy="248" rx="27" ry="40" fill="#bd7959" stroke="#344b50" stroke-width="8"/>
-<path d="M108 150 Q112 91 200 88 Q288 91 292 150 L282 280 Q272 365 200 382 Q128 365 118 280Z" fill="url(#skin)" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
-<!-- Franja -->
-<path d="M92 210 Q65 100 135 65 Q190 20 265 55 Q337 90 309 220 Q286 174 268 155 Q220 186 92 210Z" fill="#3a2028" stroke="#344b50" stroke-width="9" stroke-linejoin="round"/>
+<!-- sombra de apoio -->
+<ellipse cx="200" cy="550" rx="145" ry="13" fill="#263b38" opacity=".12" filter="url(#softShadow)"/>
+<!-- busto com silhueta arredondada -->
+<path d="M22 560 C30 474 57 428 105 404 C132 390 161 384 200 384 C239 384 268 390 295 404 C343 428 370 474 378 560Z" fill="url(#shirt)"/>
+<path d="M145 368 C151 393 150 414 132 430 C151 451 176 463 200 463 C224 463 249 451 268 430 C250 414 249 393 255 368Z" fill="#bd7959"/>
+<!-- sombra suave sob o queixo e no pescoço -->
+<path d="M145 373 C164 394 181 402 200 402 C219 402 236 394 255 373 L254 417 C231 437 169 437 146 417Z" fill="#754c40" opacity=".16"/>
+<!-- cabelo posterior, massa orgânica contínua -->
+<path d="M91 183 C75 111 105 47 171 32 C235 17 296 49 313 111 C327 163 307 247 304 304 C299 355 265 389 236 384 L252 191Z" fill="url(#hair)"/>
+<g fill="#3a2028"><circle cx="112" cy="100" r="31"/><circle cx="151" cy="75" r="34"/><circle cx="195" cy="67" r="34"/><circle cx="240" cy="76" r="34"/><circle cx="283" cy="106" r="31"/></g>
+<!-- orelhas parcialmente integradas à cabeça -->
+<path d="M119 224 C94 204 79 224 86 258 C91 284 107 297 126 286Z" fill="#bd7959"/>
+<path d="M281 224 C306 204 321 224 314 258 C309 284 293 297 274 286Z" fill="#bd7959"/>
+<path d="M105 246 Q113 235 122 250 M295 246 Q287 235 278 250" fill="none" stroke="#875b49" stroke-width="4" stroke-linecap="round" opacity=".22"/>
+<!-- rosto: queixo e mandíbula sem contorno duro -->
+<path d="M111 151 C111 101 151 78 200 78 C249 78 289 101 289 151 L282 265 C277 333 244 374 200 378 C156 374 123 333 118 265Z" fill="url(#skin)"/>
+<!-- sombra sob a franja -->
+<path d="M116 169 C139 137 163 132 200 137 C237 132 261 137 284 169 L279 190 C248 171 229 166 200 168 C171 166 152 171 121 190Z" fill="#3a2028" opacity=".13"/>
+<!-- franja arredondada, sem pontas rígidas -->
+<path d="M83 203 C63 141 79 73 132 42 C183 12 256 25 294 67 C331 108 321 169 302 211 C280 175 258 151 235 143 C194 173 137 188 83 203Z" fill="url(#hair)"/>
+<path d="M117 143 C133 94 169 70 205 70 C245 70 274 92 287 128 C259 108 237 105 215 118 C184 135 151 143 117 143Z" fill="#3a2028" opacity=".72"/>
+<!-- olhos e sobrancelhas expressivos -->
+<path d="M137 218 Q158 207 180 218 M220 218 Q242 207 263 218" fill="none" stroke="#684c40" stroke-width="5" stroke-linecap="round" opacity=".62"/>
+<ellipse cx="160" cy="246" rx="15" ry="19" fill="#fffdf8"/><ellipse cx="240" cy="246" rx="15" ry="19" fill="#fffdf8"/>
+<ellipse cx="163" cy="249" rx="7" ry="10" fill="#34413d"/><ellipse cx="243" cy="249" rx="7" ry="10" fill="#34413d"/>
+<circle cx="165" cy="245" r="3.5" fill="#fff"/><circle cx="245" cy="245" r="3.5" fill="#fff"/>
+<!-- nariz pequeno e boca sorridente -->
+<path d="M200 255 C190 278 188 291 200 295 C207 297 214 293 218 288" fill="none" stroke="#a96f5d" stroke-width="5" stroke-linecap="round" opacity=".5"/>
 
-<!-- Expressão alegre -->
-<path d="M137 222 Q158 207 180 222 M220 222 Q242 207 263 222" fill="none" stroke="#344b50" stroke-width="8" stroke-linecap="round"/>
-<ellipse cx="160" cy="248" rx="14" ry="18" fill="#fff"/><ellipse cx="240" cy="248" rx="14" ry="18" fill="#fff"/>
-<ellipse cx="163" cy="251" rx="7" ry="10" fill="#26383c"/><ellipse cx="243" cy="251" rx="7" ry="10" fill="#26383c"/>
-<circle cx="165" cy="247" r="3.5" fill="#fff"/><circle cx="245" cy="247" r="3.5" fill="#fff"/>
-<path d="M200 254 Q186 284 199 294 Q208 299 218 291" fill="none" stroke="#a76756" stroke-width="7" stroke-linecap="round"/>
-
-<path d="M151 320 Q200 365 249 320 Q240 357 200 360 Q160 357 151 320Z" fill="#8e3f43"/>
-<path d="M166 324 Q200 346 234 324" fill="none" stroke="#fff2e8" stroke-width="8" stroke-linecap="round"/>
-<ellipse cx="128" cy="286" rx="18" ry="9" fill="#e98f83" opacity=".38"/><ellipse cx="272" cy="286" rx="18" ry="9" fill="#e98f83" opacity=".38"/>
-<g fill="none" stroke="#344b50" stroke-width="7"><rect x="119" y="218" width="67" height="45" rx="15"/><rect x="214" y="218" width="67" height="45" rx="15"/><path d="M186 237 Q200 230 214 237"/></g>
+<path d="M153 316 C166 309 182 312 200 315 C218 312 234 309 247 316 C239 343 220 356 200 356 C180 356 161 343 153 316Z" fill="#934c4d" opacity=".9"/>
+<path d="M169 319 Q200 334 231 319" fill="none" stroke="#fff3e9" stroke-width="7" stroke-linecap="round"/>
+<!-- blush suave -->
+<ellipse cx="130" cy="286" rx="30" ry="18" fill="url(#cheek)"/><ellipse cx="270" cy="286" rx="30" ry="18" fill="url(#cheek)"/>
+<g fill="none" stroke="#72564a" stroke-width="5" opacity=".75"><rect x="119" y="222" width="67" height="42" rx="17"/><rect x="214" y="222" width="67" height="42" rx="17"/><path d="M186 239 Q200 233 214 239"/></g>
+<!-- detalhe de roupa -->
+<path d="M155 432 Q200 459 245 432" fill="none" stroke="#f4b8cf" stroke-width="7" stroke-linecap="round" opacity=".82"/>
 </svg>
