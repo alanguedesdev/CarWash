@@ -320,7 +320,7 @@ export default class SceneManager {
       throw new Error(`Cena desconhecida: ${name}`);
     }
 
-    this.menuBackdrop.visible = name === "menu";
+    this.menuBackdrop.visible = false;
     this.reception.visible = ["dialogue","reception"].includes(name);
     this.customer.visible = false;
     this.washEnvironment.visible = name === "wash";
