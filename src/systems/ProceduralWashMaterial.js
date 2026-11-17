@@ -57,7 +57,8 @@ export default class ProceduralWashMaterial {
         uWashBoundsSize: { value: this.boundsSize.clone() },
         uWashTime: { value: 0 },
         uDirtProfile: { value: profiles[dirtProfile] ?? 0 },
-        uWashMeshToModel: { value: meshToModel.clone() },\n        uWashMeshNormalMatrix: { value: new THREE.Matrix3().getNormalMatrix(meshToModel) },
+        uWashMeshToModel: { value: meshToModel.clone() },
+        uWashMeshNormalMatrix: { value: new THREE.Matrix3().getNormalMatrix(meshToModel) },
       };
       this.uniformSets.push(uniforms);
       material.onBeforeCompile = (shader) => {
