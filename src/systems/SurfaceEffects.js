@@ -13,8 +13,6 @@ export default class SurfaceEffects {
     this.surfaces = new Map();
     this.materials = new Map();
     this.dirtMarks = [];
-    this.soapZones = [];
-    this.wetZones = [];
     this.totalDirt = 0;
     this.cleanedDirt = 0;
     this.cleaningRadiusMultiplier = 1;
@@ -23,11 +21,35 @@ export default class SurfaceEffects {
     this.clock = new THREE.Clock();
     this.dirtProfile = "mud";
     this.lastBrushHit = null;
+    this.modelBounds = new THREE.Box3();
   }
 
   setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
     this.cleaningRadiusMultiplier = Math.max(1, cleaningRadiusMultiplier);
     this.rinseRadiusMultiplier = Math.max(1, rinseRadiusMultiplier);
+  }
+
+  calculateModelBounds(model, meshes) {
+    const bounds = new THREE.Box3();
+    for (const mesh of meshes) {
+      const geometry = mesh.geometry;
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
+      const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
+      const box = geometry.boundingBox;
+      for (let x = 0; x <= 1; x++) {
+        for (let y = 0; y <= 1; y++) {
+          for (let z = 0; z <= 1; z++) {
+            const point = new THREE.Vector3(
+              x ? box.max.x : box.min.x,
+              y ? box.max.y : box.min.y,
+              z ? box.max.z : box.min.z
+            ).applyMatrix4(meshToModel);
+            bounds.expandByPoint(point);
+          }
+        }
+      }
+    }
+    return bounds;
   }
 
   attachModel(model, { dirtProfile = this.dirtProfile } = {}) {
@@ -38,8 +60,6 @@ export default class SurfaceEffects {
     this.surfaces = new Map();
     this.materials = new Map();
     this.dirtMarks = [];
-    this.soapZones = [];
-    this.wetZones = [];
     this.cleanedDirt = 0;
     model.updateMatrixWorld(true);
 
@@ -54,15 +74,25 @@ export default class SurfaceEffects {
       if (size.length() > 0.001 && area > 0.002) candidates.push({ mesh, area });
     });
     candidates.sort((a, b) => b.area - a.area);
-
-    for (const { mesh, area } of candidates) {
-      this.surfaces.set(mesh.uuid, { mesh, area });
-      const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
-      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, { dirtProfile: this.dirtProfile, meshToModel }));
-    }
-    if (!this.surfaces.size) {
+    if (!candidates.length) {
       this.onMessage("Não foi possível preparar as superfícies do carro.");
       return false;
+    }
+
+    this.modelBounds = this.calculateModelBounds(model, candidates.map((item) => item.mesh));
+    if (this.modelBounds.isEmpty()) {
+      this.onMessage("Não foi possível calcular a área de lavagem do veículo.");
+      return false;
+    }
+
+    for (const { mesh, area } of candidates) {
+      const meshToModel = new THREE.Matrix4().copy(model.matrixWorld).invert().multiply(mesh.matrixWorld);
+      this.surfaces.set(mesh.uuid, { mesh, area, meshToModel });
+      this.materials.set(mesh.uuid, new ProceduralWashMaterial(mesh, {
+        dirtProfile: this.dirtProfile,
+        meshToModel,
+        bounds: this.modelBounds,
+      }));
     }
 
     const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
@@ -73,9 +103,13 @@ export default class SurfaceEffects {
         if (!sample) continue;
         const worldPoint = mesh.localToWorld(sample.point.clone());
         const modelPoint = model.worldToLocal(worldPoint);
+        const surface = this.surfaces.get(mesh.uuid);
+        const normalMatrix = new THREE.Matrix3().getNormalMatrix(surface.meshToModel);
+        const modelNormal = sample.normal.clone().applyMatrix3(normalMatrix).normalize();
         this.dirtMarks.push({
           mesh,
           position: modelPoint,
+          normal: modelNormal,
           wet: false,
           soapy: false,
           scrubbed: false,
@@ -83,10 +117,11 @@ export default class SurfaceEffects {
         });
       }
     }
+
     this.totalDirt = this.dirtMarks.length;
     this.onProgress(this.getProgress());
     this.onMessage("Superfície preparada. Molhe, ensaboe, esfregue e enxágue.");
-    console.info(`[SurfaceEffects] Shader triplanar aplicado em ${this.surfaces.size} peças; ${this.totalDirt} pontos de sujeira.`);
+    console.info(`[SurfaceEffects] Máscaras triplanares persistentes aplicadas em ${this.surfaces.size} malhas; ${this.totalDirt} pontos de sujeira.`);
     return true;
   }
 
@@ -107,16 +142,20 @@ export default class SurfaceEffects {
       let u = Math.random(), v = Math.random();
       if (u + v > 1) { u = 1 - u; v = 1 - v; }
       const point = a.clone().addScaledVector(b.clone().sub(a), u).addScaledVector(c.clone().sub(a), v);
-      if (b.clone().sub(a).cross(c.clone().sub(a)).lengthSq() > 0.0001) return { point };
+      const normal = b.clone().sub(a).cross(c.clone().sub(a)).normalize();
+      if (normal.lengthSq() > 0.5) return { point, normal };
     }
     return null;
   }
 
   getLocalHit(hit) {
-    if (!hit?.object?.isMesh || !hit.point || !this.model) return null;
+    if (!hit?.object?.isMesh || !hit.point || !this.model || !hit.face?.normal) return null;
     const mesh = hit.object;
-    if (!this.surfaces.has(mesh.uuid)) return null;
-    return { mesh, point: this.model.worldToLocal(hit.point.clone()) };
+    const surface = this.surfaces.get(mesh.uuid);
+    if (!surface) return null;
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(surface.meshToModel);
+    const normal = hit.face.normal.clone().applyMatrix3(normalMatrix).normalize();
+    return { mesh, point: this.model.worldToLocal(hit.point.clone()), normal };
   }
 
   applyTool(hit, tool) {
@@ -128,25 +167,24 @@ export default class SurfaceEffects {
       return false;
     }
 
-    const { mesh, point } = target;
+    const { mesh, point, normal } = target;
     const baseRadius = tool === "water"
       ? WATER_RADIUS * this.rinseRadiusMultiplier
       : RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
     const previous = this.lastBrushHit;
-    const canBridge = previous && previous.tool === tool;
+    const canBridge = previous && previous.tool === tool && previous.mesh === mesh;
     const distance = canBridge ? previous.point.distanceTo(point) : 0;
     const spacing = Math.max(baseRadius * 0.32, 0.035);
     const steps = canBridge ? Math.min(64, Math.max(1, Math.ceil(distance / spacing))) : 1;
     let changed = false;
 
     for (let i = 1; i <= steps; i++) {
-      const sample = canBridge
-        ? previous.point.clone().lerp(point, i / steps)
-        : point.clone();
-      changed = this.applyToolAtPoint(mesh, sample, tool) || changed;
+      const sample = canBridge ? previous.point.clone().lerp(point, i / steps) : point.clone();
+      const sampleNormal = canBridge ? previous.normal.clone().lerp(normal, i / steps).normalize() : normal;
+      changed = this.applyToolAtPoint(mesh, sample, sampleNormal, tool, baseRadius) || changed;
     }
 
-    this.lastBrushHit = { mesh, point: point.clone(), tool };
+    this.lastBrushHit = { mesh, point: point.clone(), normal: normal.clone(), tool };
     if (changed) {
       this.cleanedDirt = this.dirtMarks.filter((mark) => mark.removed).length;
       this.onProgress(this.getProgress());
@@ -158,120 +196,56 @@ export default class SurfaceEffects {
     this.lastBrushHit = null;
   }
 
-  applyToolAtPoint(mesh, point, tool) {
-    const brushRadius = tool === "water"
-      ? WATER_RADIUS * this.rinseRadiusMultiplier
-      : RADIUS * (tool === "sponge" ? this.cleaningRadiusMultiplier : 1);
-    const radiusSquared = brushRadius * brushRadius;
+  applyToolAtPoint(mesh, point, normal, tool, brushRadius) {
+    const shader = this.materials.get(mesh.uuid);
+    if (!shader) return false;
+    const result = shader.paint(point, brushRadius, tool, this.clock.getElapsedTime(), normal);
+    if (!result.changed) return false;
 
-    // Estados de lavagem são registrados por região, independentemente da
-    // existência de uma mancha de sujeira naquele ponto.
-    const nearbyWetZones = this.wetZones.filter((zone) =>
-      zone.position.distanceToSquared(point) <= radiusSquared
-    );
-    const nearbySoapZones = this.soapZones.filter((zone) =>
-      zone.position.distanceToSquared(point) <= radiusSquared
-    );
+    const radiusSquared = brushRadius * brushRadius;
     const nearbyMarks = this.dirtMarks.filter((mark) =>
-      !mark.removed && mark.position.distanceToSquared(point) <= radiusSquared
+      mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared * 1.25
     );
-    const affectedMeshes = new Set([
-      mesh,
-      ...nearbyMarks.map((mark) => mark.mesh),
-      ...nearbyWetZones.map((zone) => zone.mesh),
-      ...nearbySoapZones.map((zone) => zone.mesh),
-    ]);
 
     if (tool === "water") {
-      const rinsesExistingLayer = nearbySoapZones.length > 0 ||
-        nearbyMarks.some((mark) => mark.soapy || mark.scrubbed);
-
-      for (const targetMesh of affectedMeshes) {
-        const shader = this.materials.get(targetMesh.uuid);
-        if (!shader) continue;
-        shader.addStamp(point, brushRadius, 2);
-        if (rinsesExistingLayer) shader.addStamp(point, brushRadius * 1.08, 3);
-      }
-
-      // Keep distributed samples along the whole brush path. A wider merge
-      // radius caused consecutive samples to overwrite one another, leaving
-      // only the last part of a long stroke marked as wet.
-      const hasNearbyWetZone = this.wetZones.some((zone) =>
-        zone.mesh === mesh &&
-        zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.04
-      );
-      if (!hasNearbyWetZone) this.wetZones.push({ mesh, position: point.clone() });
-
       for (const mark of nearbyMarks) {
         mark.wet = true;
-        if (mark.scrubbed) mark.removed = true;
-        else if (rinsesExistingLayer) mark.soapy = false;
+        const markClean = shader.isCleanAt(mark.position, mark.normal);
+        if (result.rinsed && mark.scrubbed && markClean) {
+          mark.removed = true;
+          mark.soapy = false;
+        } else if (result.rinsed) {
+          mark.soapy = false;
+        }
       }
-
-      if (rinsesExistingLayer) {
-        this.soapZones = this.soapZones.filter((zone) =>
-          zone.position.distanceToSquared(point) > radiusSquared
-        );
-      }
-
-      if (this.wetZones.length > 256) this.wetZones.splice(0, this.wetZones.length - 256);
-      this.onMessage(rinsesExistingLayer
-        ? "Enxágue aplicado: espuma removida e pintura limpa/molhada."
+      this.onMessage(result.rinsed
+        ? "Enxágue aplicado: espuma removida e sujeira finalizada nesta região."
         : "Área molhada. Agora aplique o sabão.");
-      return true;
-    }
-
-    if (tool === "soap") {
-      if (!nearbyWetZones.length) return false;
-
-      for (const targetMesh of new Set([mesh, ...nearbyWetZones.map((zone) => zone.mesh)])) {
-        this.materials.get(targetMesh.uuid)?.addStamp(point, brushRadius, 1);
-        const duplicateZone = this.soapZones.some((zone) =>
-          zone.mesh === targetMesh &&
-          zone.position.distanceToSquared(point) <= brushRadius * brushRadius * 0.0324
-        );
-        if (!duplicateZone) this.soapZones.push({ mesh: targetMesh, position: point.clone() });
-      }
-      if (this.soapZones.length > 256) this.soapZones.splice(0, this.soapZones.length - 256);
+    } else if (tool === "soap") {
       for (const mark of nearbyMarks) {
-        if (mark.wet && !mark.removed) mark.soapy = true;
+        const mask = shader.sample(mark.position, mark.normal);
+        if (mark.wet && mask.soap > 0.05) mark.soapy = true;
       }
       this.onMessage("Sabão aplicado na região. Passe a bucha para esfregar.");
-      return true;
-    }
-
-    if (tool === "sponge") {
-      if (!nearbySoapZones.length) return false;
-
-      const eligibleMarks = nearbyMarks.filter((mark) =>
-        mark.wet && mark.soapy && !mark.removed
-      );
-      // Inclui explicitamente as malhas que possuem sujeira elegível. Em GLBs,
-      // a lataria costuma estar dividida em várias peças; limpar só a malha
-      // atingida pelo raycast atual fazia o progresso avançar sem limpar a
-      // textura das peças vizinhas.
-      const foamMeshes = new Set([
-        mesh,
-        ...nearbySoapZones.map((zone) => zone.mesh),
-        ...eligibleMarks.map((mark) => mark.mesh),
-      ]);
-
-      for (const targetMesh of foamMeshes) {
-        const shader = this.materials.get(targetMesh.uuid);
-        if (!shader) continue;
-
-        shader.addCleanStamp(point, brushRadius * 1.18);
-        shader.addStamp(point, brushRadius, 4);
+    } else if (tool === "sponge") {
+      for (const mark of nearbyMarks) {
+        const mask = shader.sample(mark.position, mark.normal);
+        if (mark.wet && mark.soapy && shader.isCleanAt(mark.position, mark.normal) && mask.foam > 0.05) {
+          mark.scrubbed = true;
+        }
       }
-
-      for (const mark of eligibleMarks) mark.scrubbed = true;
       this.onMessage("Bucha em ação! Sujeira removida e espuma pronta para o enxágue.");
-      return true;
     }
-    return false;
+
+    shader.flush();
+    return true;
   }
 
-  getFoamCount() { return this.soapZones.length; }
+  getFoamCount() {
+    let count = 0;
+    for (const shader of this.materials.values()) count += shader.getFoamCount();
+    return count;
+  }
 
   setDirtProfile(profile) {
     this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(profile) ? profile : "mud";
@@ -309,12 +283,11 @@ export default class SurfaceEffects {
     this.materials?.clear();
     this.surfaces?.clear();
     this.dirtMarks = [];
-    this.soapZones = [];
-    this.wetZones = [];
     this.lastBrushHit = null;
     this.model = null;
     this.totalDirt = 0;
     this.cleanedDirt = 0;
+    this.modelBounds?.makeEmpty();
     this.disposed = true;
   }
 }
