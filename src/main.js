@@ -371,7 +371,17 @@ const completionCopy = hud.querySelector("#completion-copy");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
-const toolButtons=[...hud.querySelectorAll("[data-tool]")]; menuProgress.textContent="Carreira salva · "+career.stats.completedJobs+" serviços concluídos";
+const toolButtons = [...hud.querySelectorAll("[data-tool]")];
+const defaultAvatarUrl = `${import.meta.env.BASE_URL}characters/default.svg`;
+
+function handleAvatarLoadError() {
+  dialoguePortrait.removeEventListener("error", handleAvatarLoadError);
+  dialoguePortrait.src = defaultAvatarUrl;
+}
+
+dialoguePortrait.addEventListener("error", handleAvatarLoadError);
+
+menuProgress.textContent = "Carreira salva · " + career.stats.completedJobs + " serviços concluídos";
 
 function setMessage(text) {
   message.textContent = text;
@@ -381,12 +391,24 @@ function wait(milliseconds) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+function applySceneVisibility(nextScene) {
+  sceneManager.show(nextScene);
+  activeScene = nextScene;
+  carPivot.visible = nextScene === "wash" || nextScene === "delivery";
+
+  hud.classList.toggle("scene-menu", nextScene === "menu");
+  hud.classList.toggle("scene-dialogue", nextScene === "dialogue");
+  hud.classList.toggle("scene-wash", nextScene === "wash");
+  hud.classList.toggle("scene-reception", nextScene === "menu" || nextScene === "dialogue");
+  hud.classList.toggle("scene-delivery", nextScene === "delivery");
+}
+
 async function transitionTo(nextScene, label) {
   sceneTransitionLabel.textContent = label;
   sceneTransition.classList.add("is-visible");
   await wait(500);
 
-  sceneManager.show(nextScene); activeScene=nextScene; carPivot.visible=nextScene==="wash"||nextScene==="delivery"; hud.classList.toggle("scene-menu",nextScene==="menu"); hud.classList.toggle("scene-dialogue",nextScene==="dialogue"); hud.classList.toggle("scene-wash",nextScene==="wash"); hud.classList.toggle("scene-reception",nextScene==="menu"||nextScene==="dialogue"); hud.classList.toggle("scene-delivery",nextScene==="delivery");
+  applySceneVisibility(nextScene);
 
   await wait(120);
   sceneTransition.classList.remove("is-visible");
@@ -409,9 +431,32 @@ function nextCustomer() {
 }
 let dialogueLine = 0;
 let currentCustomer = null;
-function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;customerSubtitleLabel.textContent=currentCustomer.age+" anos · "+currentCustomer.occupation;customerRequestLabel.textContent="“"+currentCustomer.request+"”";dialogueTitle.textContent=currentCustomer.name+" chegou!";dialoguePortrait.src=import.meta.env.BASE_URL+"characters/"+encodeURIComponent(currentCustomer.avatar||currentCustomer.id)+".svg";dialoguePortrait.alt="Ilustração de "+currentCustomer.name;}
-function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
-function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
+function updateCustomer() {
+  customerNameLabel.textContent = currentCustomer.name;
+  customerSubtitleLabel.textContent = currentCustomer.age + " anos · " + currentCustomer.occupation;
+  customerRequestLabel.textContent = "“" + currentCustomer.request + "”";
+  dialogueTitle.textContent = currentCustomer.name + " chegou!";
+  dialoguePortrait.alt = "Ilustração de " + currentCustomer.name;
+  dialoguePortrait.src = import.meta.env.BASE_URL
+    + "characters/"
+    + encodeURIComponent(currentCustomer.avatar || currentCustomer.id)
+    + ".svg";
+}
+
+function showDialogue() {
+  const isLastLine = dialogueLine === currentCustomer.lines.length - 1;
+  dialogueText.textContent = currentCustomer.lines[dialogueLine];
+  dialogueNextButton.hidden = isLastLine;
+  acceptServiceButton.hidden = !isLastLine;
+  declineServiceButton.hidden = !isLastLine;
+}
+
+function advanceDialogue() {
+  if (dialogueLine < currentCustomer.lines.length - 1) {
+    dialogueLine++;
+    showDialogue();
+  }
+}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
 async function acceptCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("wash","Preparando o box de lavagem...");customerDialogue.hidden=true;setMessage("Serviço aceito! Selecione uma ferramenta para começar.");acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
 async function declineCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("menu","Agradecendo ao cliente...");customerDialogue.hidden=true;currentCustomer=nextCustomer();await wait(650);await transitionTo("dialogue","Um novo cliente está chegando...");customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
