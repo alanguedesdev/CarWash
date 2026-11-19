@@ -52,35 +52,43 @@ function projection(point, axis, boundsMin, boundsSize) {
   };
 }
 
-function chooseSingleCluster(marks, amount, bounds) {
-  const sideMarks = marks.filter((mark) => Math.abs(mark.normal.z) >= 0.48);
-  const candidates = sideMarks.length >= amount
-    ? sideMarks
-    : marks.filter((mark) => mark.mesh === marks[0]?.mesh);
+function chooseSingleCluster(marks, amount) {
+  const groups = new Map();
+  for (const mark of marks) {
+    if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
+    groups.get(mark.mesh).push(mark);
+  }
 
-  if (!candidates.length) return [];
-
-  // Escolhe o centro com a menor soma de distâncias aos N vizinhos mais próximos.
   let best = null;
   let bestScore = Infinity;
-  for (const center of candidates) {
-    const nearest = candidates
-      .map((mark) => ({ mark, distance: mark.position.distanceTo(center.position) }))
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, amount);
-    if (nearest.length < amount) continue;
-    const score = nearest.reduce((sum, item) => sum + item.distance ** 2, 0);
-    if (score < bestScore) {
-      bestScore = score;
-      best = nearest.map((item) => item.mark);
+  for (const group of groups.values()) {
+    const sideMarks = group.filter((mark) => Math.abs(mark.normal.z) >= 0.42);
+    const candidates = sideMarks.length >= amount ? sideMarks : group;
+    if (candidates.length < amount) continue;
+
+    for (const center of candidates) {
+      const nearest = candidates
+        .map((mark) => ({ mark, distance: mark.position.distanceTo(center.position) }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, amount);
+      const score = nearest.reduce((sum, item) => sum + item.distance ** 2, 0);
+      if (score < bestScore) {
+        bestScore = score;
+        best = nearest.map((item) => item.mark);
+      }
     }
   }
 
   if (best) return best;
-  return [...candidates].sort((a, b) =>
-    a.position.distanceToSquared(candidates[0].position) -
-    b.position.distanceToSquared(candidates[0].position)
-  ).slice(0, amount);
+  // Fallback: todas as marcas do cluster continuam pertencendo à mesma malha.
+  const group = [...groups.values()].sort((a, b) => b.length - a.length)[0] || [];
+  const center = group[0];
+  return center
+    ? [...group].sort((a, b) =>
+        a.position.distanceToSquared(center.position) -
+        b.position.distanceToSquared(center.position)
+      ).slice(0, amount)
+    : [];
 }
 
 function setTextureClean(shader, clean, patch) {
@@ -257,7 +265,7 @@ export function applyDemoWashPreset(surfaceEffects) {
 
   const marks = surfaceEffects.dirtMarks;
   const remainingCount = Math.max(1, Math.round(marks.length * 0.2));
-  const remainingMarks = chooseSingleCluster(marks, remainingCount, surfaceEffects.modelBounds);
+  const remainingMarks = chooseSingleCluster(marks, remainingCount);
   if (!remainingMarks.length) return false;
 
   const remaining = new Set(remainingMarks);
