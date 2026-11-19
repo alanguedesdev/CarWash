@@ -2425,3 +2425,297 @@ body {
     scroll-behavior: auto;
   }
 }
+
+
+/* ==========================================================
+   RESPONSIVIDADE DO MENU INICIAL E ATALHOS SUPERIORES
+   Escopo exclusivo de apresentação; sem alterações funcionais.
+   ========================================================== */
+
+.game-hud.scene-menu .main-menu {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-hud.scene-menu .main-menu-card {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: min(760px, calc(100vw - 32px));
+  max-height: calc(100% - 20px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.game-hud.scene-menu .main-menu-card > * {
+  min-width: 0;
+}
+
+.game-hud.scene-menu .main-menu-card h1 {
+  line-height: .98;
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-menu .menu-description {
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-menu .menu-feature-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.game-hud.scene-menu #menu-progress {
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-menu #play-game {
+  flex: 0 0 auto;
+  min-height: 48px;
+  line-height: 1.15;
+  white-space: normal;
+  touch-action: manipulation;
+}
+
+.game-hud.scene-menu #play-game span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.game-hud.scene-menu .menu-quick-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  max-width: calc(100% - 16px);
+  gap: clamp(5px, 1vw, 10px);
+}
+
+.game-hud.scene-menu .menu-quick-actions button {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 1 clamp(48px, 6vw, 62px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 68px;
+  height: auto;
+  padding: 6px 3px 8px;
+  overflow: hidden;
+  text-align: center;
+  touch-action: manipulation;
+}
+
+.game-hud.scene-menu .menu-quick-actions button span {
+  display: block;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+.game-hud.scene-menu .menu-quick-actions button small {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(6px, .82vw, 8px);
+  line-height: 1.12;
+  letter-spacing: .25px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  text-align: center;
+}
+
+/* Paisagem mobile e tablets baixos: reduzir altura do conteúdo sem esconder a ação. */
+@media (max-width: 1000px) and (max-height: 560px) and (orientation: landscape) {
+  .game-hud.scene-menu .main-menu {
+    place-items: center start;
+    padding: 10px 12px;
+    overflow-y: auto;
+  }
+
+  .game-hud.scene-menu .main-menu-card {
+    width: min(54vw, 470px) !important;
+    max-width: calc(100vw - 190px);
+    max-height: calc(100% - 8px);
+    margin: 0;
+    padding: 13px 16px !important;
+    border-bottom-width: 7px;
+    border-radius: 12px;
+  }
+
+  .game-hud.scene-menu .main-menu-card:before {
+    position: static;
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    margin: 0 0 5px;
+    padding: 4px 8px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-menu .menu-brand-mark {
+    gap: 5px;
+    margin: 0 0 5px;
+  }
+
+  .game-hud.scene-menu .menu-brand-mark span:last-child {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-menu .menu-eyebrow {
+    margin: 3px 0 4px;
+    font-size: 7px;
+    letter-spacing: .8px;
+  }
+
+  .game-hud.scene-menu .main-menu-card h1 {
+    margin: 3px 0;
+    font-size: clamp(35px, 5.4vw, 48px);
+    letter-spacing: -2px;
+  }
+
+  .game-hud.scene-menu .menu-title-line {
+    gap: 5px;
+    margin: 3px 0 5px;
+  }
+
+  .game-hud.scene-menu .menu-title-line span {
+    font-size: 6px;
+    letter-spacing: .5px;
+  }
+
+  .game-hud.scene-menu .menu-description {
+    max-width: 100%;
+    font-size: 9px !important;
+    line-height: 1.3;
+  }
+
+  .game-hud.scene-menu .menu-feature-row {
+    gap: 4px;
+    margin: 6px 0 4px;
+  }
+
+  .game-hud.scene-menu .menu-feature-row span {
+    padding: 4px 6px;
+    font-size: 7px;
+  }
+
+  .game-hud.scene-menu #menu-progress {
+    margin: 4px 0 6px;
+    font-size: 8px;
+    line-height: 1.2;
+  }
+
+  .game-hud.scene-menu #play-game {
+    min-height: 38px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .game-hud.scene-menu #play-game b {
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
+  }
+
+  .game-hud.scene-menu .menu-hint {
+    margin-top: 5px;
+    font-size: 7px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions {
+    top: 8px;
+    right: 8px;
+    gap: 5px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button {
+    flex: 0 1 54px;
+    min-height: 60px;
+    padding: 5px 3px 7px;
+    gap: 3px;
+    border-bottom-width: 4px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button span {
+    font-size: 20px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button small {
+    font-size: 6px;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .game-hud.scene-menu .main-menu-footer {
+    display: none;
+  }
+}
+
+/* Retrato: card centralizado e atalhos em faixa superior compacta. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .game-hud.scene-menu .main-menu {
+    place-items: center;
+    padding: 82px 10px 12px;
+  }
+
+  .game-hud.scene-menu .main-menu-card {
+    width: min(430px, 100%) !important;
+    max-width: 100%;
+    max-height: 100%;
+    padding: clamp(14px, 4vw, 22px) !important;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions {
+    top: 7px;
+    right: 7px;
+    left: 7px;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button {
+    flex: 0 1 58px;
+    min-height: 62px;
+    padding: 5px 3px 7px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button span {
+    font-size: 21px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button small {
+    font-size: 6px;
+  }
+}
+
+/* Alturas extremas: o card pode rolar, mas o botão permanece no fluxo do conteúdo. */
+@media (max-height: 360px) {
+  .game-hud.scene-menu .main-menu {
+    place-items: start;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .game-hud.scene-menu .main-menu-card {
+    max-height: calc(100% - 4px);
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .game-hud.scene-menu #play-game {
+    min-height: 36px;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button {
+    min-height: 52px;
+  }
+}
