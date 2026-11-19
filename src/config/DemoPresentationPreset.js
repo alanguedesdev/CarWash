@@ -78,7 +78,7 @@ function chooseDoorCluster(marks, amount, bounds) {
     if (group.length < amount) continue;
 
     const sideAxis = "z";
-    const longitudinalAxis = "x";
+    const longitudinalAxis = sideAxis === "x" ? "z" : "x";
     const sidePosition = group.reduce((sum, mark) => sum + mark.position[sideAxis], 0) / group.length;
     const center = new THREE.Vector3();
     center[sideAxis] = sidePosition;
@@ -90,8 +90,8 @@ function chooseDoorCluster(marks, amount, bounds) {
         Math.max(size[longitudinalAxis], 0.0001);
       const height = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
       const outsideDoorPenalty =
-        (along < 0.28 || along > 0.72 ? 100 : 0) +
-        (height < 0.22 || height > 0.58 ? 100 : 0);
+        (along < 0.30 || along > 0.74 ? 2.0 : 0) +
+        (height < 0.20 || height > 0.58 ? 2.0 : 0);
       return {
         mark,
         score: mark.position.distanceToSquared(center) + outsideDoorPenalty,
@@ -104,7 +104,7 @@ function chooseDoorCluster(marks, amount, bounds) {
       bestScore = score;
       bestMarks = selected.map((item) => item.mark);
       const signed = group.reduce((sum, mark) => sum + mark.normal[sideAxis], 0);
-      bestAxis = signed >= 0 ? 4 : 5;
+      bestAxis = sideAxis === "x" ? (signed >= 0 ? 0 : 1) : (signed >= 0 ? 4 : 5);
     }
   }
 
