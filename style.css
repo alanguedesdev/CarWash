@@ -3185,3 +3185,86 @@ body {
     min-height: 50px !important;
   }
 }
+
+
+/* Toast compacto de confirmação de compra */
+.purchase-toast[hidden] { display: none !important; }
+.purchase-toast {
+  position: absolute;
+  z-index: 95;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: min(260px, calc(100% - 28px));
+  padding: 18px 16px 15px;
+  border: 2px solid #fff0c9;
+  border-bottom: 5px solid #d98d54;
+  border-radius: 14px;
+  background: linear-gradient(155deg, #fff8e5, #f3e6c7);
+  color: #29464e;
+  text-align: center;
+  box-shadow: 0 16px 42px rgba(18, 35, 40, .32);
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 18px)) scale(.88);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(.2,.85,.25,1.25);
+}
+.purchase-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+  animation: purchase-toast-pop 480ms cubic-bezier(.2,.85,.25,1.25) both;
+}
+.purchase-toast-close {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  width: 25px;
+  height: 25px;
+  border: 0;
+  border-radius: 7px;
+  background: #34515b;
+  color: #fff7e3;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+.purchase-toast-sparkle { font-size: 25px; line-height: 1; }
+.purchase-toast-kicker {
+  color: #a16e3f;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+}
+.purchase-toast-message {
+  max-width: 215px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.purchase-toast-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 5px;
+  padding: 8px 12px;
+  border: 1px solid #e0d0a9;
+  border-radius: 9px;
+  background: #fffdf5;
+}
+.purchase-toast-icon { font-size: 27px; line-height: 1; }
+.purchase-toast-name { font-size: 12px; font-weight: 900; }
+@keyframes purchase-toast-pop {
+  0% { filter: brightness(1.15); }
+  55% { filter: brightness(1.04); }
+  100% { filter: brightness(1); }
+}
+@media (max-width: 560px) {
+  .purchase-toast { width: min(230px, calc(100% - 24px)); padding: 15px 12px 12px; }
+  .purchase-toast-message { font-size: 12px; }
+  .purchase-toast-item { padding: 6px 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .purchase-toast, .purchase-toast.is-visible { animation: none; transition: opacity 120ms ease; }
+}
