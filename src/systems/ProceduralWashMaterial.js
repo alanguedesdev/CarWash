@@ -182,7 +182,7 @@ export default class ProceduralWashMaterial {
     const axisWeights = AXES.map(({ component, sign }) => Math.pow(Math.max(0, normal[component] * sign), 4));
     const axisWeightSum = axisWeights.reduce((sum, value) => sum + value, 0) || 1;
 
-    for (let axis = 0; axis < 3; axis++) {
+    for (let axis = 0; axis < 6; axis++) {
       if (axisWeights[axis] / axisWeightSum < 0.015) continue;
       const axisChangedBefore = changed;
       const { u, v } = AXES[axis];

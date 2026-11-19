@@ -357,6 +357,7 @@ export default class SurfaceEffects {
       for (const texture of shader.textures) {
         const data = texture.image.data;
         for (let offset = 0; offset < data.length; offset += 4) {
+          data[offset + 1] = 0;
           data[offset + 2] = 0;
           data[offset + 3] = 0;
         }
