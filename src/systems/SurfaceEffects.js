@@ -97,9 +97,9 @@ export default class SurfaceEffects {
     }
 
     if (demoWashRegion) {
-      // Amostra exclusivamente a porta lateral direita (+Z), abaixo das janelas
-      // e entre os eixos. O demo não depende de manchas aleatórias espalhadas
-      // pelo carro para calcular os 80% iniciais.
+      // Amostra a porta lateral visível. Não presume o sinal da normal:
+      // alguns GLBs usam winding invertido mesmo quando a face está voltada
+      // para a câmera. O hemisfério dominante será identificado abaixo.
       const eligibleByMesh = new Map();
       const boundsSize = this.modelBounds.getSize(new THREE.Vector3());
       const boundsMin = this.modelBounds.min;
@@ -127,21 +127,28 @@ export default class SurfaceEffects {
           const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
           const nx = (center.x - boundsMin.x) / Math.max(boundsSize.x, 0.0001);
           const ny = (center.y - boundsMin.y) / Math.max(boundsSize.y, 0.0001);
-          if (normal.z < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.20 || ny > 0.58) continue;
+          if (Math.abs(normal.z) < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.20 || ny > 0.58) continue;
           eligible.push({ a, b, c, normal, area });
         }
         if (eligible.length) {
-          eligibleByMesh.set(mesh, {
-            triangles: eligible,
-            totalArea: eligible.reduce((sum, triangle) => sum + triangle.area, 0),
-          });
+          const positiveArea = eligible.filter((triangle) => triangle.normal.z > 0).reduce((sum, triangle) => sum + triangle.area, 0);
+          const negativeArea = eligible.filter((triangle) => triangle.normal.z < 0).reduce((sum, triangle) => sum + triangle.area, 0);
+          const sideSign = positiveArea >= negativeArea ? 1 : -1;
+          const sideTriangles = eligible.filter((triangle) => triangle.normal.z * sideSign >= 0.45);
+          if (sideTriangles.length) {
+            eligibleByMesh.set(mesh, {
+              triangles: sideTriangles,
+              totalArea: sideTriangles.reduce((sum, triangle) => sum + triangle.area, 0),
+              sideSign,
+            });
+          }
         }
       }
 
       const target = [...eligibleByMesh.entries()]
         .sort((a, b) => b[1].totalArea - a[1].totalArea)[0];
       if (!target) {
-        console.error("[CarWash Demo] Nenhum triângulo encontrado na região da porta direita (+Z).", {
+        console.error("[CarWash Demo] Nenhum triângulo encontrado na região lateral da porta.", {
           bounds: this.modelBounds,
           candidateMeshes: candidates.map(({ mesh }) => mesh.name || mesh.uuid),
         });
@@ -173,7 +180,7 @@ export default class SurfaceEffects {
           removed: false,
         });
       }
-      console.info(`[CarWash Demo] ${DIRT_COUNT} amostras geradas exclusivamente na porta direita: malha=${targetMesh.name || targetMesh.uuid}, triângulos elegíveis=${region.triangles.length}.`);
+      console.info(`[CarWash Demo] ${DIRT_COUNT} amostras geradas na região lateral da porta: malha=${targetMesh.name || targetMesh.uuid}, hemisfério=${region.sideSign > 0 ? "+Z" : "-Z"}, triângulos elegíveis=${region.triangles.length}.`);
     } else {
       const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
       for (const { mesh, area } of candidates) {

@@ -58,11 +58,14 @@ function chooseDoorCluster(marks, amount, bounds) {
   const size = bounds.getSize(new THREE.Vector3());
   const min = bounds.min;
   const groups = new Map();
+  // A orientação dos triângulos no GLB pode inverter o sinal da normal.
+  // Detectamos o hemisfério efetivamente usado pelas amostras, sem presumir +Z.
+  const positive = marks.filter((mark) => mark.normal.z >= 0.45).length;
+  const negative = marks.filter((mark) => mark.normal.z <= -0.45).length;
+  const sideSign = positive >= negative ? 1 : -1;
 
   for (const mark of marks) {
-    // A demonstração usa a lateral direita visível pela câmera (hemisfério +Z).
-    // Não usa abs(normal.z): isso misturaria o lado esquerdo com o direito.
-    if (mark.normal.z < 0.45) continue;
+    if (mark.normal.z * sideSign < 0.45) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
@@ -186,7 +189,11 @@ export function applyDemoWashPreset(surfaceEffects) {
   // Calcula a extensão real do grupo selecionado para que a máscara visual
   // cubra os pontos lógicos que a bucha/enxágue irão concluir.
   const patchAxis = selection.axis;
-  const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }][patchAxis];
+  const axes = [
+    { u: "y", v: "z" }, { u: "y", v: "z" },
+    { u: "x", v: "z" }, { u: "x", v: "z" },
+    { u: "x", v: "y" }, { u: "x", v: "y" },
+  ][patchAxis];
   const radius = Math.max(
     0.12,
     ...remainingMarks.map((mark) => Math.hypot(
