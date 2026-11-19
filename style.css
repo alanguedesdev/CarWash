@@ -1250,6 +1250,8 @@ body {
 
 /* A loja também pode ser aberta diretamente pelo atalho do menu inicial. */
 .game-hud.scene-menu .shop-overlay:not([hidden]){display:grid!important;z-index:45}
+/* A loja também pode abrir na recepção sem ativar o tema/layout da cena de menu. */
+.game-hud.scene-reception .shop-overlay:not([hidden]){display:grid!important;z-index:45}
 
 /* Composição fiel à referência: painel à esquerda e carro vermelho na garagem à direita. */
 .game-hud.scene-menu .main-menu{
