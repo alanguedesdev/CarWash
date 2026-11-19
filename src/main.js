@@ -4,6 +4,7 @@ import SurfaceEffects from "./systems/SurfaceEffects.js";
 import CareerSystem from "./systems/CareerSystem.js";
 import SceneManager from "./systems/SceneManager.js";
 import { CUSTOMERS } from "./data/customers.js";
+import { prepareDemoCareer, applyDemoWashPreset } from "./config/DemoPresentationPreset.js";
 import "./../style.css";
 
 const root = document.querySelector("#game");
@@ -368,8 +369,16 @@ hud.innerHTML = `
 `;
 
 root.appendChild(hud);
+prepareDemoCareer();
 const career = new CareerSystem(hud, {
-  onUpgradeChange: (bonuses) => surfaceEffects?.setUpgradeBonuses(bonuses),
+  onUpgradeChange: (bonuses) => {
+    surfaceEffects?.setUpgradeBonuses(bonuses);
+    const brushButton = hud.querySelector('[data-tool="brush"]');
+    const brushUnlocked = bonuses.cleaningRadiusMultiplier > 1;
+    brushButton?.classList.toggle("locked", !brushUnlocked);
+    const brushStatus = brushButton?.querySelector(".tool-cost");
+    if (brushStatus) brushStatus.textContent = brushUnlocked ? "Adquirida" : "Bloqueada";
+  },
 });
 
 const progressLabel = hud.querySelector("#progress-label");
@@ -568,6 +577,7 @@ function setTool(tool) {
     water: "💦",
     soap: "🫧",
     sponge: "🧽",
+    brush: "🪥",
   };
 
   if (tool && icons[tool]) {
@@ -579,6 +589,7 @@ function setTool(tool) {
       water: "Água: molhe e enxágue o veículo.",
       soap: "Sabão: aplique espuma na lataria.",
       sponge: "Bucha: esfregue a espuma; a água remove a sujeira.",
+      brush: "Escova profissional selecionada. O equipamento está desbloqueado; sua ação de escovação será implementada em uma etapa futura.",
     };
 
     setMessage(texts[tool]);
@@ -718,6 +729,7 @@ function loadCar() {
       }
 
       loadError.style.display = "none";
+      applyDemoWashPreset(surfaceEffects);
       updateMission(surfaceEffects.getProgress());
       setMessage("Selecione uma ferramenta para começar a lavagem.");
 
