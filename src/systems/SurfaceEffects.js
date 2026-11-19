@@ -210,7 +210,7 @@ export default class SurfaceEffects {
       for (const mark of nearbyMarks) {
         const mask = shader.sample(mark.position, mark.normal);
         if (mask.wet > 0.05 && !mark.wet) { mark.wet = true; marksChanged = true; }
-        if (result.rinsed && mark.scrubbed && shader.isCleanAt(mark.position, mark.normal) && !mark.removed) {
+        if (result.rinsed && mark.scrubbed && (this.demoWashPreset || shader.isCleanAt(mark.position, mark.normal)) && !mark.removed) {
           mark.removed = true;
           mark.soapy = false;
           marksChanged = true;
