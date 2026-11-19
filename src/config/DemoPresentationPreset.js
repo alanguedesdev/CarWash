@@ -53,77 +53,83 @@ function project(point, axis, min, size) {
 function chooseDoorCluster(marks, amount, bounds) {
   const size = bounds.getSize(new THREE.Vector3());
   const min = bounds.min;
+  const groups = new Map();
+
+  // O painel lateral é identificado por normais predominantemente horizontais.
+  // Aceita os dois eixos horizontais para não depender da orientação do GLB.
+  for (const mark of marks) {
+    const sideStrength = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z));
+    if (sideStrength < 0.45) continue;
+    if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
+    groups.get(mark.mesh).push(mark);
+  }
+
   const target = new THREE.Vector3(
     min.x + size.x * 0.52,
     min.y + size.y * 0.39,
     0
   );
-  const groups = new Map();
-
-  // Primeiro restringe às faces laterais do modelo e agrupa por malha.
-  for (const mark of marks) {
-    if (Math.abs(mark.normal.z) < 0.45) continue;
-    if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
-    groups.get(mark.mesh).push(mark);
-  }
-
-  // Não exige que 18 amostras caiam por acaso dentro de uma janela estreita.
-  // Seleciona a malha lateral com mais amostras e pega nela as mais próximas
-  // do centro da porta. Isso evita retornar vazio e deixar o carro 0%/todo sujo.
-  let best = [];
+  let bestMarks = [];
   let bestScore = Infinity;
+
   for (const group of groups.values()) {
-    if (!group.length) continue;
-    const sideZ = group.reduce((sum, mark) => sum + mark.position.z, 0) / group.length;
+    if (group.length < amount) continue;
+    const sideAxis = Math.abs(group.reduce((sum, mark) => sum + mark.normal.x, 0)) >
+      Math.abs(group.reduce((sum, mark) => sum + mark.normal.z, 0)) ? "x" : "z";
+    const sidePosition = group.reduce((sum, mark) => sum + mark.position[sideAxis], 0) / group.length;
     const center = target.clone();
-    center.z = sideZ;
-    const nearest = group
-      .map((mark) => {
-        const nx = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
-        const ny = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
-        const regionPenalty =
-          (nx < 0.30 || nx > 0.74 ? 1.5 : 0) +
-          (ny < 0.20 || ny > 0.58 ? 1.5 : 0);
-        return {
-          mark,
-          score: mark.position.distanceToSquared(center) + regionPenalty,
-        };
-      })
-      .sort((a, b) => a.score - b.score)
-      .slice(0, Math.min(amount, group.length));
-    const score = nearest.reduce((sum, item) => sum + item.score, 0);
-    // Prioriza grupos capazes de fornecer todos os pontos; em empate,
-    // escolhe o conjunto espacialmente mais próximo da porta.
-    const completenessPenalty = group.length < amount ? 1000 : 0;
-    if (score + completenessPenalty < bestScore) {
-      bestScore = score + completenessPenalty;
-      best = nearest.map((item) => item.mark);
+    center[sideAxis] = sidePosition;
+
+    const ranked = group.map((mark) => {
+      const nx = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
+      const ny = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
+      const outsideDoorPenalty =
+        (nx < 0.30 || nx > 0.74 ? 2.0 : 0) +
+        (ny < 0.20 || ny > 0.58 ? 2.0 : 0);
+      return { mark, score: mark.position.distanceToSquared(center) + outsideDoorPenalty };
+    }).sort((a, b) => a.score - b.score);
+
+    const selected = ranked.slice(0, amount);
+    const score = selected.reduce((sum, item) => sum + item.score, 0);
+    if (selected.length === amount && score < bestScore) {
+      bestScore = score;
+      bestMarks = selected.map((item) => item.mark);
     }
   }
 
-  return best;
+  // Fallback seguro: mantém a seleção em uma única malha lateral, mesmo
+  // quando a amostragem aleatória não colocou 20% dos pontos nela.
+  if (!bestMarks.length) {
+    for (const group of groups.values()) {
+      if (group.length > bestMarks.length) bestMarks = group;
+    }
+    bestMarks = bestMarks.slice(0, amount);
+  }
+
+  return bestMarks;
 }
 
-function setTextureClean(shader, clean, patch) {
+function setTextureClean(shader, patch = null) {
   shader.textures.forEach((texture, axis) => {
     const data = texture.image.data;
-    // Canal R: 255 oculta a sujeira procedural; 0 mantém a sujeira visível.
+
+    // Estado-base invariável: toda a malha começa limpa (canal R = 255).
     for (let offset = 0; offset < data.length; offset += 4) {
-      data[offset] = clean ? 255 : 0;
+      data[offset] = 255;
       data[offset + 1] = 0;
       data[offset + 2] = 0;
       data[offset + 3] = 0;
     }
 
-      // Aplique a mancha somente na projeção alinhada à normal lateral.
-    // As outras projeções são planos extrudados e espalhariam a sujeira pelo
-    // teto/capô/partes internas da mesma malha.
-    if (patch && !clean && axis === patch.axis) {
+    // Somente os pixels dentro do patch voltam a permitir sujeira (R = 0).
+    if (patch && axis === patch.axis) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
       const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
       const ry = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.v), 0.001)) * 256));
-      const cx = Math.round(center.u * 255), cy = Math.round(center.v * 255);
+      const cx = Math.round(center.u * 255);
+      const cy = Math.round(center.v * 255);
+
       for (let y = Math.max(0, cy - ry); y <= Math.min(255, cy + ry); y++) {
         for (let x = Math.max(0, cx - rx); x <= Math.min(255, cx + rx); x++) {
           if (Math.hypot((x - cx) / rx, (y - cy) / ry) <= 1) {
@@ -132,8 +138,10 @@ function setTextureClean(shader, clean, patch) {
         }
       }
     }
+
     texture.needsUpdate = true;
   });
+
   shader.foamPixels = 0;
   shader.fadeIndices.clear();
   shader.dirtyTextures.clear();
@@ -165,30 +173,41 @@ export function applyDemoWashPreset(surfaceEffects) {
     (sum, mark) => sum.add(mark.position),
     remainingMarks[0].position.clone()
   ).multiplyScalar(1 / remainingMarks.length);
-  // Mancha visual contida no painel central da porta, sem alcançar capô,
-  // teto, para-choques ou caixas de roda.
-  const boundsSize = surfaceEffects.modelBounds.getSize(new THREE.Vector3());
-  const radius = Math.min(boundsSize.x * 0.12, boundsSize.y * 0.16);
+  // Calcula a extensão real do grupo selecionado para que a máscara visual
+  // cubra os pontos lógicos que a bucha/enxágue irão concluir.
+  const dominantNormal = remainingMarks.reduce(
+    (sum, mark) => sum.add(mark.normal),
+    new THREE.Vector3()
+  ).normalize();
+  const patchAxis = Math.abs(dominantNormal.x) > Math.abs(dominantNormal.z) ? 0 : 2;
+  const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }][patchAxis];
+  const radius = Math.max(
+    0.12,
+    ...remainingMarks.map((mark) => Math.hypot(
+      mark.position[axes.u] - center[axes.u],
+      mark.position[axes.v] - center[axes.v]
+    ) + 0.08)
+  );
 
-  // Limpa visualmente todas as peças, exceto uma única mancha em uma única malha.
-  for (const shader of surfaceEffects.materials.values()) setTextureClean(shader, true, null);
+  // Limpa TODAS as máscaras de TODAS as malhas. Na malha da porta, reabre
+  // somente o patch circular escolhido na projeção lateral correspondente.
+  for (const shader of surfaceEffects.materials.values()) setTextureClean(shader);
   const targetShader = surfaceEffects.materials.get(remainingMarks[0].mesh.uuid);
-  // A porta é uma face lateral: sua máscara usa exclusivamente a projeção XY
-  // (eixo Z), evitando replicar sujeira no teto ou em superfícies internas.
-  if (targetShader) {
-    const dominantNormal = remainingMarks.reduce(
-      (sum, mark) => sum.add(mark.normal),
-      new THREE.Vector3()
-    ).normalize();
-    const patchAxis = Math.abs(dominantNormal.x) > Math.abs(dominantNormal.z) ? 0 : 2;
-    setTextureClean(targetShader, false, { center, radius: Math.min(radius, 0.55), axis: patchAxis });
+  if (!targetShader) {
+    console.error("[CarWash Demo] Shader da malha selecionada não encontrado; preset cancelado.");
+    return false;
   }
+  setTextureClean(targetShader, { center, radius, axis: patchAxis });
 
   for (const mark of marks) {
     mark.wet = false;
     mark.soapy = false;
     mark.scrubbed = false;
     mark.removed = !remaining.has(mark);
+  }
+
+  if (remainingMarks.length !== remainingCount) {
+    console.warn(`[CarWash Demo] Apenas ${remainingMarks.length}/${remainingCount} pontos disponíveis na mesma malha lateral; percentual inicial ajustado para manter a região lavável.`);
   }
 
   surfaceEffects.demoWashPreset = true;
