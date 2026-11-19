@@ -2974,3 +2974,214 @@ body {
     text-align: center;
   }
 }
+
+
+/* ==========================================================
+   MENU INICIAL — estado real scene-reception
+   Os overrides anteriores usavam scene-menu, classe que não
+   está presente no HUD durante a tela inicial.
+   ========================================================== */
+@media screen and (max-width: 1000px) and (max-height: 440px) {
+  .game-hud.scene-reception #main-menu {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center start;
+    padding: 6px 12px !important;
+    overflow: visible !important;
+  }
+
+  .game-hud.scene-reception #main-menu .main-menu-card {
+    box-sizing: border-box;
+    display: block;
+    width: min(430px, 51vw) !important;
+    max-width: calc(100vw - 180px) !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 9px 14px 10px !important;
+    overflow: visible !important;
+    border-radius: 12px;
+    border-bottom-width: 5px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 4px !important;
+    font-size: 7px;
+    line-height: 1.1;
+    letter-spacing: .8px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-brand-icon {
+    flex: 0 0 23px;
+    width: 23px;
+    height: 23px;
+    font-size: 13px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-eyebrow {
+    margin: 1px 0 3px !important;
+    font-size: 6px !important;
+    line-height: 1.15;
+    letter-spacing: .8px;
+  }
+
+  .game-hud.scene-reception #main-menu .main-menu-card h1 {
+    margin: 1px 0 2px !important;
+    font-size: clamp(32px, 4.7vw, 40px) !important;
+    line-height: .9 !important;
+    letter-spacing: -2px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-title-line {
+    gap: 4px;
+    margin: 2px 0 4px !important;
+    line-height: 1;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-title-line span {
+    font-size: 5px;
+    line-height: 1.1;
+    letter-spacing: .45px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-title-line i {
+    width: 18px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-description {
+    max-width: 100%;
+    margin: 2px 0 4px !important;
+    font-size: 8px !important;
+    line-height: 1.25 !important;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-feature-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: 3px 0 2px !important;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-feature-row span {
+    padding: 3px 5px;
+    font-size: 6px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-reception #main-menu #menu-progress {
+    margin: 2px 0 4px !important;
+    font-size: 7px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-reception #main-menu #play-game {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 36px !important;
+    height: 36px;
+    padding: 4px 8px !important;
+    border-bottom-width: 4px;
+    font-size: 8px;
+    line-height: 1.1 !important;
+    touch-action: manipulation;
+  }
+
+  .game-hud.scene-reception #main-menu #play-game b {
+    flex: 0 0 21px;
+    width: 21px;
+    height: 21px;
+    font-size: 14px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-hint {
+    display: none !important;
+  }
+
+  .game-hud.scene-reception #main-menu .main-menu-footer {
+    display: none;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-quick-actions {
+    position: absolute;
+    top: 7px !important;
+    right: 7px !important;
+    left: auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 5px !important;
+    max-width: calc(100% - 14px);
+  }
+
+  .game-hud.scene-reception #main-menu .menu-quick-actions button {
+    box-sizing: border-box;
+    display: flex;
+    flex: 0 1 54px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px !important;
+    width: 54px;
+    min-width: 0;
+    min-height: 58px !important;
+    height: auto;
+    padding: 4px 3px 6px !important;
+    overflow: hidden;
+    text-align: center;
+    touch-action: manipulation;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-quick-actions button span {
+    display: block;
+    flex: 0 0 auto;
+    font-size: 19px !important;
+    line-height: 1;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-quick-actions button small {
+    display: block;
+    max-width: 100%;
+    font-size: 6px !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0 !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+}
+
+/* Telas ainda mais baixas: encolher o conjunto sem cortar o CTA. */
+@media screen and (max-width: 1000px) and (max-height: 350px) {
+  .game-hud.scene-reception #main-menu {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+
+  .game-hud.scene-reception #main-menu .main-menu-card {
+    padding: 6px 10px 7px !important;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-brand-mark {
+    margin-bottom: 2px !important;
+  }
+
+  .game-hud.scene-reception #main-menu .main-menu-card h1 {
+    font-size: 30px !important;
+  }
+
+  .game-hud.scene-reception #main-menu #play-game {
+    min-height: 32px !important;
+    height: 32px;
+  }
+
+  .game-hud.scene-reception #main-menu .menu-quick-actions button {
+    min-height: 50px !important;
+  }
+}
