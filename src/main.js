@@ -309,6 +309,31 @@ hud.innerHTML = `
   </div>
 
   <section id="main-menu" class="main-menu">
+    <nav class="menu-quick-actions" aria-label="Atalhos do jogo">
+      <button class="menu-action-button" type="button" data-menu-action="instructions" aria-label="Instruções" title="Instruções"><span aria-hidden="true">📖</span><small>Instruções</small></button>
+      <button class="menu-action-button menu-action-achievements" type="button" data-menu-action="achievements" aria-label="Conquistas" title="Conquistas"><span aria-hidden="true">🏆</span><small>Conquistas</small></button>
+      <button class="menu-action-button menu-action-shop" type="button" data-menu-action="shop" aria-label="Loja" title="Loja"><span aria-hidden="true">🛒</span><small>Loja</small></button>
+    </nav>
+    <section class="menu-info-overlay" data-menu-modal="instructions" role="dialog" aria-modal="true" aria-labelledby="instructions-title" hidden>
+      <article class="menu-info-panel">
+        <header class="menu-info-header"><div><small>GUIA DO LAVA-JATO</small><h2 id="instructions-title">Como jogar</h2></div><button type="button" class="menu-info-close" data-menu-close aria-label="Fechar instruções">×</button></header>
+        <ol class="instruction-steps">
+          <li><b>Atenda seus clientes</b><span>Toque em Começar a jogar, acompanhe a conversa e conheça o serviço solicitado.</span></li>
+          <li><b>Aceite ou recuse</b><span>Aceite para iniciar a lavagem ou recuse para receber o próximo cliente.</span></li>
+          <li><b>Siga a ordem de limpeza</b><span>Molhe a região, aplique sabão, esfregue com a bucha e enxágue para retirar a espuma.</span></li>
+          <li><b>Gire o veículo</b><span>Com nenhuma ferramenta selecionada, arraste sobre o carro para girá-lo. Também é possível usar a roda do mouse.</span></li>
+          <li><b>Receba e evolua</b><span>Conclua o serviço para ganhar dinheiro, experiência e reputação. Use a Loja para comprar melhorias quando cumprir os requisitos.</span></li>
+        </ol>
+        <button type="button" class="menu-info-primary" data-menu-close>Entendi, vamos jogar</button>
+      </article>
+    </section>
+    <section class="menu-info-overlay" data-menu-modal="achievements" role="dialog" aria-modal="true" aria-labelledby="achievements-title" hidden>
+      <article class="menu-info-panel achievements-panel">
+        <header class="menu-info-header"><div><small>SUA JORNADA</small><h2 id="achievements-title">Conquistas</h2></div><button type="button" class="menu-info-close" data-menu-close aria-label="Fechar conquistas">×</button></header>
+        <div class="achievement-summary" data-achievement-summary></div>
+        <div class="achievement-list" data-achievement-list></div>
+      </article>
+    </section>
     <div class="menu-glow menu-glow-one"></div><div class="menu-glow menu-glow-two"></div>
     <div class="main-menu-card">
       <div class="menu-brand-mark"><span class="menu-brand-icon">✦</span><span>SEU NEGÓCIO COMEÇA AQUI</span></div>
@@ -372,6 +397,44 @@ const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector(
 const sceneTransition = hud.querySelector("#scene-transition");
 const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons = [...hud.querySelectorAll("[data-tool]")];
+const menuActionButtons = [...hud.querySelectorAll("[data-menu-action]")];
+const menuModals = [...hud.querySelectorAll("[data-menu-modal]")];
+const achievementList = hud.querySelector("[data-achievement-list]");
+const achievementSummary = hud.querySelector("[data-achievement-summary]");
+
+function closeMenuModals() {
+  menuModals.forEach((modal) => { modal.hidden = true; });
+}
+
+function openMenuModal(name) {
+  closeMenuModals();
+  const modal = hud.querySelector(`[data-menu-modal="${name}"]`);
+  if (!modal) return;
+  if (name === "achievements") renderAchievements();
+  modal.hidden = false;
+  modal.querySelector("[data-menu-close]")?.focus();
+}
+
+function renderAchievements() {
+  const stats = career.stats;
+  const achievements = [
+    { title: "Primeiro atendimento", description: "Conclua seu primeiro serviço.", progress: Math.min(stats.completedJobs, 1), goal: 1, unlocked: stats.completedJobs >= 1, icon: "🚘" },
+    { title: "Cliente recorrente", description: "Conclua 5 serviços.", progress: Math.min(stats.completedJobs, 5), goal: 5, unlocked: stats.completedJobs >= 5, icon: "🤝" },
+    { title: "Referência no bairro", description: "Conclua 10 serviços.", progress: Math.min(stats.completedJobs, 10), goal: 10, unlocked: stats.completedJobs >= 10, icon: "⭐" },
+    { title: "Investidor", description: "Adquira sua primeira melhoria.", progress: Math.min(stats.purchasedUpgrades.length, 1), goal: 1, unlocked: stats.purchasedUpgrades.length >= 1, icon: "🛠️" },
+    { title: "Negócio completo", description: "Adquira todas as melhorias disponíveis.", progress: stats.purchasedUpgrades.length, goal: 5, unlocked: stats.purchasedUpgrades.length >= 5, icon: "🏆" },
+    { title: "Excelência", description: "Mantenha reputação igual ou superior a 4,5.", progress: stats.reputation >= 4.5 ? 1 : 0, goal: 1, unlocked: stats.reputation >= 4.5, icon: "🌟" },
+  ];
+  const unlocked = achievements.filter((item) => item.unlocked).length;
+  achievementSummary.innerHTML = `<strong>${unlocked} de ${achievements.length}</strong><span>conquistas desbloqueadas</span><div class="achievement-total-track"><i style="width:${(unlocked / achievements.length) * 100}%"></i></div>`;
+  achievementList.innerHTML = achievements.map((item) => `
+    <article class="achievement-item ${item.unlocked ? "is-unlocked" : "is-pending"}">
+      <span class="achievement-icon" aria-hidden="true">${item.icon}</span>
+      <div class="achievement-copy"><strong>${item.title}</strong><p>${item.description}</p><div class="achievement-progress"><i style="width:${(item.progress / item.goal) * 100}%"></i></div><small>${item.progress} / ${item.goal}</small></div>
+      <span class="achievement-status">${item.unlocked ? "Desbloqueada ✓" : "Pendente"}</span>
+    </article>`).join("");
+}
+
 const defaultAvatarUrl = `${import.meta.env.BASE_URL}characters/default.svg`;
 
 function handleAvatarLoadError() {
@@ -743,6 +806,31 @@ function stopDragging() {
 renderer.domElement.addEventListener("pointerup", stopDragging);
 renderer.domElement.addEventListener("pointercancel", stopDragging);
 renderer.domElement.addEventListener("lostpointercapture", stopDragging);
+
+// Atalhos do menu: a loja reutiliza a instância e as regras do CareerSystem.
+menuActionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const action = button.dataset.menuAction;
+    if (action === "shop") {
+      closeMenuModals();
+      career.openShop();
+    } else {
+      openMenuModal(action);
+    }
+  });
+});
+
+menuModals.forEach((modal) => {
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) closeMenuModals();
+  });
+});
+hud.querySelectorAll("[data-menu-close]").forEach((button) => {
+  button.addEventListener("click", closeMenuModals);
+});
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeMenuModals();
+});
 
 // Fluxo: menu, conversa com cliente e box.
 playGameButton.addEventListener("click",openCustomerDialogue);
