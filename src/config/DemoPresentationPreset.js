@@ -117,7 +117,9 @@ function setTextureClean(shader, clean, patch) {
       data[offset + 3] = 0;
     }
 
-    if (patch && !clean) {
+    // A lateral mark belongs only to the XY projection (normal on Z).
+    // Writing it to all triplanar projections duplicates dirt on roof/interior-facing areas.
+    if (patch && !clean && axis === 2) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
       const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));

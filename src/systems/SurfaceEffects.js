@@ -22,6 +22,7 @@ export default class SurfaceEffects {
     this.dirtProfile = "mud";
     this.lastBrushHit = null;
     this.modelBounds = new THREE.Box3();
+    this.demoWashPreset = false;
   }
 
   setUpgradeBonuses({ cleaningRadiusMultiplier = 1, rinseRadiusMultiplier = 1 } = {}) {
@@ -208,15 +209,30 @@ export default class SurfaceEffects {
 
     if (tool === "water") {
       for (const mark of nearbyMarks) {
-        const mask = shader.sample(mark.position, mark.normal);
-        if (mask.wet > 0.05 && !mark.wet) { mark.wet = true; marksChanged = true; }
-        if (result.rinsed && mark.scrubbed && (this.demoWashPreset || shader.isCleanAt(mark.position, mark.normal)) && !mark.removed) {
-          mark.removed = true;
-          mark.soapy = false;
-          marksChanged = true;
-        } else if (result.rinsed && mark.soapy) {
-          mark.soapy = false;
-          marksChanged = true;
+        if (this.demoWashPreset) {
+          // No preset demo, use the real texture mask as before. In the demo,
+          // the marks are a curated cluster, so track the wash stages directly
+          // against those marks instead of relying on triplanar sample thresholds.
+          if (!mark.wet && !mark.removed) { mark.wet = true; marksChanged = true; }
+          if (result.rinsed && mark.scrubbed && !mark.removed) {
+            mark.removed = true;
+            mark.soapy = false;
+            marksChanged = true;
+          } else if (result.rinsed && mark.soapy) {
+            mark.soapy = false;
+            marksChanged = true;
+          }
+        } else {
+          const mask = shader.sample(mark.position, mark.normal);
+          if (mask.wet > 0.05 && !mark.wet) { mark.wet = true; marksChanged = true; }
+          if (result.rinsed && mark.scrubbed && shader.isCleanAt(mark.position, mark.normal) && !mark.removed) {
+            mark.removed = true;
+            mark.soapy = false;
+            marksChanged = true;
+          } else if (result.rinsed && mark.soapy) {
+            mark.soapy = false;
+            marksChanged = true;
+          }
         }
       }
       if (result.changed || marksChanged) {
@@ -226,8 +242,11 @@ export default class SurfaceEffects {
       }
     } else if (tool === "soap") {
       for (const mark of nearbyMarks) {
-        const mask = shader.sample(mark.position, mark.normal);
-        if (mask.wet > 0.05 && mask.soap > 0.05 && !mark.soapy && !mark.removed) {
+        const mask = this.demoWashPreset ? null : shader.sample(mark.position, mark.normal);
+        const canApplySoap = this.demoWashPreset
+          ? mark.wet && !mark.soapy && !mark.removed
+          : mask.wet > 0.05 && mask.soap > 0.05 && !mark.soapy && !mark.removed;
+        if (canApplySoap) {
           mark.soapy = true;
           mark.wet = true;
           marksChanged = true;
@@ -236,9 +255,12 @@ export default class SurfaceEffects {
       if (result.changed || marksChanged) this.onMessage("Sabão aplicado na região. Passe a bucha para esfregar.");
     } else if (tool === "sponge") {
       for (const mark of nearbyMarks) {
-        const mask = shader.sample(mark.position, mark.normal);
-        if (mask.wet > 0.05 && mask.soap > 0.05 && mask.foam > 0.05 &&
-            shader.isCleanAt(mark.position, mark.normal) && !mark.scrubbed && !mark.removed) {
+        const mask = this.demoWashPreset ? null : shader.sample(mark.position, mark.normal);
+        const canScrub = this.demoWashPreset
+          ? mark.wet && mark.soapy && !mark.scrubbed && !mark.removed
+          : mask.wet > 0.05 && mask.soap > 0.05 && mask.foam > 0.05 &&
+            shader.isCleanAt(mark.position, mark.normal) && !mark.scrubbed && !mark.removed;
+        if (canScrub) {
           mark.scrubbed = true;
           marksChanged = true;
         }
