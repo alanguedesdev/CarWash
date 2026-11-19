@@ -423,7 +423,7 @@ function renderAchievements() {
     { title: "Referência no bairro", description: "Conclua 10 serviços.", progress: Math.min(stats.completedJobs, 10), goal: 10, unlocked: stats.completedJobs >= 10, icon: "⭐" },
     { title: "Investidor", description: "Adquira sua primeira melhoria.", progress: Math.min(stats.purchasedUpgrades.length, 1), goal: 1, unlocked: stats.purchasedUpgrades.length >= 1, icon: "🛠️" },
     { title: "Negócio completo", description: "Adquira todas as melhorias disponíveis.", progress: stats.purchasedUpgrades.length, goal: 5, unlocked: stats.purchasedUpgrades.length >= 5, icon: "🏆" },
-    { title: "Excelência", description: "Mantenha reputação igual ou superior a 4,5.", progress: stats.reputation >= 4.5 ? 1 : 0, goal: 1, unlocked: stats.reputation >= 4.5, icon: "🌟" },
+    { title: "Excelência", description: "Mantenha reputação igual ou superior a 4,5.", progress: stats.reputation >= 4.5 ? 1 : 0, goal: 1, unlocked: stats.completedJobs > 0 && stats.reputation >= 4.5, icon: "🌟" },
   ];
   const unlocked = achievements.filter((item) => item.unlocked).length;
   achievementSummary.innerHTML = `<strong>${unlocked} de ${achievements.length}</strong><span>conquistas desbloqueadas</span><div class="achievement-total-track"><i style="width:${(unlocked / achievements.length) * 100}%"></i></div>`;
@@ -829,7 +829,7 @@ hud.querySelectorAll("[data-menu-close]").forEach((button) => {
   button.addEventListener("click", closeMenuModals);
 });
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeMenuModals();
+  if (event.key === "Escape") {\n    closeMenuModals();\n    if (career.shop && !career.shop.hidden) career.closeShop();\n  }
 });
 
 // Fluxo: menu, conversa com cliente e box.
