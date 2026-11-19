@@ -209,7 +209,7 @@ const pointer = new THREE.Vector2();
 
 // Interface
 const hud = document.createElement("div");
-hud.className = "game-hud scene-reception";
+hud.className = "game-hud scene-menu";
 
 hud.innerHTML = `
   <header class="game-brand">
@@ -917,11 +917,20 @@ claimRewardButton.addEventListener("click", () => {
   completionActions.hidden = false;
 });
 
+async function returnToMainMenu(label = "Voltando ao lava-jato...") {
+  // Restaura o mesmo estado visual e de interface usado na abertura do jogo.
+  completionPanel.hidden = true;
+  completionActions.hidden = true;
+  customerDialogue.hidden = true;
+  mainMenu.hidden = false;
+  closeMenuInfo();
+  if (career.shop && !career.shop.hidden) career.closeShop();
+  await transitionTo("menu", label);
+}
+
 returnToMenuButton.addEventListener("click", async () => {
   if (!rewardClaimed) return;
-  completionPanel.hidden = true;
-  mainMenu.hidden = false;
-  await transitionTo("menu", "Voltando ao lava-jato...");
+  await returnToMainMenu();
 });
 
 nextWashButton.addEventListener("click", async () => {
