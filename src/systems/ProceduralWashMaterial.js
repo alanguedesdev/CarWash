@@ -1,10 +1,15 @@
 import * as THREE from "three";
 
 const TEXTURE_SIZE = 256;
+// Uma máscara independente por hemisfério evita que +X/-X, +Y/-Y
+// ou +Z/-Z compartilhem pixels quando as projeções se sobrepõem.
 const AXES = [
-  { u: 1, v: 2 },
-  { u: 0, v: 2 },
-  { u: 0, v: 1 },
+  { u: 1, v: 2, component: "x", sign: 1 },
+  { u: 1, v: 2, component: "x", sign: -1 },
+  { u: 0, v: 2, component: "y", sign: 1 },
+  { u: 0, v: 2, component: "y", sign: -1 },
+  { u: 0, v: 1, component: "z", sign: 1 },
+  { u: 0, v: 1, component: "z", sign: -1 },
 ];
 
 const VERTEX_DECL = [
@@ -15,9 +20,12 @@ const VERTEX_DECL = [
 ].join("\n");
 
 const FRAGMENT_DECL = [
-  "uniform sampler2D uWashMaskX;",
-  "uniform sampler2D uWashMaskY;",
-  "uniform sampler2D uWashMaskZ;",
+  "uniform sampler2D uWashMaskPX;",
+  "uniform sampler2D uWashMaskNX;",
+  "uniform sampler2D uWashMaskPY;",
+  "uniform sampler2D uWashMaskNY;",
+  "uniform sampler2D uWashMaskPZ;",
+  "uniform sampler2D uWashMaskNZ;",
   "uniform vec3 uWashBoundsMin;",
   "uniform vec3 uWashBoundsSize;",
   "uniform float uWashTime;",
@@ -27,7 +35,7 @@ const FRAGMENT_DECL = [
   "float washHash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}",
   "float washNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(washHash(i),washHash(i+vec3(1,0,0)),f.x),mix(washHash(i+vec3(0,1,0)),washHash(i+vec3(1,1,0)),f.x),f.y),mix(mix(washHash(i+vec3(0,0,1)),washHash(i+vec3(1,0,1)),f.x),mix(washHash(i+vec3(0,1,1)),washHash(i+vec3(1,1,1)),f.x),f.y),f.z);}",
   "float washTri(vec3 p,vec3 n,float s){vec3 w=pow(abs(normalize(n)),vec3(4.));w/=max(w.x+w.y+w.z,.0001);return washNoise(p.yzx*s)*w.x+washNoise(p.xzy*s)*w.y+washNoise(p.xyz*s)*w.z;}",
-  "vec4 washChannels(vec3 p,vec3 n){vec3 q=clamp((p-uWashBoundsMin)/max(uWashBoundsSize,vec3(.0001)),vec3(0.),vec3(1.));vec3 w=pow(abs(normalize(n)),vec3(4.));w/=max(w.x+w.y+w.z,.0001);vec4 a=texture2D(uWashMaskX,q.yz);vec4 b=texture2D(uWashMaskY,q.xz);vec4 c=texture2D(uWashMaskZ,q.xy);vec4 m=a*w.x+b*w.y+c*w.z;return vec4(1.-m.r,m.g,m.b,m.a);}",
+  "vec4 washChannels(vec3 p,vec3 n){vec3 q=clamp((p-uWashBoundsMin)/max(uWashBoundsSize,vec3(.0001)),vec3(0.),vec3(1.));vec3 nn=normalize(n);vec3 wp=pow(max(nn,vec3(0.)),vec3(4.));vec3 wn=pow(max(-nn,vec3(0.)),vec3(4.));float total=wp.x+wp.y+wp.z+wn.x+wn.y+wn.z;vec4 m=texture2D(uWashMaskPX,q.yz)*wp.x+texture2D(uWashMaskNX,q.yz)*wn.x+texture2D(uWashMaskPY,q.xz)*wp.y+texture2D(uWashMaskNY,q.xz)*wn.y+texture2D(uWashMaskPZ,q.xy)*wp.z+texture2D(uWashMaskNZ,q.xy)*wn.z;m/=max(total,.0001);return vec4(1.-m.r,m.g,m.b,m.a);}",
   "float washDirtProfile(vec3 p,vec3 n){float noise=washTri(p,n,5.2)*.72+washTri(p*1.7,n,13.)*.28;float lower=1.-smoothstep(-.7,.45,p.y);float top=max(dot(normalize(n),vec3(0.,1.,0.)),0.);if(uDirtProfile==1)return smoothstep(.3,.72,noise)*.58;if(uDirtProfile==2){float spots=washTri(p*2.8,n,9.);return smoothstep(.73,.9,spots)*lower*.95;}if(uDirtProfile==3){float cut=washTri(p*1.4,n,7.);return step(.68,cut)*smoothstep(.6,.9,top)*.9;}return smoothstep(.37,.7,noise)*mix(.28,1.,lower);}"
 ].join("\n");
 
@@ -50,9 +58,12 @@ export default class ProceduralWashMaterial {
     this.materials = originals.map((source) => {
       const material = source.clone();
       const uniforms = {
-        uWashMaskX: { value: this.textures[0] },
-        uWashMaskY: { value: this.textures[1] },
-        uWashMaskZ: { value: this.textures[2] },
+        uWashMaskPX: { value: this.textures[0] },
+        uWashMaskNX: { value: this.textures[1] },
+        uWashMaskPY: { value: this.textures[2] },
+        uWashMaskNY: { value: this.textures[3] },
+        uWashMaskPZ: { value: this.textures[4] },
+        uWashMaskNZ: { value: this.textures[5] },
         uWashBoundsMin: { value: this.boundsMin.clone() },
         uWashBoundsSize: { value: this.boundsSize.clone() },
         uWashTime: { value: 0 },
@@ -111,7 +122,7 @@ export default class ProceduralWashMaterial {
             "normal=normalize(normal+vec3(dFdx(runoff),dFdy(runoff),0.)*1.65);"
           ].join("\n"));
       };
-      material.customProgramCacheKey = () => "carwash-persistent-triplanar-mask-v1";
+      material.customProgramCacheKey = () => "carwash-directional-triplanar-mask-v2";
       material.needsUpdate = true;
       return material;
     });
@@ -149,10 +160,10 @@ export default class ProceduralWashMaterial {
   }
 
   sample(point, normal = new THREE.Vector3(0, 1, 0)) {
-    const weights = [Math.pow(Math.abs(normal.x), 4), Math.pow(Math.abs(normal.y), 4), Math.pow(Math.abs(normal.z), 4)];
+    const weights = AXES.map(({ component, sign }) => Math.pow(Math.max(0, normal[component] * sign), 4));
     const sum = weights.reduce((a, b) => a + b, 0) || 1;
     const result = [0, 0, 0, 0];
-    for (let axis = 0; axis < 3; axis++) {
+    for (let axis = 0; axis < 6; axis++) {
       const projection = this.getProjection(point, axis);
       const x = Math.min(TEXTURE_SIZE - 1, Math.max(0, Math.round(projection.u * (TEXTURE_SIZE - 1))));
       const y = Math.min(TEXTURE_SIZE - 1, Math.max(0, Math.round(projection.v * (TEXTURE_SIZE - 1))));
@@ -168,10 +179,10 @@ export default class ProceduralWashMaterial {
     let changed = false;
     let rinsed = false;
     const size = [this.boundsSize.x, this.boundsSize.y, this.boundsSize.z];
-    const axisWeights = [Math.pow(Math.abs(normal.x), 4), Math.pow(Math.abs(normal.y), 4), Math.pow(Math.abs(normal.z), 4)];
+    const axisWeights = AXES.map(({ component, sign }) => Math.pow(Math.max(0, normal[component] * sign), 4));
     const axisWeightSum = axisWeights.reduce((sum, value) => sum + value, 0) || 1;
 
-    for (let axis = 0; axis < 3; axis++) {
+    for (let axis = 0; axis < 6; axis++) {
       if (axisWeights[axis] / axisWeightSum < 0.015) continue;
       const axisChangedBefore = changed;
       const { u, v } = AXES[axis];
@@ -203,7 +214,6 @@ export default class ProceduralWashMaterial {
             if (data[offset + 2] > 8 || data[offset + 3] > 8) {
               rinsed = true;
               changed = true;
-              this.foamPixels = Math.max(0, this.foamPixels - 1);
               data[offset + 2] = 0;
               data[offset + 3] = 0;
               if (data[offset + 1] > 0) {
@@ -214,13 +224,11 @@ export default class ProceduralWashMaterial {
             }
           } else if (tool === "soap") {
             if (data[offset + 1] > 12 && data[offset + 2] < strength) {
-              if (data[offset + 2] <= 12 && data[offset + 3] <= 12) this.foamPixels++;
               data[offset + 2] = strength;
               changed = true;
             }
           } else if (tool === "sponge") {
             if (data[offset + 1] > 12 && data[offset + 2] > 12) {
-              if (data[offset + 2] <= 12 && data[offset + 3] <= 12) this.foamPixels++;
               if (data[offset] < strength) { data[offset] = strength; changed = true; }
               if (data[offset + 3] < strength) { data[offset + 3] = strength; changed = true; }
             }
@@ -243,7 +251,17 @@ export default class ProceduralWashMaterial {
   }
 
   getFoamCount() {
-    return this.foamPixels;
+    // Fonte de verdade: pixels de espuma efetivamente presentes nas máscaras.
+    // Evita contador incremental divergente após enxágues parciais ou fades.
+    let count = 0;
+    for (const texture of this.textures) {
+      const data = texture.image.data;
+      for (let offset = 3; offset < data.length; offset += 4) {
+        if (data[offset] > 8) count++;
+      }
+    }
+    this.foamPixels = count;
+    return count;
   }
 
   setDirtProfile(profile) {

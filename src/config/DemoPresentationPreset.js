@@ -42,7 +42,11 @@ export function prepareDemoCareer() {
 }
 
 function project(point, axis, min, size) {
-  const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }];
+  const axes = [
+    { u: "y", v: "z" }, { u: "y", v: "z" },
+    { u: "x", v: "z" }, { u: "x", v: "z" },
+    { u: "x", v: "y" }, { u: "x", v: "y" },
+  ];
   const { u, v } = axes[axis];
   return {
     u: Math.max(0, Math.min(1, (point[u] - min[u]) / Math.max(size[u], 0.0001))),
@@ -56,8 +60,9 @@ function chooseDoorCluster(marks, amount, bounds) {
   const groups = new Map();
 
   for (const mark of marks) {
-    const sideStrength = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z));
-    if (sideStrength < 0.45) continue;
+    // A demonstração usa a lateral direita visível pela câmera (hemisfério +Z).
+    // Não usa abs(normal.z): isso misturaria o lado esquerdo com o direito.
+    if (mark.normal.z < 0.45) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
@@ -69,9 +74,7 @@ function chooseDoorCluster(marks, amount, bounds) {
   for (const group of groups.values()) {
     if (group.length < amount) continue;
 
-    const normalX = group.reduce((sum, mark) => sum + Math.abs(mark.normal.x), 0);
-    const normalZ = group.reduce((sum, mark) => sum + Math.abs(mark.normal.z), 0);
-    const sideAxis = normalX > normalZ ? "x" : "z";
+    const sideAxis = "z";
     const longitudinalAxis = sideAxis === "x" ? "z" : "x";
     const sidePosition = group.reduce((sum, mark) => sum + mark.position[sideAxis], 0) / group.length;
     const center = new THREE.Vector3();
@@ -97,22 +100,15 @@ function chooseDoorCluster(marks, amount, bounds) {
     if (selected.length === amount && score < bestScore) {
       bestScore = score;
       bestMarks = selected.map((item) => item.mark);
-      bestAxis = sideAxis === "x" ? 0 : 2;
+      const signed = group.reduce((sum, mark) => sum + mark.normal[sideAxis], 0);
+      bestAxis = sideAxis === "x" ? (signed >= 0 ? 0 : 1) : (signed >= 0 ? 4 : 5);
     }
   }
 
   if (!bestMarks.length) {
-    // Fallback: escolhe a malha com maior quantidade de amostras laterais.
-    let largestGroup = [];
-    for (const group of groups.values()) {
-      if (group.length > largestGroup.length) largestGroup = group;
-    }
-    bestMarks = largestGroup.slice(0, amount);
-    if (largestGroup.length) {
-      const nx = largestGroup.reduce((sum, mark) => sum + Math.abs(mark.normal.x), 0);
-      const nz = largestGroup.reduce((sum, mark) => sum + Math.abs(mark.normal.z), 0);
-      bestAxis = nx > nz ? 0 : 2;
-    }
+    // Não transforma silenciosamente uma face arbitrária em "porta direita".
+    // Sem amostras do hemisfério direito, o preset falha de forma explícita.
+    return { marks: [], axis: 4 };
   }
 
   return { marks: bestMarks, axis: bestAxis };
@@ -133,7 +129,11 @@ function setTextureClean(shader, patch = null) {
     // Somente os pixels dentro do patch voltam a permitir sujeira (R = 0).
     if (patch && axis === patch.axis) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
-      const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
+      const axes = [
+        { u: 1, v: 2 }, { u: 1, v: 2 },
+        { u: 0, v: 2 }, { u: 0, v: 2 },
+        { u: 0, v: 1 }, { u: 0, v: 1 },
+      ][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
       const ry = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.v), 0.001)) * 256));
       const cx = Math.round(center.u * 255);
