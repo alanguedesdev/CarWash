@@ -42,7 +42,11 @@ export function prepareDemoCareer() {
 }
 
 function project(point, axis, min, size) {
-  const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }];
+  const axes = [
+    { u: "y", v: "z" }, { u: "y", v: "z" },
+    { u: "x", v: "z" }, { u: "x", v: "z" },
+    { u: "x", v: "y" }, { u: "x", v: "y" },
+  ];
   const { u, v } = axes[axis];
   return {
     u: Math.max(0, Math.min(1, (point[u] - min[u]) / Math.max(size[u], 0.0001))),
@@ -125,7 +129,11 @@ function setTextureClean(shader, patch = null) {
     // Somente os pixels dentro do patch voltam a permitir sujeira (R = 0).
     if (patch && axis === patch.axis) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
-      const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
+      const axes = [
+        { u: 1, v: 2 }, { u: 1, v: 2 },
+        { u: 0, v: 2 }, { u: 0, v: 2 },
+        { u: 0, v: 1 }, { u: 0, v: 1 },
+      ][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
       const ry = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.v), 0.001)) * 256));
       const cx = Math.round(center.u * 255);

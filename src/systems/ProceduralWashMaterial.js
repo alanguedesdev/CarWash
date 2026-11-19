@@ -163,7 +163,7 @@ export default class ProceduralWashMaterial {
     const weights = AXES.map(({ component, sign }) => Math.pow(Math.max(0, normal[component] * sign), 4));
     const sum = weights.reduce((a, b) => a + b, 0) || 1;
     const result = [0, 0, 0, 0];
-    for (let axis = 0; axis < 3; axis++) {
+    for (let axis = 0; axis < 6; axis++) {
       const projection = this.getProjection(point, axis);
       const x = Math.min(TEXTURE_SIZE - 1, Math.max(0, Math.round(projection.u * (TEXTURE_SIZE - 1))));
       const y = Math.min(TEXTURE_SIZE - 1, Math.max(0, Math.round(projection.v * (TEXTURE_SIZE - 1))));
