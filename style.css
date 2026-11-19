@@ -2719,3 +2719,113 @@ body {
     min-height: 52px;
   }
 }
+
+
+/* Ajuste fino baseado no teste real em 852x393: eliminar o scroll do card
+   e compactar o conteúdo para manter o CTA integralmente visível. */
+@media (max-width: 1000px) and (max-height: 430px) and (orientation: landscape) {
+  .game-hud.scene-menu .main-menu {
+    place-items: center start;
+    padding: 6px 12px;
+    overflow: hidden;
+  }
+
+  .game-hud.scene-menu .main-menu-card {
+    width: min(52vw, 430px) !important;
+    max-width: calc(100vw - 180px);
+    max-height: none;
+    height: auto;
+    margin: 0;
+    padding: 9px 14px 10px !important;
+    overflow: visible;
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-radius: 11px;
+  }
+
+  .game-hud.scene-menu .menu-brand-mark {
+    gap: 5px;
+    margin: 0 0 4px;
+  }
+
+  .game-hud.scene-menu .menu-brand-icon {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+  }
+
+  .game-hud.scene-menu .menu-brand-mark span:last-child {
+    font-size: 7px;
+    letter-spacing: .8px;
+  }
+
+  .game-hud.scene-menu .menu-eyebrow {
+    margin: 2px 0 3px;
+    font-size: 7px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-menu .main-menu-card h1 {
+    margin: 2px 0;
+    font-size: clamp(34px, 5vw, 43px);
+    line-height: .95;
+    letter-spacing: -2px;
+  }
+
+  .game-hud.scene-menu .menu-title-line {
+    gap: 5px;
+    margin: 2px 0 4px;
+    line-height: 1;
+  }
+
+  .game-hud.scene-menu .menu-title-line span {
+    font-size: 6px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-menu .menu-description {
+    margin: 3px 0 5px;
+    font-size: 9px !important;
+    line-height: 1.25;
+  }
+
+  .game-hud.scene-menu .menu-feature-row {
+    gap: 4px;
+    margin: 4px 0 3px;
+  }
+
+  .game-hud.scene-menu .menu-feature-row span {
+    padding: 4px 6px;
+    font-size: 7px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-menu #menu-progress {
+    margin: 3px 0 5px;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+
+  .game-hud.scene-menu #play-game {
+    min-height: 36px;
+    padding: 4px 9px;
+    border-bottom-width: 4px;
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .game-hud.scene-menu #play-game b {
+    width: 21px;
+    height: 21px;
+    font-size: 14px;
+  }
+
+  .game-hud.scene-menu .menu-hint {
+    display: none;
+  }
+
+  .game-hud.scene-menu .menu-quick-actions button {
+    min-height: 58px;
+    padding: 5px 3px 7px;
+  }
+}
