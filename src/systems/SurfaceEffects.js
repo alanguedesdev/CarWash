@@ -127,7 +127,7 @@ export default class SurfaceEffects {
           const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
           const nx = (center.x - boundsMin.x) / Math.max(boundsSize.x, 0.0001);
           const ny = (center.y - boundsMin.y) / Math.max(boundsSize.y, 0.0001);
-          if (Math.abs(normal.z) < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.20 || ny > 0.58) continue;
+          if (Math.abs(normal.z) < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.30 || ny > 0.60) continue;
           eligible.push({ a, b, c, normal, area });
         }
         if (eligible.length) {
@@ -288,9 +288,18 @@ export default class SurfaceEffects {
     const shader = this.materials.get(mesh.uuid);
     if (!shader) return false;
     const result = shader.paint(point, brushRadius, tool, this.clock.getElapsedTime(), normal);
-    const radiusSquared = brushRadius * brushRadius;
+    // No preset de demonstração, os pontos são amostras esparsas de uma
+    // única mancha. A tolerância visual da ferramenta precisa alcançar essas
+    // amostras mesmo quando o raycast cai entre dois triângulos do GLB.
+    // Mantemos a seleção restrita à mesma malha e ao cluster ainda sujo.
+    const markRadius = this.demoWashPreset
+      ? Math.max(brushRadius * 2, 0.78)
+      : brushRadius * Math.sqrt(1.25);
+    const radiusSquared = markRadius * markRadius;
     const nearbyMarks = this.dirtMarks.filter((mark) =>
-      mark.mesh === mesh && mark.position.distanceToSquared(point) <= radiusSquared * 1.25
+      mark.mesh === mesh &&
+      (!this.demoWashPreset || !mark.removed) &&
+      mark.position.distanceToSquared(point) <= radiusSquared
     );
     let marksChanged = false;
 
