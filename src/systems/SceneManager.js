@@ -322,7 +322,8 @@ export default class SceneManager {
 
     this.menuBackdrop.visible = false;
     // A recepção 3D é preservada para outras cenas; o diálogo usa cenário estático em CSS.
-    this.reception.visible = ["menu", "reception"].includes(name);
+    // A recepção 3D antiga não deve ser reativada ao exibir o menu atual.
+    this.reception.visible = name === "reception";
     this.customer.visible = false;
     this.washEnvironment.visible = name === "wash";
     this.delivery.visible = name === "delivery";
