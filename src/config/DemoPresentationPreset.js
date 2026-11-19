@@ -55,50 +55,77 @@ function chooseDoorCluster(marks, amount, bounds) {
   const min = bounds.min;
   const groups = new Map();
 
-  // O GLB pode ter a lateral orientada para +Z ou -Z. Agrupa por malha
-  // e por qualquer uma das duas faces laterais, sem assumir o sinal da normal.
+  // Região da porta/painel lateral indicada na referência:
+  // meio do comprimento do carro, abaixo das janelas e entre os eixos.
+  // O Nissan do projeto está orientado longitudinalmente no eixo X e com
+  // as laterais no eixo Z. Mantemos apenas amostras da face lateral (+/- Z).
   for (const mark of marks) {
-    const sideStrength = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z));
-    const y = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
-    if (sideStrength < 0.62 || y < 0.18 || y > 0.82) continue;
+    const nx = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
+    const ny = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
+    const sideNormal = Math.abs(mark.normal.z);
+    if (sideNormal < 0.72) continue;
+    if (nx < 0.30 || nx > 0.74 || ny < 0.20 || ny > 0.58) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
 
-  let best = [];
-  let bestScore = Infinity;
+  // Escolhe uma única malha lateral que comporte o maior número de amostras
+  // dentro da porta. A seleção é determinística em relação às posições amostradas.
+  let selected = [];
+  let selectedScore = Infinity;
   for (const group of groups.values()) {
     if (group.length < amount) continue;
-    for (const center of group) {
-      const nearest = group
-        .map((mark) => ({ mark, distance: mark.position.distanceToSquared(center.position) }))
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, amount);
-      const score = nearest.reduce((sum, item) => sum + item.distance, 0);
-      if (score < bestScore) {
-        bestScore = score;
-        best = nearest.map((item) => item.mark);
-      }
-    }
-  }
-
-  // Fallback: não deixa a demo falhar por uma distribuição esparsa de amostras.
-  // Ainda prioriza faces laterais e mantém um cluster espacial compacto.
-  if (best.length) return best;
-  const sideMarks = marks.filter((mark) => Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z)) >= 0.45);
-  const pool = sideMarks.length >= amount ? sideMarks : marks;
-  for (const center of pool) {
-    const nearest = pool
-      .map((mark) => ({ mark, distance: mark.position.distanceToSquared(center.position) }))
+    const center = new THREE.Vector3(
+      min.x + size.x * 0.52,
+      min.y + size.y * 0.39,
+      group.reduce((sum, mark) => sum + mark.position.z, 0) / group.length
+    );
+    const nearest = group
+      .map((mark) => ({ mark, distance: mark.position.distanceToSquared(center) }))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, amount);
     const score = nearest.reduce((sum, item) => sum + item.distance, 0);
-    if (score < bestScore) {
-      bestScore = score;
-      best = nearest.map((item) => item.mark);
+    if (score < selectedScore) {
+      selectedScore = score;
+      selected = nearest.map((item) => item.mark);
     }
   }
-  return best;
+
+  // Se uma malha tiver menos amostras dentro da porta, completa com os pontos
+  // laterais mais próximos do centro da mesma região, ainda em uma única malha.
+  if (selected.length) return selected;
+  let fallback = [];
+  let fallbackScore = Infinity;
+  const allGroups = new Map();
+  for (const mark of marks) {
+    if (Math.abs(mark.normal.z) < 0.72) continue;
+    if (!allGroups.has(mark.mesh)) allGroups.set(mark.mesh, []);
+    allGroups.get(mark.mesh).push(mark);
+  }
+  for (const group of allGroups.values()) {
+    if (group.length < amount) continue;
+    const center = new THREE.Vector3(
+      min.x + size.x * 0.52,
+      min.y + size.y * 0.39,
+      group.reduce((sum, mark) => sum + mark.position.z, 0) / group.length
+    );
+    const nearest = group
+      .map((mark) => {
+        const nx = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
+        const ny = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
+        const outsidePenalty = (nx < 0.30 || nx > 0.74 ? 4 : 0) +
+          (ny < 0.20 || ny > 0.58 ? 4 : 0);
+        return { mark, score: mark.position.distanceToSquared(center) + outsidePenalty };
+      })
+      .sort((a, b) => a.score - b.score)
+      .slice(0, amount);
+    const score = nearest.reduce((sum, item) => sum + item.score, 0);
+    if (score < fallbackScore) {
+      fallbackScore = score;
+      fallback = nearest.map((item) => item.mark);
+    }
+  }
+  return fallback;
 }
 
 function setTextureClean(shader, clean, patch) {
@@ -152,20 +179,18 @@ export function applyDemoWashPreset(surfaceEffects) {
     (sum, mark) => sum.add(mark.position),
     remainingMarks[0].position.clone()
   ).multiplyScalar(1 / remainingMarks.length);
-  const radius = Math.max(0.3, ...remainingMarks.map(
-    (mark) => mark.position.distanceTo(center) + 0.22
-  ));
+  // Mancha visual contida no painel central da porta, sem alcançar capô,
+  // teto, para-choques ou caixas de roda.
+  const boundsSize = surfaceEffects.modelBounds.getSize(new THREE.Vector3());
+  const radius = Math.min(boundsSize.x * 0.12, boundsSize.y * 0.16);
 
   // Limpa visualmente todas as peças, exceto uma única mancha em uma única malha.
   for (const shader of surfaceEffects.materials.values()) setTextureClean(shader, true, null);
   const targetShader = surfaceEffects.materials.get(remainingMarks[0].mesh.uuid);
-  const dominantNormal = remainingMarks.reduce(
-    (sum, mark) => sum.add(mark.normal),
-    new THREE.Vector3()
-  ).normalize();
-  const patchAxis = Math.abs(dominantNormal.x) > Math.abs(dominantNormal.z) ? 0 : 2;
+  // A porta é uma face lateral: sua máscara usa exclusivamente a projeção XY
+  // (eixo Z), evitando replicar sujeira no teto ou em superfícies internas.
   if (targetShader) {
-    setTextureClean(targetShader, false, { center, radius: Math.min(radius, 0.55), axis: patchAxis });
+    setTextureClean(targetShader, false, { center, radius, axis: 2 });
   }
 
   for (const mark of marks) {
