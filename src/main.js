@@ -209,7 +209,7 @@ const pointer = new THREE.Vector2();
 
 // Interface
 const hud = document.createElement("div");
-hud.className = "game-hud scene-menu";
+hud.className = "game-hud scene-reception";
 
 hud.innerHTML = `
   <header class="game-brand">
@@ -930,7 +930,9 @@ async function returnToMainMenu(label = "Voltando ao lava-jato...") {
 
 returnToMenuButton.addEventListener("click", async () => {
   if (!rewardClaimed) return;
-  await returnToMainMenu();
+  completionPanel.hidden = true;
+  mainMenu.hidden = false;
+  await transitionTo("menu", "Voltando ao lava-jato...");
 });
 
 nextWashButton.addEventListener("click", async () => {
