@@ -49,7 +49,45 @@ export default class SceneManager {
     this.show("reception");
   }
 
-  createCustomer(){const g=new THREE.Group();g.name="ReceptionCustomer";g.position.set(-3.25,0,.35);const add=(geo,color,pos)=>{const o=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:.9}));o.position.set(...pos);o.castShadow=true;g.add(o);return o;};add(new THREE.CapsuleGeometry(.34,.72,4,8),"#477b91",[0,1.18,0]);add(new THREE.SphereGeometry(.31,16,12),"#c98963",[0,2.02,0]);add(new THREE.SphereGeometry(.32,16,10,0,Math.PI*2,0,Math.PI*.48),"#49352d",[0,2.12,-.015]);add(new THREE.CapsuleGeometry(.105,.58,3,6),"#354c5b",[-.16,.43,0]);add(new THREE.CapsuleGeometry(.105,.58,3,6),"#354c5b",[.16,.43,0]);for(const side of [-1,1]){const arm=add(new THREE.CapsuleGeometry(.09,.48,3,6),"#477b91",[side*.39,1.25,0]);arm.rotation.z=side*-.18;add(new THREE.SphereGeometry(.1,10,8),"#c98963",[side*.43,.88,.02]);add(new THREE.SphereGeometry(.025,8,8),"#293b40",[side*.11,2.04,.285]);}return g;}
+  createCustomer() {
+    const group = new THREE.Group();
+    group.name = "ReceptionCustomer";
+    group.position.set(-3.25, 0, 0.35);
+
+    const addPart = (geometry, color, position) => {
+      const mesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshStandardMaterial({ color, roughness: 0.9 })
+      );
+      mesh.position.set(...position);
+      mesh.castShadow = true;
+      group.add(mesh);
+      return mesh;
+    };
+
+    addPart(new THREE.CapsuleGeometry(0.34, 0.72, 4, 8), "#477b91", [0, 1.18, 0]);
+    addPart(new THREE.SphereGeometry(0.31, 16, 12), "#c98963", [0, 2.02, 0]);
+    addPart(
+      new THREE.SphereGeometry(0.32, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.48),
+      "#49352d",
+      [0, 2.12, -0.015]
+    );
+    addPart(new THREE.CapsuleGeometry(0.105, 0.58, 3, 6), "#354c5b", [-0.16, 0.43, 0]);
+    addPart(new THREE.CapsuleGeometry(0.105, 0.58, 3, 6), "#354c5b", [0.16, 0.43, 0]);
+
+    for (const side of [-1, 1]) {
+      const arm = addPart(
+        new THREE.CapsuleGeometry(0.09, 0.48, 3, 6),
+        "#477b91",
+        [side * 0.39, 1.25, 0]
+      );
+      arm.rotation.z = side * -0.18;
+      addPart(new THREE.SphereGeometry(0.1, 10, 8), "#c98963", [side * 0.43, 0.88, 0.02]);
+      addPart(new THREE.SphereGeometry(0.025, 8, 8), "#293b40", [side * 0.11, 2.04, 0.285]);
+    }
+
+    return group;
+  }
 
   createReception() {
     const root = new THREE.Group();
