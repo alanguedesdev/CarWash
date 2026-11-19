@@ -127,7 +127,7 @@ export default class SurfaceEffects {
           const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
           const nx = (center.x - boundsMin.x) / Math.max(boundsSize.x, 0.0001);
           const ny = (center.y - boundsMin.y) / Math.max(boundsSize.y, 0.0001);
-          if (Math.abs(normal.z) < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.30 || ny > 0.60) continue;
+          if (Math.abs(normal.z) < 0.45 || nx < 0.42 || nx > 0.62 || ny < 0.34 || ny > 0.58) continue;
           eligible.push({ a, b, c, normal, area });
         }
         if (eligible.length) {
