@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 /**
  * Preset reversível para apresentações do CarWash.
  * Desligue DEMO_PRESENTATION_MODE e publique para restaurar o save original.
