@@ -360,8 +360,12 @@ hud.innerHTML = `
       <p class="completion-copy" id="completion-copy">Seu cliente vai receber o veículo limpo, sem espuma e brilhando.</p>
       <div class="completion-rating"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
       <div class="completion-reward"><span>Recompensa da missão</span><strong>R$ 80,00</strong></div>
-      <button id="claim-reward" type="button">Concluir missão</button>
+      <button id="claim-reward" type="button">Receber recompensa</button>
       <p id="completion-note" class="completion-note">Lavagem completa finalizada.</p>
+      <div class="completion-actions" id="completion-actions" hidden>
+        <button id="return-to-menu" class="completion-secondary" type="button">Voltar para o início</button>
+        <button id="next-wash" type="button">Próxima lavagem <span aria-hidden="true">→</span></button>
+      </div>
     </div>
   </div>
   <div id="tool-cursor" aria-hidden="true"></div>
@@ -438,6 +442,9 @@ const completionPanel = hud.querySelector("#mission-complete");
 const claimRewardButton = hud.querySelector("#claim-reward");
 const completionNote = hud.querySelector("#completion-note");
 const completionCopy = hud.querySelector("#completion-copy");
+const completionActions = hud.querySelector("#completion-actions");
+const returnToMenuButton = hud.querySelector("#return-to-menu");
+const nextWashButton = hud.querySelector("#next-wash");
 const mainMenu=hud.querySelector("#main-menu"),playGameButton=hud.querySelector("#play-game"),menuProgress=hud.querySelector("#menu-progress"),menuInfoPanel=hud.querySelector("#menu-info-panel"),menuInfoTitle=hud.querySelector("#menu-info-title"),menuInfoContent=hud.querySelector("#menu-info-content"),customerDialogue=hud.querySelector("#customer-dialogue"),dialogueTitle=hud.querySelector("#dialogue-title"),dialogueText=hud.querySelector("#dialogue-text"),dialoguePortrait=hud.querySelector("#dialogue-portrait"),dialogueNextButton=hud.querySelector("#dialogue-next"),acceptServiceButton=hud.querySelector("#accept-service"),declineServiceButton=hud.querySelector("#decline-service"),customerNameLabel=hud.querySelector(".customer-details strong"),customerSubtitleLabel=hud.querySelector(".customer-details > span"),customerRequestLabel=hud.querySelector(".customer-request");
 // Assets da conversa: os quatro SVGs novos são reutilizados pelo catálogo inteiro.
 const CUSTOMER_AVATARS = {
@@ -567,7 +574,29 @@ function updateCustomer(){customerNameLabel.textContent=currentCustomer.name;cus
 function showDialogue(){dialogueText.textContent=currentCustomer.lines[dialogueLine];const last=dialogueLine===currentCustomer.lines.length-1;dialogueNextButton.hidden=last;acceptServiceButton.hidden=!last;declineServiceButton.hidden=!last;}
 function advanceDialogue(){if(dialogueLine<currentCustomer.lines.length-1){dialogueLine++;showDialogue();}}
 async function openCustomerDialogue(){if(activeScene!=="menu")return;playGameButton.disabled=true;currentCustomer=nextCustomer();await transitionTo("dialogue","Um cliente está chegando...");mainMenu.hidden=true;customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();playGameButton.disabled=false;}
-async function acceptCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("wash","Preparando o box de lavagem...");customerDialogue.hidden=true;setMessage("Serviço aceito! Selecione uma ferramenta para começar.");acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
+async function acceptCustomerService(){
+  if(activeScene!=="dialogue")return;
+  acceptServiceButton.disabled=true;declineServiceButton.disabled=true;
+  await transitionTo("wash","Preparando o box de lavagem...");
+  customerDialogue.hidden=true;
+  missionCompleted=false;
+  rewardClaimed=false;
+  completionPanel.hidden=true;
+  completionActions.hidden=true;
+  claimRewardButton.disabled=false;
+  claimRewardButton.textContent="Receber recompensa";
+  completionNote.textContent="Lavagem completa finalizada.";
+  setTool(null);
+  const attached=surfaceEffects.attachModel(carModel,{demoWashRegion:DEMO_PRESENTATION_MODE});
+  if(!attached) {
+    showLoadError("Não foi possível preparar a lavagem deste serviço.");
+  } else {
+    applyDemoWashPreset(surfaceEffects);
+    updateMission(surfaceEffects.getProgress());
+    setMessage("Serviço aceito! Selecione uma ferramenta para começar.");
+  }
+  acceptServiceButton.disabled=false;declineServiceButton.disabled=false;
+}
 async function declineCustomerService(){if(activeScene!=="dialogue")return;acceptServiceButton.disabled=true;declineServiceButton.disabled=true;await transitionTo("menu","Agradecendo ao cliente...");customerDialogue.hidden=true;currentCustomer=nextCustomer();await wait(650);await transitionTo("dialogue","Um novo cliente está chegando...");customerDialogue.hidden=false;dialogueLine=0;updateCustomer();showDialogue();acceptServiceButton.disabled=false;declineServiceButton.disabled=false;}
 function showLoadError(text) {
   loadError.style.display = "block";
@@ -878,12 +907,31 @@ toolButtons.forEach((button) => {
 });
 
 claimRewardButton.addEventListener("click", () => {
-  if (rewardClaimed) return;
+  if (rewardClaimed || !missionCompleted) return;
+  const credited = career.completeJob(80, 5);
+  if (!credited) return;
   rewardClaimed = true;
-  career.completeJob(80, 5);
   claimRewardButton.disabled = true;
   claimRewardButton.textContent = "Recompensa recebida ✓";
   completionNote.textContent = "R$ 80,00 registrados como recompensa desta missão.";
+  completionActions.hidden = false;
+});
+
+returnToMenuButton.addEventListener("click", async () => {
+  if (!rewardClaimed) return;
+  completionPanel.hidden = true;
+  mainMenu.hidden = false;
+  await transitionTo("menu", "Voltando ao lava-jato...");
+});
+
+nextWashButton.addEventListener("click", async () => {
+  if (!rewardClaimed) return;
+  nextWashButton.disabled = true;
+  completionPanel.hidden = true;
+  mainMenu.hidden = false;
+  await transitionTo("menu", "Preparando o próximo atendimento...");
+  nextWashButton.disabled = false;
+  await openCustomerDialogue();
 });
 
 // Centralizar o carro

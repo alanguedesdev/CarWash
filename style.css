@@ -3268,3 +3268,41 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .purchase-toast, .purchase-toast.is-visible { animation: none; transition: opacity 120ms ease; }
 }
+
+
+/* Ações pós-recompensa: aparecem somente depois do crédito confirmado. */
+.completion-actions[hidden] { display: none !important; }
+.completion-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+.completion-actions button {
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 9px;
+  border: 0;
+  border-bottom: 4px solid #276644;
+  border-radius: 8px;
+  background: #43a875;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.completion-actions button:hover:not(:disabled) { background: #358d61; }
+.completion-actions .completion-secondary {
+  border-bottom-color: #b87843;
+  background: #d99a5d;
+  color: #293f45;
+}
+.completion-actions .completion-secondary:hover:not(:disabled) { background: #c9874c; }
+.completion-actions button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 420px) {
+  .completion-actions { grid-template-columns: 1fr; gap: 7px; }
+  .completion-actions button { min-height: 44px; }
+}
