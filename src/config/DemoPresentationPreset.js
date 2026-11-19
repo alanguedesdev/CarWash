@@ -173,7 +173,8 @@ export function applyDemoWashPreset(surfaceEffects) {
     mark.removed = !remaining.has(mark);
   }
 
-  surfaceEffects.demoWashPreset = true;\n  surfaceEffects.cleanedDirt = marks.length - remainingMarks.length;
+  surfaceEffects.demoWashPreset = true;
+  surfaceEffects.cleanedDirt = marks.length - remainingMarks.length;
   surfaceEffects.resetBrushPath();
   surfaceEffects.onProgress(surfaceEffects.getProgress());
   surfaceEffects.onMessage("Modo demonstração: manchas concentradas em uma única área da lateral. Molhe, ensaboe, esfregue e enxágue.");
