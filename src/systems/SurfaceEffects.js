@@ -214,7 +214,7 @@ export default class SurfaceEffects {
           // the marks are a curated cluster, so track the wash stages directly
           // against those marks instead of relying on triplanar sample thresholds.
           if (!mark.wet && !mark.removed) { mark.wet = true; marksChanged = true; }
-          if (result.rinsed && mark.scrubbed && !mark.removed) {
+          if (mark.scrubbed && !mark.removed) {
             mark.removed = true;
             mark.soapy = false;
             marksChanged = true;
@@ -270,6 +270,22 @@ export default class SurfaceEffects {
 
     shader.flush();
     return result.changed || marksChanged;
+  }
+
+  clearDemoWashResidue() {
+    for (const shader of this.materials.values()) {
+      for (const texture of shader.textures) {
+        const data = texture.image.data;
+        for (let offset = 0; offset < data.length; offset += 4) {
+          data[offset + 2] = 0;
+          data[offset + 3] = 0;
+        }
+        texture.needsUpdate = true;
+      }
+      shader.foamPixels = 0;
+      shader.fadeIndices.clear();
+      shader.dirtyTextures.clear();
+    }
   }
 
   getFoamCount() {
