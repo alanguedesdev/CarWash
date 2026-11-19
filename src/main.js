@@ -323,16 +323,17 @@ hud.innerHTML = `
     </div>
     <div class="main-menu-footer"><span>CAR WASH</span><i></i><span>LAVE · EVOLUA · CONQUISTE</span></div>
       <nav class="menu-quick-actions" aria-label="Atalhos do menu">
-        <button type="button" data-menu-action="settings" aria-label="Configurações" title="Configurações"><span>⚙</span></button>
-        <button type="button" data-menu-action="achievements" aria-label="Conquistas" title="Conquistas"><span>🏆</span></button>
-        <button type="button" data-menu-action="shop" aria-label="Loja" title="Loja"><span>🛒</span></button>
+        <button type="button" data-menu-action="instructions" aria-label="Instruções" title="Instruções"><span aria-hidden="true">📖</span><small>INSTRUÇÕES</small></button>
+        <button type="button" data-menu-action="achievements" aria-label="Conquistas" title="Conquistas"><span aria-hidden="true">🏆</span><small>CONQUISTAS</small></button>
+        <button type="button" data-menu-action="shop" aria-label="Loja" title="Loja"><span aria-hidden="true">🛒</span><small>LOJA</small></button>
       </nav>
       <section class="menu-info-panel" id="menu-info-panel" hidden role="dialog" aria-modal="true" aria-labelledby="menu-info-title">
         <div class="menu-info-card">
           <button class="menu-info-close" type="button" aria-label="Fechar">×</button>
-          <small>MEU LAVA-JATO</small>
-          <h2 id="menu-info-title">Configurações</h2>
+          <small>MEU LAVA-JATO · GUIA DO JOGADOR</small>
+          <h2 id="menu-info-title">Instruções</h2>
           <div id="menu-info-content"></div>
+          <button class="menu-info-primary" type="button" data-menu-info-done>Entendi, vamos jogar</button>
         </div>
       </section>
   </section>
@@ -400,23 +401,76 @@ const sceneTransitionLabel = hud.querySelector("#scene-transition-label");
 const toolButtons=[...hud.querySelectorAll("[data-tool]")];
 function updateMenuProgress(){const jobs=career.stats.completedJobs;menuProgress.textContent="Carreira salva • "+jobs+" "+(jobs===1?"serviço concluído":"serviços concluídos");}
 updateMenuProgress();
-function closeMenuInfo(){menuInfoPanel.hidden=true;}
+function closeMenuInfo(){
+  menuInfoPanel.hidden=true;
+}
+function renderAchievements(){
+  const { completedJobs, reputation, purchasedUpgrades } = career.stats;
+  const level = career.getLevel();
+  const totalUpgrades = 5;
+  const achievements = [
+    { icon:"🚘", title:"Primeiro atendimento", description:"Conclua seu primeiro serviço.", progress:Math.min(completedJobs,1), target:1, unlocked:completedJobs>=1 },
+    { icon:"🤝", title:"Cliente recorrente", description:"Conclua 5 serviços.", progress:Math.min(completedJobs,5), target:5, unlocked:completedJobs>=5 },
+    { icon:"⭐", title:"Referência no bairro", description:"Conclua 10 serviços.", progress:Math.min(completedJobs,10), target:10, unlocked:completedJobs>=10 },
+    { icon:"🛠️", title:"Primeiro investimento", description:"Adquira sua primeira melhoria.", progress:Math.min(purchasedUpgrades.length,1), target:1, unlocked:purchasedUpgrades.length>=1 },
+    { icon:"🏆", title:"Negócio completo", description:"Adquira todas as melhorias disponíveis.", progress:Math.min(purchasedUpgrades.length,totalUpgrades), target:totalUpgrades, unlocked:purchasedUpgrades.length>=totalUpgrades },
+    { icon:"🌟", title:"Excelência", description:"Alcance reputação média de 4,5 após concluir um serviço.", progress:completedJobs>0?Math.min(reputation,4.5):0, target:4.5, unlocked:completedJobs>0&&reputation>=4.5, decimals:true }
+  ];
+  const unlocked = achievements.filter(item=>item.unlocked).length;
+  menuInfoTitle.textContent="Conquistas";
+  menuInfoContent.innerHTML=`
+    <div class="achievement-overview">
+      <div><strong>${unlocked}/${achievements.length}</strong><span>conquistas desbloqueadas</span></div>
+      <div class="achievement-overview-track"><i style="width:${unlocked/achievements.length*100}%"></i></div>
+      <p>Nível ${level.level} · ${level.name} · ${level.xp} XP</p>
+    </div>
+    <div class="achievement-list">
+      ${achievements.map(item=>`
+        <article class="achievement-card ${item.unlocked?"is-unlocked":"is-pending"}">
+          <span class="achievement-card-icon" aria-hidden="true">${item.icon}</span>
+          <div class="achievement-card-copy">
+            <strong>${item.title}</strong>
+            <p>${item.description}</p>
+            <div class="achievement-progress"><i style="width:${Math.min(100,item.progress/item.target*100)}%"></i></div>
+            <small>${item.decimals?item.progress.toFixed(1).replace(".",","):item.progress} / ${item.target}</small>
+          </div>
+          <span class="achievement-state">${item.unlocked?"Desbloqueada ✓":"Pendente"}</span>
+        </article>`).join("")}
+    </div>`;
+}
 function openMenuInfo(type){
-  if(type==="shop"){career.openShop();return;}
+  if(type==="shop"){
+    closeMenuInfo();
+    career.openShop();
+    return;
+  }
   if(type==="achievements"){
-    const jobs=career.stats.completedJobs, level=career.getLevel();
-    menuInfoTitle.textContent="Conquistas";
-    menuInfoContent.innerHTML=`<div class="menu-info-stat"><strong>${jobs}</strong><span>serviços concluídos</span></div><div class="menu-info-stat"><strong>${level.level}</strong><span>nível atual · ${level.name}</span></div><p>Continue atendendo clientes para evoluir seu lava-jato e liberar novos equipamentos.</p>`;
+    renderAchievements();
   } else {
-    menuInfoTitle.textContent="Configurações";
-    menuInfoContent.innerHTML=`<p>Controles do jogo</p><ul><li>Arraste o cenário para girar o veículo.</li><li>Selecione água, sabão ou bucha para lavar.</li><li>Use a roda do mouse para girar a plataforma.</li></ul><p class="menu-info-note">Seu progresso é salvo automaticamente neste dispositivo.</p>`;
+    menuInfoTitle.textContent="Como jogar";
+    menuInfoContent.innerHTML=`
+      <ol class="instruction-list">
+        <li><strong>Atenda o cliente</strong><span>Toque em Começar a jogar e acompanhe o pedido durante a conversa.</span></li>
+        <li><strong>Aceite ou recuse o serviço</strong><span>Aceite para iniciar a lavagem ou recuse para chamar o próximo cliente.</span></li>
+        <li><strong>Respeite a sequência de lavagem</strong><span>Molhe o veículo, aplique sabão, esfregue com a bucha e enxágue para concluir.</span></li>
+        <li><strong>Gire o carro livremente</strong><span>Sem ferramenta selecionada, arraste com mouse ou toque para girar. A roda do mouse também controla a rotação; use Centralizar carro para voltar à posição inicial.</span></li>
+        <li><strong>Ganhe e evolua</strong><span>Conclua o serviço para receber dinheiro e reputação. A experiência libera melhorias.</span></li>
+        <li><strong>Invista na loja</strong><span>Abra a Loja para comprar equipamentos e melhorias. As compras seguem os requisitos de saldo, XP e sequência.</span></li>
+      </ol>`;
   }
   menuInfoPanel.hidden=false;
+  menuInfoPanel.querySelector(".menu-info-close").focus();
 }
 hud.querySelectorAll("[data-menu-action]").forEach(button=>button.addEventListener("click",()=>openMenuInfo(button.dataset.menuAction)));
 hud.querySelector(".menu-info-close").addEventListener("click",closeMenuInfo);
+hud.querySelector("[data-menu-info-done]").addEventListener("click",closeMenuInfo);
 menuInfoPanel.addEventListener("click",event=>{if(event.target===menuInfoPanel)closeMenuInfo();});
-window.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenuInfo();});
+window.addEventListener("keydown",event=>{
+  if(event.key==="Escape"){
+    closeMenuInfo();
+    if(career.shop && !career.shop.hidden) career.closeShop();
+  }
+});
 
 function setMessage(text) {
   message.textContent = text;
