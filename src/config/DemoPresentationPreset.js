@@ -55,8 +55,6 @@ function chooseDoorCluster(marks, amount, bounds) {
   const min = bounds.min;
   const groups = new Map();
 
-  // O painel lateral é identificado por normais predominantemente horizontais.
-  // Aceita os dois eixos horizontais para não depender da orientação do GLB.
   for (const mark of marks) {
     const sideStrength = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z));
     if (sideStrength < 0.45) continue;
@@ -64,29 +62,34 @@ function chooseDoorCluster(marks, amount, bounds) {
     groups.get(mark.mesh).push(mark);
   }
 
-  const target = new THREE.Vector3(
-    min.x + size.x * 0.52,
-    min.y + size.y * 0.39,
-    0
-  );
   let bestMarks = [];
   let bestScore = Infinity;
+  let bestAxis = 2;
 
   for (const group of groups.values()) {
     if (group.length < amount) continue;
-    const sideAxis = Math.abs(group.reduce((sum, mark) => sum + mark.normal.x, 0)) >
-      Math.abs(group.reduce((sum, mark) => sum + mark.normal.z, 0)) ? "x" : "z";
+
+    const normalX = group.reduce((sum, mark) => sum + Math.abs(mark.normal.x), 0);
+    const normalZ = group.reduce((sum, mark) => sum + Math.abs(mark.normal.z), 0);
+    const sideAxis = normalX > normalZ ? "x" : "z";
+    const longitudinalAxis = sideAxis === "x" ? "z" : "x";
     const sidePosition = group.reduce((sum, mark) => sum + mark.position[sideAxis], 0) / group.length;
-    const center = target.clone();
+    const center = new THREE.Vector3();
     center[sideAxis] = sidePosition;
+    center[longitudinalAxis] = min[longitudinalAxis] + size[longitudinalAxis] * 0.52;
+    center.y = min.y + size.y * 0.39;
 
     const ranked = group.map((mark) => {
-      const nx = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
-      const ny = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
+      const along = (mark.position[longitudinalAxis] - min[longitudinalAxis]) /
+        Math.max(size[longitudinalAxis], 0.0001);
+      const height = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
       const outsideDoorPenalty =
-        (nx < 0.30 || nx > 0.74 ? 2.0 : 0) +
-        (ny < 0.20 || ny > 0.58 ? 2.0 : 0);
-      return { mark, score: mark.position.distanceToSquared(center) + outsideDoorPenalty };
+        (along < 0.30 || along > 0.74 ? 2.0 : 0) +
+        (height < 0.20 || height > 0.58 ? 2.0 : 0);
+      return {
+        mark,
+        score: mark.position.distanceToSquared(center) + outsideDoorPenalty,
+      };
     }).sort((a, b) => a.score - b.score);
 
     const selected = ranked.slice(0, amount);
@@ -94,19 +97,25 @@ function chooseDoorCluster(marks, amount, bounds) {
     if (selected.length === amount && score < bestScore) {
       bestScore = score;
       bestMarks = selected.map((item) => item.mark);
+      bestAxis = sideAxis === "x" ? 0 : 2;
     }
   }
 
-  // Fallback seguro: mantém a seleção em uma única malha lateral, mesmo
-  // quando a amostragem aleatória não colocou 20% dos pontos nela.
   if (!bestMarks.length) {
+    // Fallback: escolhe a malha com maior quantidade de amostras laterais.
+    let largestGroup = [];
     for (const group of groups.values()) {
-      if (group.length > bestMarks.length) bestMarks = group;
+      if (group.length > largestGroup.length) largestGroup = group;
     }
-    bestMarks = bestMarks.slice(0, amount);
+    bestMarks = largestGroup.slice(0, amount);
+    if (largestGroup.length) {
+      const nx = largestGroup.reduce((sum, mark) => sum + Math.abs(mark.normal.x), 0);
+      const nz = largestGroup.reduce((sum, mark) => sum + Math.abs(mark.normal.z), 0);
+      bestAxis = nx > nz ? 0 : 2;
+    }
   }
 
-  return bestMarks;
+  return { marks: bestMarks, axis: bestAxis };
 }
 
 function setTextureClean(shader, patch = null) {
@@ -156,7 +165,8 @@ export function applyDemoWashPreset(surfaceEffects) {
 
   const marks = surfaceEffects.dirtMarks;
   const remainingCount = Math.max(1, Math.round(marks.length * 0.2));
-  const remainingMarks = chooseDoorCluster(marks, remainingCount, surfaceEffects.modelBounds);
+  const selection = chooseDoorCluster(marks, remainingCount, surfaceEffects.modelBounds);
+  const remainingMarks = selection.marks;
   if (!remainingMarks.length) {
     console.error("[CarWash Demo] Não foi possível selecionar pontos residuais para a porta; preset não aplicado.", {
       totalMarks: marks.length,
@@ -175,11 +185,7 @@ export function applyDemoWashPreset(surfaceEffects) {
   ).multiplyScalar(1 / remainingMarks.length);
   // Calcula a extensão real do grupo selecionado para que a máscara visual
   // cubra os pontos lógicos que a bucha/enxágue irão concluir.
-  const dominantNormal = remainingMarks.reduce(
-    (sum, mark) => sum.add(mark.normal),
-    new THREE.Vector3()
-  ).normalize();
-  const patchAxis = Math.abs(dominantNormal.x) > Math.abs(dominantNormal.z) ? 0 : 2;
+  const patchAxis = selection.axis;
   const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }][patchAxis];
   const radius = Math.max(
     0.12,
