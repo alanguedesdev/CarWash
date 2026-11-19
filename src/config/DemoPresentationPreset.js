@@ -139,9 +139,11 @@ function setTextureClean(shader, clean, patch) {
       data[offset + 3] = 0;
     }
 
-    // A lateral mark belongs only to the XY projection (normal on Z).
-    // Writing it to all triplanar projections duplicates dirt on roof/interior-facing areas.
-    if (patch && !clean && axis === patch.axis) {
+    // A mancha é uma região espacial da carroceria, não uma textura isolada.
+    // Grave a mesma região nas três projeções triplanares para que a mistura
+    // por normais do shader não apague a sujeira quando a malha tiver normais
+    // inclinadas, suavizadas ou diferentes da orientação ideal da porta.
+    if (patch && !clean) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
       const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
@@ -190,7 +192,7 @@ export function applyDemoWashPreset(surfaceEffects) {
   // A porta é uma face lateral: sua máscara usa exclusivamente a projeção XY
   // (eixo Z), evitando replicar sujeira no teto ou em superfícies internas.
   if (targetShader) {
-    setTextureClean(targetShader, false, { center, radius, axis: 2 });
+    setTextureClean(targetShader, false, { center, radius });
   }
 
   for (const mark of marks) {
@@ -205,6 +207,6 @@ export function applyDemoWashPreset(surfaceEffects) {
   surfaceEffects.resetBrushPath();
   surfaceEffects.onProgress(surfaceEffects.getProgress());
   surfaceEffects.onMessage("Modo demonstração: manchas concentradas em uma única área da lateral. Molhe, ensaboe, esfregue e enxágue.");
-  console.info(`[CarWash Demo] ${surfaceEffects.cleanedDirt}/${marks.length} pontos concluídos; ${remainingMarks.length} concentrados em uma área.`);
+  console.info(`[CarWash Demo] preset aplicado: ${surfaceEffects.cleanedDirt}/${marks.length} pontos limpos; ${remainingMarks.length} pontos residuais; malha=${remainingMarks[0].mesh.name || remainingMarks[0].mesh.uuid}; centro=(${center.x.toFixed(3)}, ${center.y.toFixed(3)}, ${center.z.toFixed(3)}); raio=${radius.toFixed(3)}.`);
   return true;
 }
