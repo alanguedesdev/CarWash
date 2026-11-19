@@ -48,22 +48,28 @@ function project(point, axis, min, size) {
   };
 }
 
-function chooseSingleCluster(marks, amount) {
+function chooseDoorCluster(marks, amount, bounds) {
+  const size = bounds.getSize(new THREE.Vector3());
+  const min = bounds.min;
   const groups = new Map();
+
+  // A porta fica na faixa central longitudinal e na metade inferior/intermediária
+  // da carroceria. Prioriza a face +Z e mantém todos os pontos na mesma malha.
   for (const mark of marks) {
+    if (mark.normal.z < 0.72) continue;
+    const x = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
+    const y = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
+    if (x < 0.24 || x > 0.76 || y < 0.22 || y > 0.72) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
 
-  let best = null;
+  let best = [];
   let bestScore = Infinity;
   for (const group of groups.values()) {
-    const side = group.filter((mark) => Math.abs(mark.normal.z) >= 0.42);
-    const candidates = side.length >= amount ? side : group;
-    if (candidates.length < amount) continue;
-
-    for (const center of candidates) {
-      const nearest = candidates
+    if (group.length < amount) continue;
+    for (const center of group) {
+      const nearest = group
         .map((mark) => ({ mark, distance: mark.position.distanceTo(center.position) }))
         .sort((a, b) => a.distance - b.distance)
         .slice(0, amount);
@@ -75,12 +81,27 @@ function chooseSingleCluster(marks, amount) {
     }
   }
 
-  if (best) return best;
-  const group = [...groups.values()].sort((a, b) => b.length - a.length)[0] || [];
-  const center = group[0];
-  return center ? [...group].sort((a, b) =>
-    a.position.distanceToSquared(center.position) - b.position.distanceToSquared(center.position)
-  ).slice(0, amount) : [];
+  // Fallback controlado: continua exigindo uma única malha e face lateral +Z.
+  if (best.length) return best;
+  const sideGroups = new Map();
+  for (const mark of marks) {
+    if (mark.normal.z < 0.72) continue;
+    if (!sideGroups.has(mark.mesh)) sideGroups.set(mark.mesh, []);
+    sideGroups.get(mark.mesh).push(mark);
+  }
+  for (const group of sideGroups.values()) {
+    if (group.length < amount) continue;
+    const center = group.reduce((sum, mark) => sum.add(mark.position), group[0].position.clone())
+      .multiplyScalar(1 / group.length);
+    const nearest = group.map((mark) => ({ mark, distance: mark.position.distanceToSquared(center) }))
+      .sort((a, b) => a.distance - b.distance).slice(0, amount);
+    const score = nearest.reduce((sum, item) => sum + item.distance, 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = nearest.map((item) => item.mark);
+    }
+  }
+  return best;
 }
 
 function setTextureClean(shader, clean, patch) {
@@ -124,7 +145,7 @@ export function applyDemoWashPreset(surfaceEffects) {
 
   const marks = surfaceEffects.dirtMarks;
   const remainingCount = Math.max(1, Math.round(marks.length * 0.2));
-  const remainingMarks = chooseSingleCluster(marks, remainingCount);
+  const remainingMarks = chooseDoorCluster(marks, remainingCount, surfaceEffects.modelBounds);
   if (!remainingMarks.length) return false;
 
   const remaining = new Set(remainingMarks);
@@ -140,7 +161,7 @@ export function applyDemoWashPreset(surfaceEffects) {
   for (const shader of surfaceEffects.materials.values()) setTextureClean(shader, true, null);
   const targetShader = surfaceEffects.materials.get(remainingMarks[0].mesh.uuid);
   if (targetShader) {
-    setTextureClean(targetShader, false, { center, radius });
+    setTextureClean(targetShader, false, { center, radius: Math.min(radius, 0.55), axis: 2 });
   }
 
   for (const mark of marks) {
@@ -150,7 +171,7 @@ export function applyDemoWashPreset(surfaceEffects) {
     mark.removed = !remaining.has(mark);
   }
 
-  surfaceEffects.cleanedDirt = marks.length - remainingMarks.length;
+  surfaceEffects.demoWashPreset = true;\n  surfaceEffects.cleanedDirt = marks.length - remainingMarks.length;
   surfaceEffects.resetBrushPath();
   surfaceEffects.onProgress(surfaceEffects.getProgress());
   surfaceEffects.onMessage("Modo demonstração: manchas concentradas em uma única área da lateral. Molhe, ensaboe, esfregue e enxágue.");
