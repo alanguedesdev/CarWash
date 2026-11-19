@@ -55,13 +55,12 @@ function chooseDoorCluster(marks, amount, bounds) {
   const min = bounds.min;
   const groups = new Map();
 
-  // A porta fica na faixa central longitudinal e na metade inferior/intermediária
-  // da carroceria. Prioriza a face +Z e mantém todos os pontos na mesma malha.
+  // O GLB pode ter a lateral orientada para +Z ou -Z. Agrupa por malha
+  // e por qualquer uma das duas faces laterais, sem assumir o sinal da normal.
   for (const mark of marks) {
-    if (mark.normal.z < 0.72) continue;
-    const x = (mark.position.x - min.x) / Math.max(size.x, 0.0001);
+    const sideStrength = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z));
     const y = (mark.position.y - min.y) / Math.max(size.y, 0.0001);
-    if (x < 0.24 || x > 0.76 || y < 0.22 || y > 0.72) continue;
+    if (sideStrength < 0.62 || y < 0.18 || y > 0.82) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
@@ -72,10 +71,10 @@ function chooseDoorCluster(marks, amount, bounds) {
     if (group.length < amount) continue;
     for (const center of group) {
       const nearest = group
-        .map((mark) => ({ mark, distance: mark.position.distanceTo(center.position) }))
+        .map((mark) => ({ mark, distance: mark.position.distanceToSquared(center.position) }))
         .sort((a, b) => a.distance - b.distance)
         .slice(0, amount);
-      const score = nearest.reduce((sum, item) => sum + item.distance ** 2, 0);
+      const score = nearest.reduce((sum, item) => sum + item.distance, 0);
       if (score < bestScore) {
         bestScore = score;
         best = nearest.map((item) => item.mark);
@@ -83,20 +82,16 @@ function chooseDoorCluster(marks, amount, bounds) {
     }
   }
 
-  // Fallback controlado: continua exigindo uma única malha e face lateral +Z.
+  // Fallback: não deixa a demo falhar por uma distribuição esparsa de amostras.
+  // Ainda prioriza faces laterais e mantém um cluster espacial compacto.
   if (best.length) return best;
-  const sideGroups = new Map();
-  for (const mark of marks) {
-    if (mark.normal.z < 0.72) continue;
-    if (!sideGroups.has(mark.mesh)) sideGroups.set(mark.mesh, []);
-    sideGroups.get(mark.mesh).push(mark);
-  }
-  for (const group of sideGroups.values()) {
-    if (group.length < amount) continue;
-    const center = group.reduce((sum, mark) => sum.add(mark.position), group[0].position.clone())
-      .multiplyScalar(1 / group.length);
-    const nearest = group.map((mark) => ({ mark, distance: mark.position.distanceToSquared(center) }))
-      .sort((a, b) => a.distance - b.distance).slice(0, amount);
+  const sideMarks = marks.filter((mark) => Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.z)) >= 0.45);
+  const pool = sideMarks.length >= amount ? sideMarks : marks;
+  for (const center of pool) {
+    const nearest = pool
+      .map((mark) => ({ mark, distance: mark.position.distanceToSquared(center.position) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, amount);
     const score = nearest.reduce((sum, item) => sum + item.distance, 0);
     if (score < bestScore) {
       bestScore = score;
@@ -119,7 +114,7 @@ function setTextureClean(shader, clean, patch) {
 
     // A lateral mark belongs only to the XY projection (normal on Z).
     // Writing it to all triplanar projections duplicates dirt on roof/interior-facing areas.
-    if (patch && !clean && axis === 2) {
+    if (patch && !clean && axis === patch.axis) {
       const center = project(patch.center, axis, shader.boundsMin, shader.boundsSize);
       const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
       const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
@@ -164,8 +159,13 @@ export function applyDemoWashPreset(surfaceEffects) {
   // Limpa visualmente todas as peças, exceto uma única mancha em uma única malha.
   for (const shader of surfaceEffects.materials.values()) setTextureClean(shader, true, null);
   const targetShader = surfaceEffects.materials.get(remainingMarks[0].mesh.uuid);
+  const dominantNormal = remainingMarks.reduce(
+    (sum, mark) => sum.add(mark.normal),
+    new THREE.Vector3()
+  ).normalize();
+  const patchAxis = Math.abs(dominantNormal.x) > Math.abs(dominantNormal.z) ? 0 : 2;
   if (targetShader) {
-    setTextureClean(targetShader, false, { center, radius: Math.min(radius, 0.55), axis: 2 });
+    setTextureClean(targetShader, false, { center, radius: Math.min(radius, 0.55), axis: patchAxis });
   }
 
   for (const mark of marks) {
