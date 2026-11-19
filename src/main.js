@@ -4,7 +4,7 @@ import SurfaceEffects from "./systems/SurfaceEffects.js";
 import CareerSystem from "./systems/CareerSystem.js";
 import SceneManager from "./systems/SceneManager.js";
 import { CUSTOMERS } from "./data/customers.js";
-import { prepareDemoCareer, applyDemoWashPreset } from "./config/DemoPresentationPreset.js";
+import { DEMO_PRESENTATION_MODE, prepareDemoCareer, applyDemoWashPreset } from "./config/DemoPresentationPreset.js";
 import "./../style.css";
 
 const root = document.querySelector("#game");
@@ -765,7 +765,7 @@ function loadCar() {
       });
       surfaceEffects.setUpgradeBonuses(career.getUpgradeBonuses());
 
-      const attached = surfaceEffects.attachModel(carModel);
+      const attached = surfaceEffects.attachModel(carModel, { demoWashRegion: DEMO_PRESENTATION_MODE });
 
       if (!attached) {
         showLoadError(

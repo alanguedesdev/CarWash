@@ -53,7 +53,7 @@ export default class SurfaceEffects {
     return bounds;
   }
 
-  attachModel(model, { dirtProfile = this.dirtProfile } = {}) {
+  attachModel(model, { dirtProfile = this.dirtProfile, demoWashRegion = false } = {}) {
     this.dispose();
     this.dirtProfile = ["mud", "soot", "tar", "debris"].includes(dirtProfile) ? dirtProfile : "mud";
     this.disposed = false;
@@ -96,29 +96,109 @@ export default class SurfaceEffects {
       }));
     }
 
-    const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
-    for (const { mesh, area } of candidates) {
-      const count = Math.max(1, Math.round((area / Math.max(totalArea, 0.001)) * DIRT_COUNT));
-      for (let i = 0; i < count; i++) {
-        const sample = this.randomPointOnMesh(mesh);
-        if (!sample) continue;
-        const worldPoint = mesh.localToWorld(sample.point.clone());
-        const modelPoint = model.worldToLocal(worldPoint);
-        const surface = this.surfaces.get(mesh.uuid);
-        const normalMatrix = new THREE.Matrix3().getNormalMatrix(surface.meshToModel);
-        const modelNormal = sample.normal.clone().applyMatrix3(normalMatrix).normalize();
+    if (demoWashRegion) {
+      // Amostra exclusivamente a porta lateral direita (+Z), abaixo das janelas
+      // e entre os eixos. O demo não depende de manchas aleatórias espalhadas
+      // pelo carro para calcular os 80% iniciais.
+      const eligibleByMesh = new Map();
+      const boundsSize = this.modelBounds.getSize(new THREE.Vector3());
+      const boundsMin = this.modelBounds.min;
+      for (const { mesh } of candidates) {
+        const geometry = mesh.geometry;
+        const pos = geometry.attributes.position;
+        const index = geometry.index;
+        const triangleCount = index ? Math.floor(index.count / 3) : Math.floor(pos.count / 3);
+        const meshToModel = this.surfaces.get(mesh.uuid).meshToModel;
+        const normalMatrix = new THREE.Matrix3().getNormalMatrix(meshToModel);
+        const eligible = [];
+        for (let tri = 0; tri < triangleCount; tri++) {
+          const ia = index ? index.getX(tri * 3) : tri * 3;
+          const ib = index ? index.getX(tri * 3 + 1) : tri * 3 + 1;
+          const ic = index ? index.getX(tri * 3 + 2) : tri * 3 + 2;
+          const a = new THREE.Vector3().fromBufferAttribute(pos, ia).applyMatrix4(meshToModel);
+          const b = new THREE.Vector3().fromBufferAttribute(pos, ib).applyMatrix4(meshToModel);
+          const c = new THREE.Vector3().fromBufferAttribute(pos, ic).applyMatrix4(meshToModel);
+          const ab = b.clone().sub(a);
+          const ac = c.clone().sub(a);
+          const cross = ab.clone().cross(ac);
+          const area = cross.length() * 0.5;
+          if (area < 0.000001) continue;
+          const normal = cross.normalize();
+          const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
+          const nx = (center.x - boundsMin.x) / Math.max(boundsSize.x, 0.0001);
+          const ny = (center.y - boundsMin.y) / Math.max(boundsSize.y, 0.0001);
+          if (normal.z < 0.45 || nx < 0.30 || nx > 0.74 || ny < 0.20 || ny > 0.58) continue;
+          eligible.push({ a, b, c, normal, area });
+        }
+        if (eligible.length) {
+          eligibleByMesh.set(mesh, {
+            triangles: eligible,
+            totalArea: eligible.reduce((sum, triangle) => sum + triangle.area, 0),
+          });
+        }
+      }
+
+      const target = [...eligibleByMesh.entries()]
+        .sort((a, b) => b[1].totalArea - a[1].totalArea)[0];
+      if (!target) {
+        console.error("[CarWash Demo] Nenhum triângulo encontrado na região da porta direita (+Z).", {
+          bounds: this.modelBounds,
+          candidateMeshes: candidates.map(({ mesh }) => mesh.name || mesh.uuid),
+        });
+        this.onMessage("Não foi possível identificar a porta direita para a demonstração.");
+        return false;
+      }
+
+      const [targetMesh, region] = target;
+      for (let i = 0; i < DIRT_COUNT; i++) {
+        let pick = Math.random() * region.totalArea;
+        let triangle = region.triangles[region.triangles.length - 1];
+        for (const candidate of region.triangles) {
+          pick -= candidate.area;
+          if (pick <= 0) { triangle = candidate; break; }
+        }
+        let u = Math.random();
+        let v = Math.random();
+        if (u + v > 1) { u = 1 - u; v = 1 - v; }
+        const position = triangle.a.clone()
+          .addScaledVector(triangle.b.clone().sub(triangle.a), u)
+          .addScaledVector(triangle.c.clone().sub(triangle.a), v);
         this.dirtMarks.push({
-          mesh,
-          position: modelPoint,
-          normal: modelNormal,
+          mesh: targetMesh,
+          position,
+          normal: triangle.normal.clone(),
           wet: false,
           soapy: false,
           scrubbed: false,
           removed: false,
         });
       }
+      console.info(`[CarWash Demo] ${DIRT_COUNT} amostras geradas exclusivamente na porta direita: malha=${targetMesh.name || targetMesh.uuid}, triângulos elegíveis=${region.triangles.length}.`);
+    } else {
+      const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
+      for (const { mesh, area } of candidates) {
+        const count = Math.max(1, Math.round((area / Math.max(totalArea, 0.001)) * DIRT_COUNT));
+        for (let i = 0; i < count; i++) {
+          const sample = this.randomPointOnMesh(mesh);
+          if (!sample) continue;
+          const worldPoint = mesh.localToWorld(sample.point.clone());
+          const modelPoint = model.worldToLocal(worldPoint);
+          const surface = this.surfaces.get(mesh.uuid);
+          const normalMatrix = new THREE.Matrix3().getNormalMatrix(surface.meshToModel);
+          const modelNormal = sample.normal.clone().applyMatrix3(normalMatrix).normalize();
+          this.dirtMarks.push({
+            mesh,
+            position: modelPoint,
+            normal: modelNormal,
+            wet: false,
+            soapy: false,
+            scrubbed: false,
+            removed: false,
+          });
+        }
+      }
+  
     }
-
     this.totalDirt = this.dirtMarks.length;
     this.onProgress(this.getProgress());
     this.onMessage("Superfície preparada. Molhe, ensaboe, esfregue e enxágue.");
