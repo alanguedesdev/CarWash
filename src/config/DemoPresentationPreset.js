@@ -60,12 +60,12 @@ function chooseDoorCluster(marks, amount, bounds) {
   const groups = new Map();
   // A orientação dos triângulos no GLB pode inverter o sinal da normal.
   // Detectamos o hemisfério efetivamente usado pelas amostras, sem presumir +Z.
-  const positive = marks.filter((mark) => mark.normal.x >= 0.45).length;
-  const negative = marks.filter((mark) => mark.normal.x <= -0.45).length;
+  const positive = marks.filter((mark) => mark.normal.z >= 0.45).length;
+  const negative = marks.filter((mark) => mark.normal.z <= -0.45).length;
   const sideSign = positive >= negative ? 1 : -1;
 
   for (const mark of marks) {
-    if (mark.normal.x * sideSign < 0.45) continue;
+    if (mark.normal.z * sideSign < 0.45) continue;
     if (!groups.has(mark.mesh)) groups.set(mark.mesh, []);
     groups.get(mark.mesh).push(mark);
   }
@@ -77,8 +77,8 @@ function chooseDoorCluster(marks, amount, bounds) {
   for (const group of groups.values()) {
     if (group.length < amount) continue;
 
-    const sideAxis = "x";
-    const longitudinalAxis = "z";
+    const sideAxis = "z";
+    const longitudinalAxis = "x";
     const sidePosition = group.reduce((sum, mark) => sum + mark.position[sideAxis], 0) / group.length;
     const center = new THREE.Vector3();
     center[sideAxis] = sidePosition;
@@ -104,14 +104,14 @@ function chooseDoorCluster(marks, amount, bounds) {
       bestScore = score;
       bestMarks = selected.map((item) => item.mark);
       const signed = group.reduce((sum, mark) => sum + mark.normal[sideAxis], 0);
-      bestAxis = signed >= 0 ? 0 : 1;
+      bestAxis = signed >= 0 ? 4 : 5;
     }
   }
 
   if (!bestMarks.length) {
     // Não transforma silenciosamente uma face arbitrária em "porta direita".
     // Sem amostras do hemisfério direito, o preset falha de forma explícita.
-    return { marks: [], axis: 0 };
+    return { marks: [], axis: 4 };
   }
 
   return { marks: bestMarks, axis: bestAxis };
