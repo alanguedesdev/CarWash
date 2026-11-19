@@ -381,6 +381,52 @@ const career = new CareerSystem(hud, {
   },
 });
 
+// Feedback compacto de compra: observa o resultado do fluxo original da loja.
+const purchaseToast = document.createElement("aside");
+purchaseToast.className = "purchase-toast";
+purchaseToast.hidden = true;
+purchaseToast.setAttribute("role", "status");
+purchaseToast.setAttribute("aria-live", "polite");
+purchaseToast.innerHTML = `
+  <button class="purchase-toast-close" type="button" aria-label="Fechar aviso">×</button>
+  <span class="purchase-toast-sparkle" aria-hidden="true">✨</span>
+  <span class="purchase-toast-kicker">COMPRA REALIZADA</span>
+  <strong class="purchase-toast-message">Parabéns, você acabou de comprar</strong>
+  <span class="purchase-toast-item">
+    <span class="purchase-toast-icon" aria-hidden="true"></span>
+    <span class="purchase-toast-name"></span>
+  </span>
+`;
+hud.appendChild(purchaseToast);
+let purchaseToastTimer = null;
+let purchaseToastExitTimer = null;
+function hidePurchaseToast() {
+  if (purchaseToast.hidden) return;
+  purchaseToast.classList.remove("is-visible");
+  window.clearTimeout(purchaseToastTimer);
+  purchaseToastExitTimer = window.setTimeout(() => {
+    purchaseToast.hidden = true;
+  }, 260);
+}
+function showPurchaseToast(itemName, itemIcon) {
+  window.clearTimeout(purchaseToastTimer);
+  window.clearTimeout(purchaseToastExitTimer);
+  purchaseToast.querySelector(".purchase-toast-icon").textContent = itemIcon;
+  purchaseToast.querySelector(".purchase-toast-name").textContent = itemName;
+  purchaseToast.hidden = false;
+  requestAnimationFrame(() => purchaseToast.classList.add("is-visible"));
+  purchaseToastTimer = window.setTimeout(hidePurchaseToast, 4800);
+}
+purchaseToast.querySelector(".purchase-toast-close").addEventListener("click", hidePurchaseToast);
+career.shopItems.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-buy-upgrade]");
+  if (!button || !career.stats.purchasedUpgrades.includes(button.dataset.buyUpgrade)) return;
+  const item = button.closest(".shop-item");
+  const name = item?.querySelector(".shop-item-title strong")?.textContent.replace(/^\\d+\\.\\s*/, "") || "melhoria";
+  const icon = item?.querySelector(".shop-item-icon")?.textContent.trim() || "🎁";
+  showPurchaseToast(name, icon);
+});
+
 const progressLabel = hud.querySelector("#progress-label");
 const progressElement = hud.querySelector("#wash-progress");
 const stepLabel = hud.querySelector("#wash-step");
