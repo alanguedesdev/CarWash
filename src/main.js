@@ -829,7 +829,10 @@ hud.querySelectorAll("[data-menu-close]").forEach((button) => {
   button.addEventListener("click", closeMenuModals);
 });
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {\n    closeMenuModals();\n    if (career.shop && !career.shop.hidden) career.closeShop();\n  }
+  if (event.key === "Escape") {
+    closeMenuModals();
+    if (career.shop && !career.shop.hidden) career.closeShop();
+  }
 });
 
 // Fluxo: menu, conversa com cliente e box.
