@@ -1753,3 +1753,675 @@ body {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* ==========================================================
+   RESPONSIVIDADE DA CENA DE LAVAGEM
+   Regras de apresentação: não alteram lógica, estados ou hit-test.
+   ========================================================== */
+
+.game-hud.scene-wash {
+  --wash-safe-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  --wash-safe-left: max(10px, env(safe-area-inset-left, 0px));
+  --wash-safe-right: max(10px, env(safe-area-inset-right, 0px));
+}
+
+.game-hud.scene-wash .mission-card,
+.game-hud.scene-wash .business-dashboard,
+.game-hud.scene-wash .wash-status,
+.game-hud.scene-wash .tool-dock,
+.game-hud.scene-wash #reset-car,
+.game-hud.scene-wash .game-message {
+  min-width: 0;
+  max-width: calc(100% - var(--wash-safe-left) - var(--wash-safe-right));
+}
+
+.game-hud.scene-wash .mission-card {
+  z-index: 7;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c6a66b transparent;
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-wash .mission-card > * {
+  min-width: 0;
+}
+
+.game-hud.scene-wash .mission-reward {
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.game-hud.scene-wash .mission-reward strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-wash .business-dashboard {
+  z-index: 8;
+  min-width: 0;
+}
+
+.game-hud.scene-wash .business-stat {
+  min-width: 0;
+}
+
+.game-hud.scene-wash .business-stat strong,
+.game-hud.scene-wash .business-level-top strong,
+.game-hud.scene-wash .business-level-top span,
+.game-hud.scene-wash .business-level > small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-wash .wash-status {
+  z-index: 9;
+  min-width: 0;
+}
+
+.game-hud.scene-wash .status-top {
+  min-width: 0;
+}
+
+.game-hud.scene-wash .status-top span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.game-hud.scene-wash .tool-dock {
+  z-index: 12;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 3px 3px calc(5px + env(safe-area-inset-bottom, 0px));
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-hud.scene-wash .tool-button {
+  flex: 0 0 clamp(58px, 8vw, 72px);
+  min-width: 0;
+  min-height: 66px;
+  touch-action: manipulation;
+}
+
+.game-hud.scene-wash #reset-car {
+  z-index: 13;
+  max-width: calc(100% - 20px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+
+.game-hud.scene-wash .game-message {
+  z-index: 11;
+  width: max-content;
+  max-width: min(520px, calc(100% - 24px));
+  overflow-wrap: anywhere;
+}
+
+/* Tablets e janelas médias: duas colunas laterais, centro livre para o carro. */
+@media (min-width: 561px) and (max-width: 1100px) {
+  .game-hud.scene-wash .mission-card {
+    top: 92px;
+    left: 10px;
+    bottom: 104px;
+    width: clamp(190px, 27vw, 245px);
+    max-height: none;
+    padding: 9px;
+  }
+
+  .game-hud.scene-wash .business-dashboard {
+    top: 10px;
+    right: 10px;
+    left: auto;
+    width: min(390px, calc(100% - 220px));
+    max-width: 390px;
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .game-hud.scene-wash .business-stat {
+    flex: 1 1 0;
+    justify-content: center;
+    gap: 4px;
+    padding: 2px 4px;
+  }
+
+  .game-hud.scene-wash .business-stat-icon {
+    font-size: 15px;
+  }
+
+  .game-hud.scene-wash .business-stat small {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .business-stat strong {
+    font-size: 9px;
+  }
+
+  .game-hud.scene-wash .business-level {
+    min-width: 0;
+  }
+
+  .game-hud.scene-wash .wash-status {
+    top: 10px;
+    left: 50%;
+    width: min(205px, calc(100% - 650px));
+    min-width: 165px;
+    padding: 7px 9px;
+    transform: translateX(-50%);
+  }
+
+  .game-hud.scene-wash .status-top strong {
+    font-size: 17px;
+  }
+
+  .game-hud.scene-wash .tool-dock {
+    bottom: 8px;
+    left: 50%;
+    gap: 5px;
+    max-width: calc(100% - 20px);
+    transform: translateX(-50%);
+  }
+
+  .game-hud.scene-wash .tool-button {
+    flex-basis: clamp(58px, 8vw, 68px);
+    min-height: 64px;
+  }
+
+  .game-hud.scene-wash #reset-car {
+    right: 10px;
+    bottom: 82px;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .game-hud.scene-wash .game-message {
+    bottom: 82px;
+  }
+}
+
+/* Celular em paisagem e notebooks compactos: altura é o limite principal. */
+@media (max-width: 900px) and (max-height: 600px) and (orientation: landscape) {
+  .game-hud.scene-wash .game-brand {
+    top: 7px;
+    left: 8px;
+    max-width: 185px;
+    padding: 5px 8px;
+  }
+
+  .game-hud.scene-wash .game-brand strong {
+    font-size: 12px;
+  }
+
+  .game-hud.scene-wash .game-brand span {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .wash-status {
+    top: 7px;
+    left: 50%;
+    width: clamp(150px, 27vw, 195px);
+    min-width: 0;
+    padding: 5px 8px;
+    transform: translateX(-50%);
+  }
+
+  .game-hud.scene-wash .status-top {
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+
+  .game-hud.scene-wash .status-top span {
+    font-size: 7px;
+    letter-spacing: .5px;
+  }
+
+  .game-hud.scene-wash .status-top strong {
+    font-size: 15px;
+  }
+
+  .game-hud.scene-wash .progress-track {
+    height: 7px;
+  }
+
+  .game-hud.scene-wash #wash-step {
+    margin-top: 3px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .business-dashboard {
+    top: 7px;
+    right: 8px;
+    left: auto;
+    width: clamp(185px, 31vw, 230px);
+    max-width: calc(100% - 2 * 8px);
+    gap: 1px;
+    padding: 4px;
+  }
+
+  .game-hud.scene-wash .business-stat {
+    gap: 2px;
+    padding: 1px 3px;
+  }
+
+  .game-hud.scene-wash .business-stat-icon {
+    font-size: 12px;
+  }
+
+  .game-hud.scene-wash .business-stat small {
+    font-size: 6px;
+    letter-spacing: 0;
+  }
+
+  .game-hud.scene-wash .business-stat strong {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .business-level {
+    padding: 4px 5px 1px;
+  }
+
+  .game-hud.scene-wash .business-level-top {
+    gap: 4px;
+    margin-bottom: 3px;
+  }
+
+  .game-hud.scene-wash .business-level-top strong,
+  .game-hud.scene-wash .business-level-top span,
+  .game-hud.scene-wash .business-level > small {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .business-level-track {
+    height: 5px;
+  }
+
+  .game-hud.scene-wash .shop-open-button {
+    margin-top: 1px;
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .mission-card {
+    top: 70px;
+    left: 8px;
+    bottom: 88px;
+    width: clamp(178px, 29vw, 210px);
+    max-height: none;
+    padding: 7px;
+  }
+
+  .game-hud.scene-wash .customer-avatar {
+    flex-basis: 36px;
+    width: 36px;
+    height: 40px;
+  }
+
+  .game-hud.scene-wash .customer-details small,
+  .game-hud.scene-wash .mission-goal span,
+  .game-hud.scene-wash .mission-reward span {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .customer-details strong {
+    font-size: 10px;
+  }
+
+  .game-hud.scene-wash .customer-details > span,
+  .game-hud.scene-wash .mission-car span {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .mission-car {
+    gap: 5px;
+    margin-top: 5px;
+    padding: 5px 0;
+  }
+
+  .game-hud.scene-wash .mission-car strong,
+  .game-hud.scene-wash .mission-goal strong {
+    font-size: 9px;
+  }
+
+  .game-hud.scene-wash .car-symbol {
+    font-size: 19px !important;
+  }
+
+  .game-hud.scene-wash .customer-request {
+    margin: 5px 0;
+    font-size: 8px;
+    line-height: 1.35;
+  }
+
+  .game-hud.scene-wash .mission-reward {
+    margin-top: 5px;
+    padding-top: 5px;
+  }
+
+  .game-hud.scene-wash .mission-reward strong {
+    font-size: 12px;
+  }
+
+  .game-hud.scene-wash .tool-dock {
+    left: 50%;
+    bottom: 5px;
+    gap: 3px;
+    max-width: calc(100% - 225px);
+    transform: translateX(-50%);
+  }
+
+  .game-hud.scene-wash .tool-button {
+    flex-basis: clamp(48px, 8vw, 58px);
+    min-height: 57px;
+    padding: 3px 2px;
+    gap: 2px;
+  }
+
+  .game-hud.scene-wash .tool-icon {
+    font-size: 18px;
+  }
+
+  .game-hud.scene-wash .tool-name {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .tool-cost {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash #reset-car {
+    right: 8px;
+    bottom: 7px;
+    padding: 7px 8px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .game-message {
+    left: 50%;
+    bottom: 70px;
+    max-width: calc(100% - 240px);
+    padding: 5px 8px;
+    font-size: 8px;
+  }
+}
+
+/* Celular em retrato: HUD empilhada, sem disputar a faixa inferior de ferramentas. */
+@media (max-width: 560px) and (orientation: portrait) {
+  .game-hud.scene-wash .game-brand {
+    top: 7px;
+    left: 7px;
+    max-width: 44%;
+    padding: 5px 7px;
+  }
+
+  .game-hud.scene-wash .game-brand strong {
+    font-size: 11px;
+  }
+
+  .game-hud.scene-wash .game-brand span {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .wash-status {
+    top: 7px;
+    right: 7px;
+    left: auto;
+    width: 48%;
+    max-width: 190px;
+    min-width: 0;
+    padding: 5px 7px;
+    transform: none;
+  }
+
+  .game-hud.scene-wash .status-top {
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .game-hud.scene-wash .status-top span {
+    font-size: 6px;
+    letter-spacing: .3px;
+  }
+
+  .game-hud.scene-wash .status-top strong {
+    font-size: 15px;
+  }
+
+  .game-hud.scene-wash .progress-track {
+    height: 7px;
+  }
+
+  .game-hud.scene-wash #wash-step {
+    margin-top: 3px;
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .business-dashboard {
+    top: 60px;
+    right: 7px;
+    left: 7px;
+    width: auto;
+    max-width: none;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .game-hud.scene-wash .business-stat {
+    flex: 1 1 0;
+    justify-content: center;
+    gap: 3px;
+    padding: 2px;
+  }
+
+  .game-hud.scene-wash .business-stat-icon {
+    font-size: 12px;
+  }
+
+  .game-hud.scene-wash .business-stat small {
+    font-size: 6px;
+    letter-spacing: 0;
+  }
+
+  .game-hud.scene-wash .business-stat strong {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .business-level {
+    padding: 4px 5px 1px;
+  }
+
+  .game-hud.scene-wash .business-level-top {
+    gap: 4px;
+    margin-bottom: 3px;
+  }
+
+  .game-hud.scene-wash .business-level-top strong,
+  .game-hud.scene-wash .business-level-top span,
+  .game-hud.scene-wash .business-level > small {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .business-level-track {
+    height: 5px;
+  }
+
+  .game-hud.scene-wash .shop-open-button {
+    margin-top: 1px;
+    padding: 5px 7px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .mission-card {
+    top: 158px;
+    left: 7px;
+    bottom: 116px;
+    width: min(205px, 53vw);
+    max-height: none;
+    padding: 7px;
+  }
+
+  .game-hud.scene-wash .customer-avatar {
+    flex-basis: 34px;
+    width: 34px;
+    height: 38px;
+  }
+
+  .game-hud.scene-wash .customer-details small,
+  .game-hud.scene-wash .mission-goal span,
+  .game-hud.scene-wash .mission-reward span {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash .customer-details strong {
+    font-size: 10px;
+  }
+
+  .game-hud.scene-wash .customer-details > span,
+  .game-hud.scene-wash .mission-car span {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .mission-car {
+    gap: 4px;
+    margin-top: 4px;
+    padding: 5px 0;
+  }
+
+  .game-hud.scene-wash .mission-car strong,
+  .game-hud.scene-wash .mission-goal strong {
+    font-size: 9px;
+  }
+
+  .game-hud.scene-wash .car-symbol {
+    font-size: 18px !important;
+  }
+
+  .game-hud.scene-wash .customer-request {
+    margin: 5px 0;
+    font-size: 8px;
+    line-height: 1.35;
+  }
+
+  .game-hud.scene-wash .mission-reward {
+    margin-top: 5px;
+    padding-top: 5px;
+  }
+
+  .game-hud.scene-wash .mission-reward strong {
+    font-size: 12px;
+  }
+
+  .game-hud.scene-wash .tool-dock {
+    left: 7px;
+    right: 7px;
+    bottom: max(5px, env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    justify-content: flex-start;
+    gap: 4px;
+    transform: none;
+  }
+
+  .game-hud.scene-wash .tool-button {
+    flex: 1 0 0;
+    min-width: 0;
+    min-height: 62px;
+    padding: 4px 2px;
+  }
+
+  .game-hud.scene-wash .tool-icon {
+    font-size: 18px;
+  }
+
+  .game-hud.scene-wash .tool-name {
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .tool-cost {
+    font-size: 7px;
+  }
+
+  .game-hud.scene-wash #reset-car {
+    right: 7px;
+    bottom: 83px;
+    padding: 7px 8px;
+    font-size: 8px;
+  }
+
+  .game-hud.scene-wash .game-message {
+    left: 50%;
+    bottom: 83px;
+    max-width: calc(100% - 14px);
+    padding: 5px 8px;
+    font-size: 8px;
+  }
+}
+
+/* Telas muito baixas: libera espaço vertical e permite rolagem só no card. */
+@media (max-height: 430px) {
+  .game-hud.scene-wash .mission-card {
+    top: 64px;
+    bottom: 72px;
+  }
+
+  .game-hud.scene-wash .tool-button {
+    min-height: 52px;
+  }
+
+  .game-hud.scene-wash #reset-car {
+    bottom: 5px;
+  }
+
+  .game-hud.scene-wash .game-message {
+    bottom: 61px;
+  }
+}
+
+/* Modais e painéis: respeitam a área útil e rolam internamente em qualquer orientação. */
+.game-hud .menu-info-panel,
+.game-hud .shop-overlay,
+.game-hud .mission-complete,
+.game-hud .scene-intro {
+  padding:
+    max(8px, env(safe-area-inset-top, 0px))
+    max(8px, env(safe-area-inset-right, 0px))
+    max(8px, env(safe-area-inset-bottom, 0px))
+    max(8px, env(safe-area-inset-left, 0px));
+}
+
+.game-hud .menu-info-card,
+.game-hud .shop-panel,
+.game-hud .completion-card,
+.game-hud .scene-intro-card {
+  min-width: 0;
+  max-width: 100%;
+  max-height: calc(100% - 16px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@supports (height: 100dvh) {
+  #game {
+    height: 100dvh;
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-hud.scene-wash .tool-button,
+  .game-hud.scene-wash .mission-card,
+  .game-hud.scene-wash .business-dashboard {
+    scroll-behavior: auto;
+  }
+}
