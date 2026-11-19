@@ -137,14 +137,22 @@ function setTextureClean(shader, patch = null) {
         { u: 0, v: 2 }, { u: 0, v: 2 },
         { u: 0, v: 1 }, { u: 0, v: 1 },
       ][axis];
-      const rx = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
-      const ry = Math.max(2, Math.ceil(Math.min(0.48, patch.radius / Math.max(shader.boundsSize.getComponent(axes.v), 0.001)) * 256));
+      const rx = Math.max(2, Math.ceil(Math.min(0.48, (patch.radiusU || patch.radius) / Math.max(shader.boundsSize.getComponent(axes.u), 0.001)) * 256));
+      const ry = Math.max(2, Math.ceil(Math.min(0.48, (patch.radiusV || patch.radius) / Math.max(shader.boundsSize.getComponent(axes.v), 0.001)) * 256));
       const cx = Math.round(center.u * 255);
       const cy = Math.round(center.v * 255);
 
       for (let y = Math.max(0, cy - ry); y <= Math.min(255, cy + ry); y++) {
         for (let x = Math.max(0, cx - rx); x <= Math.min(255, cx + rx); x++) {
-          if (Math.hypot((x - cx) / rx, (y - cy) / ry) <= 1) {
+          const dx = (x - cx) / rx;
+          const dy = (y - cy) / ry;
+          const angle = Math.atan2(dy, dx);
+          const edge = 1 + (patch.irregularity || 0) * (
+            Math.sin(angle * 3 + 0.7) * 0.55 +
+            Math.sin(angle * 5 - 1.2) * 0.3 +
+            Math.sin(angle * 7 + 2.1) * 0.15
+          );
+          if (Math.hypot(dx, dy) <= edge) {
             data[(y * 256 + x) * 4] = 0;
           }
         }
@@ -200,7 +208,7 @@ export function applyDemoWashPreset(surfaceEffects) {
       mark.position[axes.u] - center[axes.u],
       mark.position[axes.v] - center[axes.v]
     ) + 0.08)
-  );
+  ) * 1.12;
 
   // Limpa TODAS as máscaras de TODAS as malhas. Na malha da porta, reabre
   // somente o patch circular escolhido na projeção lateral correspondente.
@@ -210,7 +218,15 @@ export function applyDemoWashPreset(surfaceEffects) {
     console.error("[CarWash Demo] Shader da malha selecionada não encontrado; preset cancelado.");
     return false;
   }
-  setTextureClean(targetShader, { center, radius, axis: patchAxis });
+  // Mancha demo um pouco maior, ovalada e com borda orgânica; só afeta a máscara visual.
+  setTextureClean(targetShader, {
+    center,
+    radius,
+    radiusU: radius * 1.34,
+    radiusV: radius * 0.86,
+    irregularity: 0.12,
+    axis: patchAxis,
+  });
 
   for (const mark of marks) {
     mark.wet = false;
