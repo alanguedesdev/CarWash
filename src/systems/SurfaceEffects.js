@@ -127,14 +127,21 @@ export default class SurfaceEffects {
           const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
           const nx = (center.x - boundsMin.x) / Math.max(boundsSize.x, 0.0001);
           const ny = (center.y - boundsMin.y) / Math.max(boundsSize.y, 0.0001);
-          if (Math.abs(normal.z) < 0.45 || nx < 0.42 || nx > 0.62 || ny < 0.34 || ny > 0.58) continue;
+          const nz = (center.z - this.modelBounds.min.z) / Math.max(boundsSize.z, 0.0001);
+          // No GLB do GT-R, X representa a largura e Z o comprimento:
+          // normais em X identificam as laterais; Z identifica frente/traseira.
+          // Mantemos apenas a faixa externa da carroceria, na altura da porta
+          // e entre os eixos, descartando teto, assoalho, capô e para-choques.
+          const insideSideBand = (nx >= 0.08 && nx <= 0.32) || (nx >= 0.68 && nx <= 0.92);
+          if (Math.abs(normal.x) < 0.45 || !insideSideBand ||
+              ny < 0.22 || ny > 0.58 || nz < 0.28 || nz > 0.72) continue;
           eligible.push({ a, b, c, normal, area });
         }
         if (eligible.length) {
-          const positiveArea = eligible.filter((triangle) => triangle.normal.z > 0).reduce((sum, triangle) => sum + triangle.area, 0);
-          const negativeArea = eligible.filter((triangle) => triangle.normal.z < 0).reduce((sum, triangle) => sum + triangle.area, 0);
+          const positiveArea = eligible.filter((triangle) => triangle.normal.x > 0).reduce((sum, triangle) => sum + triangle.area, 0);
+          const negativeArea = eligible.filter((triangle) => triangle.normal.x < 0).reduce((sum, triangle) => sum + triangle.area, 0);
           const sideSign = positiveArea >= negativeArea ? 1 : -1;
-          const sideTriangles = eligible.filter((triangle) => triangle.normal.z * sideSign >= 0.45);
+          const sideTriangles = eligible.filter((triangle) => triangle.normal.x * sideSign >= 0.45);
           if (sideTriangles.length) {
             eligibleByMesh.set(mesh, {
               triangles: sideTriangles,
@@ -152,7 +159,7 @@ export default class SurfaceEffects {
           bounds: this.modelBounds,
           candidateMeshes: candidates.map(({ mesh }) => mesh.name || mesh.uuid),
         });
-        this.onMessage("Não foi possível identificar a porta direita para a demonstração.");
+        this.onMessage("Não foi possível identificar a porta lateral para a demonstração.");
         return false;
       }
 
@@ -180,7 +187,7 @@ export default class SurfaceEffects {
           removed: false,
         });
       }
-      console.info(`[CarWash Demo] ${DIRT_COUNT} amostras geradas na região lateral da porta: malha=${targetMesh.name || targetMesh.uuid}, hemisfério=${region.sideSign > 0 ? "+Z" : "-Z"}, triângulos elegíveis=${region.triangles.length}.`);
+      console.info(`[CarWash Demo] ${DIRT_COUNT} amostras geradas na região lateral da porta: malha=${targetMesh.name || targetMesh.uuid}, hemisfério=${region.sideSign > 0 ? "+X" : "-X"}, triângulos elegíveis=${region.triangles.length}.`);
     } else {
       const totalArea = candidates.reduce((sum, item) => sum + item.area, 0);
       for (const { mesh, area } of candidates) {
