@@ -1,13 +1,12 @@
 /**
  * Preset reversível para apresentações do CarWash.
  * Desligue DEMO_PRESENTATION_MODE e publique para restaurar o save original.
- * O backup preserva o valor anterior da chave principal sem alterar seu formato.
+ * Com o modo ativo, cada carregamento da página reinicia a carreira de demo.
  */
 export const DEMO_PRESENTATION_MODE = true;
 
 const CAREER_STORAGE_KEY = "carwash-business-progress-v1";
 const BACKUP_STORAGE_KEY = "carwash-demo-original-save-v1";
-const SESSION_STORAGE_KEY = "carwash-demo-session-v1";
 
 const DEMO_CAREER = Object.freeze({
   balance: 500,
@@ -27,108 +26,151 @@ export function prepareDemoCareer() {
         else localStorage.setItem(CAREER_STORAGE_KEY, parsed.original);
         localStorage.removeItem(BACKUP_STORAGE_KEY);
       }
-      localStorage.removeItem(SESSION_STORAGE_KEY);
       return;
     }
 
+    // Guarda o save real somente na primeira ativação; nunca o substitui pelo demo.
     if (localStorage.getItem(BACKUP_STORAGE_KEY) === null) {
       localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify({
         original: localStorage.getItem(CAREER_STORAGE_KEY),
       }));
     }
 
-    // Inicializa uma única vez: compras e progresso de demo sobrevivem a refresh.
-    if (localStorage.getItem(SESSION_STORAGE_KEY) !== "active") {
-      localStorage.setItem(CAREER_STORAGE_KEY, JSON.stringify(DEMO_CAREER));
-      localStorage.setItem(SESSION_STORAGE_KEY, "active");
-    }
+    // Executado a cada reload: a compra e o saldo voltam ao estado inicial de demo.
+    localStorage.setItem(CAREER_STORAGE_KEY, JSON.stringify(DEMO_CAREER));
   } catch (error) {
     console.warn("[CarWash Demo] Não foi possível preparar o save de demonstração:", error);
   }
 }
 
-function pickSpread(items, amount) {
-  if (amount <= 0 || items.length === 0) return [];
-  const sorted = [...items].sort((a, b) =>
-    a.position.x - b.position.x || a.position.z - b.position.z
-  );
-  if (amount >= sorted.length) return sorted;
-  if (amount === 1) return [sorted[Math.floor((sorted.length - 1) / 2)]];
-  return Array.from({ length: amount }, (_, index) =>
-    sorted[Math.round(index * (sorted.length - 1) / (amount - 1))]
-  );
+function projection(point, axis, bounds) {
+  const axes = [{ u: "y", v: "z" }, { u: "x", v: "z" }, { u: "x", v: "y" }];
+  const { u, v } = axes[axis];
+  const min = bounds.min, size = bounds.getSize({ x: 0, y: 0, z: 0 });
+  return {
+    u: Math.max(0, Math.min(1, (point[u] - min[u]) / Math.max(size[u], 0.0001))),
+    v: Math.max(0, Math.min(1, (point[v] - min[v]) / Math.max(size[v], 0.0001))),
+  };
+}
+
+function chooseSingleCluster(marks, amount, bounds) {
+  const sideMarks = marks.filter((mark) => Math.abs(mark.normal.z) >= 0.48);
+  const candidates = sideMarks.length >= amount
+    ? sideMarks
+    : marks.filter((mark) => mark.mesh === marks[0]?.mesh);
+
+  if (!candidates.length) return [];
+
+  // Escolhe o centro com a menor soma de distâncias aos N vizinhos mais próximos.
+  let best = null;
+  let bestScore = Infinity;
+  for (const center of candidates) {
+    const nearest = candidates
+      .map((mark) => ({ mark, distance: mark.position.distanceTo(center.position) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, amount);
+    if (nearest.length < amount) continue;
+    const score = nearest.reduce((sum, item) => sum + item.distance ** 2, 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = nearest.map((item) => item.mark);
+    }
+  }
+
+  if (best) return best;
+  return [...candidates].sort((a, b) =>
+    a.position.distanceToSquared(candidates[0].position) -
+    b.position.distanceToSquared(candidates[0].position)
+  ).slice(0, amount);
+}
+
+function setTextureClean(shader, clean, patch) {
+  shader.textures.forEach((texture, axis) => {
+    const data = texture.image.data;
+    // Canal R da máscara: 255 significa superfície limpa; 0 preserva a sujeira.
+    for (let offset = 0; offset < data.length; offset += 4) {
+      data[offset] = clean ? 255 : 0;
+      data[offset + 1] = 0;
+      data[offset + 2] = 0;
+      data[offset + 3] = 0;
+    }
+
+    if (patch && !clean) {
+      const center = projection(patch.center, axis, shaderBounds(shader));
+      const size = shader.boundsSize;
+      const axes = [{ u: 1, v: 2 }, { u: 0, v: 2 }, { u: 0, v: 1 }][axis];
+      const radiusU = Math.min(0.48, patch.radius / Math.max(size.getComponent(axes.u), 0.001));
+      const radiusV = Math.min(0.48, patch.radius / Math.max(size.getComponent(axes.v), 0.001));
+      const cx = Math.round(center.u * 255), cy = Math.round(center.v * 255);
+      const rx = Math.max(2, Math.ceil(radiusU * 256));
+      const ry = Math.max(2, Math.ceil(radiusV * 256));
+      for (let y = Math.max(0, cy - ry); y <= Math.min(255, cy + ry); y++) {
+        for (let x = Math.max(0, cx - rx); x <= Math.min(255, cx + rx); x++) {
+          const distance = Math.hypot((x - cx) / rx, (y - cy) / ry);
+          if (distance <= 1) data[(y * 256 + x) * 4] = 0;
+        }
+      }
+    }
+
+    texture.needsUpdate = true;
+  });
+  shader.foamPixels = 0;
+  shader.fadeIndices.clear();
+  shader.dirtyTextures.clear();
+}
+
+function shaderBounds(shader) {
+  return {
+    min: shader.boundsMin,
+    getSize: (target) => target.set(
+      shader.boundsSize.x, shader.boundsSize.y, shader.boundsSize.z
+    ),
+  };
 }
 
 /**
- * Pré-limpa 80% dos pontos e mantém ~20% em superfícies externas mais altas.
- * A aparência usa a mesma sequência de canais do material procedural existente.
+ * Deixa 80% dos pontos concluídos e concentra os 20% restantes em uma única
+ * mancha na mesma malha e em uma área circular da lateral/carroceria.
+ * As interações seguintes continuam usando SurfaceEffects.applyTool().
  */
 export function applyDemoWashPreset(surfaceEffects) {
   if (!DEMO_PRESENTATION_MODE || !surfaceEffects?.dirtMarks?.length) return false;
 
   const marks = surfaceEffects.dirtMarks;
-  const bounds = surfaceEffects.modelBounds;
-  const height = Math.max(bounds.max.y - bounds.min.y, 0.001);
-  const yRatio = (mark) => (mark.position.y - bounds.min.y) / height;
+  const remainingCount = Math.max(1, Math.round(marks.length * 0.2));
+  const remainingMarks = chooseSingleCluster(marks, remainingCount, surfaceEffects.modelBounds);
+  if (!remainingMarks.length) return false;
 
-  const eligible = marks.filter((mark) => {
-    const outward = Math.max(Math.abs(mark.normal.x), Math.abs(mark.normal.y), Math.abs(mark.normal.z));
-    return yRatio(mark) >= 0.28 && outward >= 0.58;
-  });
-  const targetRemaining = Math.max(1, Math.round(marks.length * 0.2));
-  const side = eligible.filter((mark) =>
-    Math.abs(mark.normal.z) >= 0.58 && yRatio(mark) >= 0.28 && yRatio(mark) <= 0.78
-  );
-  const upper = eligible.filter((mark) =>
-    Math.abs(mark.normal.y) >= 0.58 && yRatio(mark) >= 0.42
-  );
-  const frontGlass = eligible.filter((mark) =>
-    Math.abs(mark.normal.x) >= 0.58 && yRatio(mark) >= 0.38
-  );
+  const remaining = new Set(remainingMarks);
+  const center = remainingMarks.reduce((sum, mark) => sum.add(mark.position), remainingMarks[0].position.clone())
+    .multiplyScalar(1 / remainingMarks.length);
+  const radius = Math.max(0.3, ...remainingMarks.map((mark) => mark.position.distanceTo(center) + 0.22));
+  const patch = { center, radius };
 
-  const selected = [];
-  const addUnique = (items) => {
-    for (const mark of items) {
-      if (selected.length >= targetRemaining) break;
-      if (!selected.includes(mark)) selected.push(mark);
-    }
-  };
-
-  addUnique(pickSpread(side, Math.round(targetRemaining * 0.55)));
-  addUnique(pickSpread(upper, Math.round(targetRemaining * 0.3)));
-  addUnique(pickSpread(frontGlass, targetRemaining - selected.length));
-  addUnique(pickSpread(eligible, targetRemaining - selected.length));
-
-  if (selected.length < targetRemaining) {
-    addUnique(pickSpread([...marks].sort((a, b) => yRatio(b) - yRatio(a)), targetRemaining - selected.length));
+  // Primeiro limpa toda a máscara visual de cada peça.
+  for (const shader of surfaceEffects.materials.values()) {
+    setTextureClean(shader, true, null);
   }
 
-  const remaining = new Set(selected);
-  let cleaned = 0;
+  // Reintroduz sujeira somente em um círculo da única malha escolhida.
+  const targetMesh = remainingMarks[0].mesh;
+  const targetShader = surfaceEffects.materials.get(targetMesh.uuid);
+  if (targetShader) {
+    setTextureClean(targetShader, false, patch);
+    targetShader.flush();
+  }
 
   for (const mark of marks) {
     mark.wet = false;
     mark.soapy = false;
     mark.scrubbed = false;
     mark.removed = !remaining.has(mark);
-
-    if (mark.removed) {
-      const shader = surfaceEffects.materials.get(mark.mesh.uuid);
-      if (shader) {
-        shader.paint(mark.position, 0.68, "water", 0, mark.normal);
-        shader.paint(mark.position, 0.68, "soap", 0, mark.normal);
-        shader.paint(mark.position, 0.68, "sponge", 0, mark.normal);
-        shader.paint(mark.position, 0.68, "water", 0, mark.normal);
-      }
-      mark.scrubbed = true;
-      cleaned++;
-    }
   }
 
-  for (const shader of surfaceEffects.materials.values()) shader.flush();
-  surfaceEffects.cleanedDirt = cleaned;
+  surfaceEffects.cleanedDirt = marks.length - remainingMarks.length;
+  surfaceEffects.resetBrushPath();
   surfaceEffects.onProgress(surfaceEffects.getProgress());
-  surfaceEffects.onMessage("Modo demonstração: veículo preparado com aproximadamente 80% da limpeza concluída.");
-  console.info(`[CarWash Demo] Preset aplicado: ${cleaned}/${marks.length} pontos concluídos; ${remaining.size} manchas restantes.`);
+  surfaceEffects.onMessage("Modo demonstração: manchas concentradas em uma única área da lateral. Molhe, ensaboe, esfregue e enxágue.");
+  console.info(`[CarWash Demo] ${surfaceEffects.cleanedDirt}/${marks.length} pontos concluídos; ${remainingMarks.length} concentrados em uma área.`);
   return true;
 }
